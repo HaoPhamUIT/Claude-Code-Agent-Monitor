@@ -197,6 +197,8 @@ describe("previous version sweep", () => {
     write(root, "forgotten.yaml", "image: ccam-dashboard:2.3.0\n");
     write(root, "package-lock.json", '{"dependency":"2.3.0"}\n');
     write(root, "mcp/package-lock.json", '{"dependency":"2.3.0"}\n');
+    write(root, "client/package-lock.json", '{"dependency":"2.3.0"}\n');
+    write(root, "vscode-extension/package-lock.json", '{"dependency":"2.3.0"}\n');
     write(root, "server/__tests__/release-version-bump.test.js", 'fixture = "2.3.0";\n');
     write(root, "docs/superpowers/specs/history.md", "2.3.0 design example\n");
     write(root, "docs/HISTORY.md", "pre-v2.3.0 sessions used the old schema\n");
@@ -209,6 +211,8 @@ describe("previous version sweep", () => {
           "forgotten.yaml",
           "package-lock.json",
           "mcp/package-lock.json",
+          "client/package-lock.json",
+          "vscode-extension/package-lock.json",
           "server/__tests__/release-version-bump.test.js",
           "docs/superpowers/specs/history.md",
           "docs/HISTORY.md",

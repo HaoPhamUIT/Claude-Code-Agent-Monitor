@@ -27,11 +27,7 @@ const GENERATED_PATHS = Object.freeze([
   "plugins/*/.claude-plugin/plugin.json",
   "plugins/*/.codex-plugin/plugin.json",
 ]);
-const SWEEP_IGNORED_FILES = new Set([
-  "package-lock.json",
-  "mcp/package-lock.json",
-  "server/__tests__/release-version-bump.test.js",
-]);
+const SWEEP_IGNORED_FILES = new Set(["server/__tests__/release-version-bump.test.js"]);
 
 function parseVersion(value) {
   const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(String(value));
@@ -253,7 +249,12 @@ function findUnexpectedPreviousVersion({ root, previousVersion, trackedFiles }) 
   const findings = [];
   for (const relativePath of trackedFiles) {
     const normalized = relativePath.split(path.sep).join("/");
-    if (SWEEP_IGNORED_FILES.has(normalized) || normalized.startsWith("docs/superpowers/")) {
+    if (
+      normalized === "package-lock.json" ||
+      normalized.endsWith("/package-lock.json") ||
+      SWEEP_IGNORED_FILES.has(normalized) ||
+      normalized.startsWith("docs/superpowers/")
+    ) {
       continue;
     }
     const file = path.join(repositoryRoot, relativePath);

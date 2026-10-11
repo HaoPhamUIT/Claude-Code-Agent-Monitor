@@ -80,7 +80,7 @@ Before any file is written, every required field and pattern is validated agains
 
 After generation, the command scans tracked files for the previous root version. Remaining matches fail the bump unless they are in a narrow allowlist:
 
-- dependency records inside root or MCP lockfiles
+- dependency records inside package lockfiles, whose release-owned root fields are covered by the positive consistency contract
 - explicit historical prose such as `pre-v<previous-version>`
 
 The normal release consistency test remains the authoritative positive contract for current-version surfaces. The sweep is a negative guard against forgotten old values. A new root-release surface must be added to the consistency test and the updater together.
