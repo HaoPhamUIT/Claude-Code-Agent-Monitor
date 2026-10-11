@@ -8,7 +8,12 @@ const assert = require("node:assert");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { resolveTranscriptPath, appendChunk, MAX_CHUNK_BYTES } = require("../lib/remote-transcript");
+const {
+  resolveTranscriptPath,
+  appendChunk,
+  decodeBase64Strict,
+  MAX_CHUNK_BYTES,
+} = require("../lib/remote-transcript");
 
 const SID = "3d9c5424-7921-402a-acef-e038490164e2";
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "rt-"));
@@ -89,4 +94,10 @@ test("an empty chunk is a no-op that reports the current size", () => {
   const { abs } = resolveTranscriptPath(root, SID, `p/${SID}.jsonl`);
   assert.deepEqual(appendChunk(abs, 0, Buffer.alloc(0)), { ok: true, size: 0 });
   assert.equal(fs.existsSync(abs), false);
+});
+
+test("strict base64 accepts valid input and rejects bytes the decoder would silently drop", () => {
+  assert.equal(decodeBase64Strict(Buffer.from("hello\n").toString("base64")).toString(), "hello\n");
+  assert.equal(decodeBase64Strict("").length, 0);
+  assert.equal(decodeBase64Strict("@@@@ab"), null);
 });

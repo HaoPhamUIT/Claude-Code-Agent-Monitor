@@ -1074,6 +1074,7 @@ Tài liệu API hiện đã **đầy đủ**: mọi route phụ trợ đều đ�
 | ------ | ------------------ | -------------------------------------------- |
 | `POST` | `/api/hooks/event` | Nhận và xử lý sự kiện hook Claude Code |
 | `POST` | `/api/hooks/ingest-batch` | Đẩy một batch dữ liệu phiên từ máy roaming/sau NAT (mặc định tắt; xem `REMOTE_PUSH_TOKEN` bên dưới và `server/README.md` để biết cấu trúc payload đầy đủ) |
+| `POST` | `/api/hooks/ingest-transcript` | Tải transcript JSONL của máy từ xa lên theo từng chunk có offset (cùng cổng `REMOTE_PUSH_TOKEN`; phiên phải được đăng ký trước qua `ingest-batch`) |
 
 **Tải trọng sự kiện móc:**
 

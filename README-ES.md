@@ -1083,6 +1083,7 @@ npm run openapi:yaml
 | ------ | ------------------ | -------------------------------------------- |
 | `POST` | `/api/hooks/event` | Recibir y procesar un evento de gancho de código Claude |
 | `POST` | `/api/hooks/ingest-batch` | Enviar un lote de datos de sesión desde una máquina itinerante o tras NAT (deshabilitado por defecto; consulte `REMOTE_PUSH_TOKEN` más abajo y `server/README.md` para la forma completa del payload) |
+| `POST` | `/api/hooks/ingest-transcript` | Sube el JSONL de transcripción de una máquina remota en fragmentos con offset (mismo control `REMOTE_PUSH_TOKEN`; la sesión debe registrarse antes con `ingest-batch`) |
 
 **Peso de carga del evento de conexión:**
 

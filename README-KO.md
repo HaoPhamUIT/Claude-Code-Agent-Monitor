@@ -1089,6 +1089,7 @@ npm run openapi:yaml
 | ------ | ------------------ | -------------------------------------------- |
 | `POST` | `/api/hooks/event` | Claude Code Hook 이벤트를 수신하고 처리합니다 |
 | `POST` | `/api/hooks/ingest-batch` | 로밍 중이거나 NAT 뒤에 있는 머신에서 세션 데이터 배치를 푸시합니다(기본 비활성. 아래의 `REMOTE_PUSH_TOKEN`과 전체 페이로드 구조는 `server/README.md` 참고) |
+| `POST` | `/api/hooks/ingest-transcript` | 원격 머신의 transcript JSONL을 offset 기반 chunk로 업로드합니다(동일한 `REMOTE_PUSH_TOKEN` gate; 세션은 먼저 `ingest-batch`로 등록되어야 함) |
 
 **Hook 이벤트 페이로드:**
 

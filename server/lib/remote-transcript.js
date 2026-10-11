@@ -28,6 +28,12 @@ const MAX_CHUNK_BYTES = 4 * 1024 * 1024;
 
 class TranscriptPathError extends Error {}
 
+/** Node's base64 decoder skips bad characters silently; accept only input that round-trips. */
+function decodeBase64Strict(str) {
+  const buf = Buffer.from(str, "base64");
+  return buf.toString("base64") === str ? buf : null;
+}
+
 function isSafeSegment(seg) {
   return SEGMENT_RE.test(seg) && seg !== "." && seg !== "..";
 }
@@ -110,6 +116,7 @@ function appendChunk(abs, offset, buf, { maxFileBytes = 256 * 1024 * 1024 } = {}
 module.exports = {
   MAX_CHUNK_BYTES,
   TranscriptPathError,
+  decodeBase64Strict,
   isValidSessionId,
   resolveTranscriptPath,
   appendChunk,

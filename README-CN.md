@@ -1093,6 +1093,7 @@ API 文档现已**全面覆盖**：每个后端路由都有文档说明（共 82
 | ------ | ------------------ | -------------------------------------------- |
 | `POST` | `/api/hooks/event` | 接收并处理 Claude Code Hook 事件 |
 | `POST` | `/api/hooks/ingest-batch` | 由处于漫游/NAT 后方的机器推送一批会话数据（默认禁用；参见下文的 `REMOTE_PUSH_TOKEN` 以及 `server/README.md` 中完整的载荷结构） |
+| `POST` | `/api/hooks/ingest-transcript` | 以基于偏移量的分块方式上传远程机器的 transcript JSONL（使用同一个 `REMOTE_PUSH_TOKEN`；会话须先通过 `ingest-batch` 注册） |
 
 **Hook 事件载荷：**
 

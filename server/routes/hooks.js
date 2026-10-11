@@ -30,6 +30,7 @@ const { isCursorTranscriptPath } = require("../lib/cursor-home");
 const { getProjectsDir } = require("../lib/claude-home");
 const {
   TranscriptPathError,
+  decodeBase64Strict,
   isValidSessionId,
   resolveTranscriptPath,
   appendChunk,
@@ -2650,7 +2651,10 @@ router.post("/ingest-transcript", (req, res) => {
     });
   }
 
-  const result = appendChunk(resolved.abs, body.offset, Buffer.from(body.content_b64, "base64"), {
+  const chunk = decodeBase64Strict(body.content_b64);
+  if (!chunk) return invalid("content_b64 is not valid base64");
+
+  const result = appendChunk(resolved.abs, body.offset, chunk, {
     maxFileBytes: REMOTE_TRANSCRIPT_MAX_FILE_BYTES,
   });
   if (!result.ok) {
