@@ -9,6 +9,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 
 const {
   applyReleasePlan,
@@ -16,6 +17,9 @@ const {
   findUnexpectedPreviousVersion,
   nextVersion,
 } = require("../../scripts/lib/release-version");
+
+const ROOT = path.resolve(__dirname, "..", "..");
+const BUMP_SCRIPT = path.join(ROOT, "scripts", "bump-release.js");
 
 function write(root, relativePath, value) {
   const file = path.join(root, relativePath);
@@ -216,5 +220,113 @@ describe("previous version sweep", () => {
       }),
       [{ path: "forgotten.yaml", line: 1, text: "image: ccam-dashboard:2.3.0" }]
     );
+  });
+});
+
+describe("release bump CLI", () => {
+  it("prints a machine-readable dry-run plan without changing files", () => {
+    const root = fixture();
+    const before = read(root, "package.json");
+    const result = spawnSync(
+      process.execPath,
+      [BUMP_SCRIPT, "intermediate", "--dry-run", "--json"],
+      { cwd: root, encoding: "utf8" }
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), {
+      bump: "intermediate",
+      currentVersion: "2.3.0",
+      nextVersion: "2.4.0",
+      branch: "chore/release-v2.4.0",
+      milestone: "v2.4.0",
+      files: JSON.parse(result.stdout).files,
+      dryRun: true,
+    });
+    assert.ok(JSON.parse(result.stdout).files.includes("package.json"));
+    assert.equal(read(root, "package.json"), before);
+  });
+
+  it("rejects unknown flags and bump names without changing files", () => {
+    const root = fixture();
+    const before = read(root, "package.json");
+    for (const args of [
+      ["patch", "--dry-run"],
+      ["minor", "--unknown"],
+      ["minor", "extra"],
+    ]) {
+      const result = spawnSync(process.execPath, [BUMP_SCRIPT, ...args], {
+        cwd: root,
+        encoding: "utf8",
+      });
+      assert.equal(result.status, 1, `${args.join(" ")} unexpectedly succeeded`);
+      assert.match(result.stderr, /Usage:|major, intermediate, or minor/);
+    }
+    assert.equal(read(root, "package.json"), before);
+  });
+
+  it("applies the plan and runs every release validation boundary", () => {
+    const { runReleaseBump } = require(BUMP_SCRIPT);
+    const root = fixture();
+    const trackedFiles = [
+      "package.json",
+      "package-lock.json",
+      "desktop/package.json",
+      "desktop/package-lock.json",
+      "mcp/package.json",
+      "mcp/package-lock.json",
+      "server/openapi.js",
+      "docker-compose.yml",
+      "deployments/helm/agent-monitor/Chart.yaml",
+      "deployments/kubernetes/base/deployment.yaml",
+      "deployments/kubernetes/components/mcp-sidecar/deployment-patch.yaml",
+      "deployments/kubernetes/overlays/production/kustomization.yaml",
+      "deployments/scripts/deploy.sh",
+      "DEPLOYMENT.md",
+      "docs/DEPLOYMENT.md",
+      "CITATION.cff",
+      "index.html",
+      "wiki/index.html",
+      "client/src/pages/__tests__/__snapshots__/screens.snapshot.test.tsx.snap",
+    ];
+    const calls = [];
+    const runCommand = (command, args) => {
+      calls.push([command, ...args].join(" "));
+      if (command === "git" && args[0] === "ls-files") {
+        return { status: 0, stdout: `${trackedFiles.join("\0")}\0`, stderr: "" };
+      }
+      if (command === "git" && args[0] === "diff") {
+        return { status: 0, stdout: "package.json\nserver/openapi.js\n", stderr: "" };
+      }
+      return { status: 0, stdout: "", stderr: "" };
+    };
+
+    const result = runReleaseBump({
+      root,
+      bump: "minor",
+      dryRun: false,
+      runCommand,
+      log: () => {},
+    });
+
+    assert.equal(result.nextVersion, "2.3.1");
+    assert.equal(JSON.parse(read(root, "package.json")).version, "2.3.1");
+    assert.deepEqual(calls, [
+      "git status --porcelain --untracked-files=no",
+      `${process.execPath} --test server/__tests__/release-version-consistency.test.js`,
+      "npm run openapi:yaml",
+      "npm run extensions:sync",
+      `${process.execPath} --test server/__tests__/release-version-consistency.test.js`,
+      "npm run extensions:validate",
+      `${process.execPath} bin/ccam.js version`,
+      "git ls-files -z",
+      "git diff --name-only",
+    ]);
+    assert.deepEqual(result.files, ["package.json", "server/openapi.js"]);
+  });
+
+  it("exposes the CLI through the root package scripts", () => {
+    const scripts = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")).scripts;
+    assert.equal(scripts["release:bump"], "node scripts/bump-release.js");
   });
 });
