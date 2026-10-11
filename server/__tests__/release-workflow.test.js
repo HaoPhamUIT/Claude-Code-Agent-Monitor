@@ -90,6 +90,10 @@ describe("automated release bump workflow", () => {
     const headerScripts = runScripts(headers);
     assert.match(headerScripts, /EVENT_NAME.*workflow_dispatch/);
     assert.match(headerScripts, /GITHUB_SHA.*HEAD_SHA/);
+    assert.match(
+      headerScripts,
+      /if \[ "\$EVENT_NAME" = workflow_dispatch \] && \[ "\$GITHUB_SHA" != "\$HEAD_SHA" \]; then[\s\S]*?exit 1[\s\S]*?fi/
+    );
 
     const cla = workflow(".github/workflows/cla.yml");
     assert.equal(cla.on.workflow_dispatch.inputs.pull_request_number.required, true);
