@@ -36,7 +36,13 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.head_sha }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = workflow_dispatch ] && [ "$GITHUB_SHA" != "$HEAD_SHA" ]; then
+            echo "::error::The release branch advanced after the requested head SHA was captured"
+            exit 1
+          fi
           set +e
           bash .claude/skills/file-headers/scripts/check-headers-pr.sh \
             "$BASE_SHA" \

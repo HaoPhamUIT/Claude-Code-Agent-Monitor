@@ -87,6 +87,9 @@ describe("automated release bump workflow", () => {
     const headers = workflow(".github/workflows/file-headers.yml");
     assert.equal(headers.on.workflow_dispatch.inputs.base_sha.required, true);
     assert.equal(headers.on.workflow_dispatch.inputs.head_sha.required, true);
+    const headerScripts = runScripts(headers);
+    assert.match(headerScripts, /EVENT_NAME.*workflow_dispatch/);
+    assert.match(headerScripts, /GITHUB_SHA.*HEAD_SHA/);
 
     const cla = workflow(".github/workflows/cla.yml");
     assert.equal(cla.on.workflow_dispatch.inputs.pull_request_number.required, true);
