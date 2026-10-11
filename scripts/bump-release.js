@@ -14,8 +14,7 @@ const {
   findUnexpectedPreviousVersion,
 } = require("./lib/release-version");
 
-const USAGE =
-  "Usage: npm run release:bump -- <major|intermediate|minor> [--dry-run] [--json]";
+const USAGE = "Usage: npm run release:bump -- <major|intermediate|minor> [--dry-run] [--json]";
 
 function parseArgs(argv) {
   let bump = null;
@@ -75,10 +74,7 @@ function runReleaseBump({
   const repositoryRoot = path.resolve(root);
   const plan = buildReleasePlan({ root: repositoryRoot, bump });
   const plannedFiles = [
-    ...new Set([
-      ...plan.mutations.map((mutation) => mutation.path),
-      ...plan.generatedPaths,
-    ]),
+    ...new Set([...plan.mutations.map((mutation) => mutation.path), ...plan.generatedPaths]),
   ].sort();
   if (dryRun) return releaseResult(plan, plannedFiles, true);
 
@@ -89,12 +85,10 @@ function runReleaseBump({
     repositoryRoot,
     log
   ).stdout.trim();
-  if (status) throw new Error(`Tracked working tree must be clean before a release bump:\n${status}`);
+  if (status)
+    throw new Error(`Tracked working tree must be clean before a release bump:\n${status}`);
 
-  const consistencyTest = [
-    "--test",
-    "server/__tests__/release-version-consistency.test.js",
-  ];
+  const consistencyTest = ["--test", "server/__tests__/release-version-consistency.test.js"];
   runChecked(runCommand, process.execPath, consistencyTest, repositoryRoot, log);
   applyReleasePlan(plan, { dryRun: false });
   runChecked(runCommand, "npm", ["run", "openapi:yaml"], repositoryRoot, log);
@@ -103,14 +97,8 @@ function runReleaseBump({
   runChecked(runCommand, "npm", ["run", "extensions:validate"], repositoryRoot, log);
   runChecked(runCommand, process.execPath, ["bin/ccam.js", "version"], repositoryRoot, log);
 
-  const trackedFiles = runChecked(
-    runCommand,
-    "git",
-    ["ls-files", "-z"],
-    repositoryRoot,
-    log
-  ).stdout
-    .split("\0")
+  const trackedFiles = runChecked(runCommand, "git", ["ls-files", "-z"], repositoryRoot, log)
+    .stdout.split("\0")
     .filter(Boolean);
   const stale = findUnexpectedPreviousVersion({
     root: repositoryRoot,
@@ -119,17 +107,13 @@ function runReleaseBump({
   });
   if (stale.length > 0) {
     const lines = stale.map((entry) => `${entry.path}:${entry.line}: ${entry.text}`);
-    throw new Error(`Previous release ${plan.currentVersion} remains outside allowlists:\n${lines.join("\n")}`);
+    throw new Error(
+      `Previous release ${plan.currentVersion} remains outside allowlists:\n${lines.join("\n")}`
+    );
   }
 
-  const files = runChecked(
-    runCommand,
-    "git",
-    ["diff", "--name-only"],
-    repositoryRoot,
-    log
-  ).stdout
-    .split(/\r?\n/)
+  const files = runChecked(runCommand, "git", ["diff", "--name-only"], repositoryRoot, log)
+    .stdout.split(/\r?\n/)
     .filter(Boolean)
     .sort();
   if (files.length === 0) throw new Error("Release bump produced no changed files");
