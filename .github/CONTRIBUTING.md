@@ -146,6 +146,8 @@ A normal workflow run updates every guarded root-release surface, regenerates Op
 Co-authored-by: hoangsonww <124531104+hoangsonww@users.noreply.github.com>
 ```
 
+The repository must allow GitHub Actions to create pull requests under **Settings → Actions → General → Workflow permissions**. The workflow verifies this prerequisite before any GitHub write. Default workflow permissions remain read-only.
+
 The workflow never merges, force-pushes, tags, or publishes. After a maintainer reviews and merges the PR, existing `master` CI creates the tag and GitHub Release.
 
 ---

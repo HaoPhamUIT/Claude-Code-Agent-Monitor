@@ -251,6 +251,7 @@ Parse both workflows using `js-yaml` with `JSON_SCHEMA`. Assert:
 - the workflow invokes `npm run release:bump` rather than editing versions itself.
 - the commit message includes the exact coordinator trailer.
 - the workflow contains branch, milestone, PR, linked-issue, saved-state verification, and explicit dispatches for CI, file-header, and CLA checks.
+- the workflow fails before GitHub writes when repository-token pull request creation is disabled.
 - `ci.yml` exposes `workflow_dispatch` while retaining push and pull request triggers.
 - `file-headers.yml` accepts exact base and head SHAs for a manually dispatched diff check.
 - `cla.yml` verifies the bot-authored PR, exact coordinator trailer, and signed coordinator record during manual dispatch.

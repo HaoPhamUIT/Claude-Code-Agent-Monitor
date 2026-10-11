@@ -37,4 +37,6 @@ Run **Prepare Release Bump** from the Actions tab. The component mapping is:
 
 The generated commit is authored by `github-actions[bot]` and carries `hoangsonww` as release coordinator through the required coauthor trailer. The workflow uses the repository token, then explicitly dispatches `ci.yml`, `file-headers.yml`, and the release-automation path in `cla.yml` because token-created pull requests do not emit secondary workflow runs.
 
+One repository setting is required: **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. The workflow checks this setting before any branch, milestone, or pull request write and stops with a direct error when it is disabled. Default workflow permissions may remain read-only because each workflow declares its narrower job permissions explicitly.
+
 The workflow stops with an open pull request. Merging remains a maintainer decision. A successful merge to `master` lets the existing CI release job create the tag and published GitHub Release.

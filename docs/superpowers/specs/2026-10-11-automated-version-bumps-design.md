@@ -116,7 +116,7 @@ The workflow uses only the repository `GITHUB_TOKEN` with explicit permissions:
 - `issues: write`
 - `pull-requests: write`
 
-No personal access token is required.
+No personal access token is required. The repository setting **Allow GitHub Actions to create and approve pull requests** must be enabled because GitHub blocks `GITHUB_TOKEN` pull request creation when it is disabled. The workflow reads this setting before any remote write and fails with setup guidance when it is unavailable. Default workflow permissions remain read-only.
 
 Dry-run execution performs no GitHub writes. It publishes the calculated version, branch, milestone, and file plan to the workflow summary.
 

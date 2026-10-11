@@ -28,7 +28,7 @@ Preview the exact plan locally without writes:
 node scripts/bump-release.js intermediate --dry-run --json
 ```
 
-The workflow creates one branch, one coordinated commit, the exact open milestone, and one pull request. Every automation-created commit ends with `Co-authored-by: hoangsonww <124531104+hoangsonww@users.noreply.github.com>`. It explicitly dispatches CI, file-header, and CLA checks because repository-token PR creation does not emit secondary workflow events. It never merges, force-pushes, tags, or publishes. Existing default-branch CI publishes only after a maintainer merges the PR.
+The workflow creates one branch, one coordinated commit, the exact open milestone, and one pull request. Every automation-created commit ends with `Co-authored-by: hoangsonww <124531104+hoangsonww@users.noreply.github.com>`. It requires the repository setting **Allow GitHub Actions to create and approve pull requests**, checks that prerequisite before remote writes, and keeps default workflow permissions read-only. It explicitly dispatches CI, file-header, and CLA checks because repository-token PR creation does not emit secondary workflow events. It never merges, force-pushes, tags, or publishes. Existing default-branch CI publishes only after a maintainer merges the PR.
 
 ## CCAM release workflow
 
