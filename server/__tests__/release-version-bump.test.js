@@ -195,6 +195,7 @@ describe("previous version sweep", () => {
   it("reports forgotten shipping values while allowing dependencies, specs, and pre-version history", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "ccam-release-sweep-"));
     write(root, "forgotten.yaml", "image: ccam-dashboard:2.3.0\n");
+    write(root, "other-release.yaml", "image: example:12.3.0\n");
     write(root, "package-lock.json", '{"dependency":"2.3.0"}\n');
     write(root, "mcp/package-lock.json", '{"dependency":"2.3.0"}\n');
     write(root, "client/package-lock.json", '{"dependency":"2.3.0"}\n');
@@ -209,6 +210,7 @@ describe("previous version sweep", () => {
         previousVersion: "2.3.0",
         trackedFiles: [
           "forgotten.yaml",
+          "other-release.yaml",
           "package-lock.json",
           "mcp/package-lock.json",
           "client/package-lock.json",

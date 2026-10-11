@@ -246,6 +246,8 @@ function applyReleasePlan(plan, { dryRun = false } = {}) {
 function findUnexpectedPreviousVersion({ root, previousVersion, trackedFiles }) {
   const repositoryRoot = path.resolve(root);
   const historical = `pre-v${previousVersion}`;
+  const escapedVersion = previousVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const versionPattern = new RegExp(`(^|[^\\d.])${escapedVersion}(?![\\d.])`);
   const findings = [];
   for (const relativePath of trackedFiles) {
     const normalized = relativePath.split(path.sep).join("/");
@@ -263,7 +265,7 @@ function findUnexpectedPreviousVersion({ root, previousVersion, trackedFiles }) 
     if (contents.includes(0)) continue;
     const lines = contents.toString("utf8").split(/\r?\n/);
     lines.forEach((text, index) => {
-      if (text.split(historical).join("").includes(previousVersion)) {
+      if (versionPattern.test(text.split(historical).join(""))) {
         findings.push({ path: normalized, line: index + 1, text });
       }
     });
