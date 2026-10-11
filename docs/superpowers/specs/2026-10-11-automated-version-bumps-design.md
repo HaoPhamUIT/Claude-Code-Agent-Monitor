@@ -105,9 +105,9 @@ Normal execution performs this sequence:
 7. On a new bump, install dependencies, apply the release command, run all validation, create one commit, and push the release branch.
 8. Create the pull request when absent, assign the exact milestone, and assign every same-repository closing issue to that milestone.
 9. Read the pull request and linked issues back to verify the saved milestone state.
-10. Explicitly dispatch `.github/workflows/ci.yml` for the release branch.
+10. Explicitly dispatch `.github/workflows/ci.yml`, `.github/workflows/file-headers.yml`, and the release-automation CLA check for the release branch.
 
-`ci.yml` gains a `workflow_dispatch` trigger. This explicit dispatch is required because pushes and pull requests created with the repository `GITHUB_TOKEN` do not automatically start another workflow. The CI run is attached to the release branch head and uses the existing job names and checks.
+`ci.yml`, `file-headers.yml`, and `cla.yml` gain controlled `workflow_dispatch` paths. Explicit dispatch is required because pushes and pull requests created with the repository `GITHUB_TOKEN` do not automatically start another workflow. The manual file-header path checks the supplied base and head SHAs. The manual CLA path verifies the bot-authored release PR, exact coordinator trailer, and existing signed `hoangsonww` record on `cla-signatures`. These runs attach every ruleset-required check to the release branch head.
 
 The workflow uses only the repository `GITHUB_TOKEN` with explicit permissions:
 

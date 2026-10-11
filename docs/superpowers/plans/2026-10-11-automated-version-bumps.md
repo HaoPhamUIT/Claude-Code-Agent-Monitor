@@ -4,7 +4,7 @@
 
 **Goal:** Add a deterministic release bump command and a manually dispatched GitHub workflow that prepares a complete, attributed, validated release pull request.
 
-**Architecture:** A pure Node module owns version calculation and allowlisted file mutation. A CLI orchestrator runs existing generators and release checks. A thin GitHub Actions workflow owns branch, commit, milestone, pull request, linked-issue, and CI-dispatch state without duplicating file-editing logic.
+**Architecture:** A pure Node module owns version calculation and allowlisted file mutation. A CLI orchestrator runs existing generators and release checks. A thin GitHub Actions workflow owns branch, commit, milestone, pull request, linked-issue, and required-check dispatch state without duplicating file-editing logic.
 
 **Tech Stack:** Node.js CommonJS, Node test runner, GitHub Actions YAML, GitHub CLI, npm scripts, existing OpenAPI and extension generators.
 
@@ -229,13 +229,15 @@ git -c core.hooksPath=/dev/null commit -m "feat(release): automate version surfa
 
 - Create: `.github/workflows/release-bump.yml`
 - Modify: `.github/workflows/ci.yml`
+- Modify: `.github/workflows/file-headers.yml`
+- Modify: `.github/workflows/cla.yml`
 - Create: `server/__tests__/release-workflow.test.js`
 
 **Interfaces:**
 
 - Consumes: `npm run release:bump` and its JSON fields.
 - Produces: manual workflow `release-bump.yml` with `bump` and `dry_run` inputs.
-- Produces: manual trigger support in `ci.yml` so the release workflow can attach normal checks to the generated branch head.
+- Produces: controlled manual trigger support in `ci.yml`, `file-headers.yml`, and `cla.yml` so token-created release PRs receive every ruleset-required check.
 
 - [ ] **Step 1: Write failing workflow contract tests**
 
@@ -248,8 +250,10 @@ Parse both workflows using `js-yaml` with `JSON_SCHEMA`. Assert:
 - concurrency is non-cancelling.
 - the workflow invokes `npm run release:bump` rather than editing versions itself.
 - the commit message includes the exact coordinator trailer.
-- the workflow contains branch, milestone, PR, linked-issue, saved-state verification, and `gh workflow run ci.yml --ref` operations.
+- the workflow contains branch, milestone, PR, linked-issue, saved-state verification, and explicit dispatches for CI, file-header, and CLA checks.
 - `ci.yml` exposes `workflow_dispatch` while retaining push and pull request triggers.
+- `file-headers.yml` accepts exact base and head SHAs for a manually dispatched diff check.
+- `cla.yml` verifies the bot-authored PR, exact coordinator trailer, and signed coordinator record during manual dispatch.
 
 - [ ] **Step 2: Run workflow tests and confirm the missing workflow failure**
 
@@ -274,11 +278,11 @@ For normal mode:
 - create the PR when absent
 - assign and read back the milestone on the PR and linked same-repository issues
 - reject cross-repository closing issues before issue mutation
-- explicitly dispatch `ci.yml` for the release branch
+- explicitly dispatch `ci.yml`, `file-headers.yml`, and `cla.yml` for the release branch
 
-- [ ] **Step 4: Add `workflow_dispatch` to normal CI**
+- [ ] **Step 4: Add controlled dispatch paths to required-check workflows**
 
-Preserve the existing push and pull request triggers. Add the manual trigger without changing default-branch release conditions, so a manual branch run cannot publish a tag or release.
+Preserve existing event triggers. Add manual inputs for CI, exact file-header base/head SHAs, and release-automation CLA verification without changing default-branch release conditions, so a manual branch run cannot publish a tag or release.
 
 - [ ] **Step 5: Run workflow contract and focused release tests**
 
@@ -291,7 +295,7 @@ node --test server/__tests__/release-version-consistency.test.js
 - [ ] **Step 6: Commit workflow automation**
 
 ```bash
-git add .github/workflows/release-bump.yml .github/workflows/ci.yml server/__tests__/release-workflow.test.js
+git add .github/workflows/release-bump.yml .github/workflows/ci.yml .github/workflows/file-headers.yml .github/workflows/cla.yml server/__tests__/release-workflow.test.js
 git -c core.hooksPath=/dev/null commit -m "feat(release): open coordinated bump pull requests"
 ```
 
