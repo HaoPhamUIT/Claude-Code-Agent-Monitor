@@ -1093,6 +1093,7 @@ npm run openapi:yaml
 | ------ | ------------------ | -------------------------------------------- |
 | `POST` | `/api/hooks/event` | Receive and process a Claude Code hook event |
 | `POST` | `/api/hooks/ingest-batch` | Push a batch of session data from a roaming/NAT'd machine (disabled by default; see `REMOTE_PUSH_TOKEN` below and `server/README.md` for the full payload shape) |
+| `POST` | `/api/hooks/ingest-transcript` | Upload a remote machine's transcript JSONL in offset-based chunks (same `REMOTE_PUSH_TOKEN` gate; session must first be registered via `ingest-batch`) |
 
 **Hook event payload:**
 
