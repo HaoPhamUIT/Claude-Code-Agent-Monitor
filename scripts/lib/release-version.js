@@ -27,7 +27,11 @@ const GENERATED_PATHS = Object.freeze([
   "plugins/*/.claude-plugin/plugin.json",
   "plugins/*/.codex-plugin/plugin.json",
 ]);
-const SWEEP_IGNORED_FILES = new Set(["package-lock.json", "mcp/package-lock.json"]);
+const SWEEP_IGNORED_FILES = new Set([
+  "package-lock.json",
+  "mcp/package-lock.json",
+  "server/__tests__/release-version-bump.test.js",
+]);
 
 function parseVersion(value) {
   const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(String(value));
@@ -217,7 +221,8 @@ function buildReleasePlan({ root, bump }) {
 
   const paths = new Set();
   for (const mutation of mutations) {
-    if (paths.has(mutation.path)) throw new Error(`Duplicate release mutation for ${mutation.path}`);
+    if (paths.has(mutation.path))
+      throw new Error(`Duplicate release mutation for ${mutation.path}`);
     paths.add(mutation.path);
   }
 

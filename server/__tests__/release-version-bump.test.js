@@ -67,11 +67,7 @@ function fixture() {
   }
 
   write(root, "server/openapi.js", 'example: "2.3.0",\n');
-  write(
-    root,
-    "docker-compose.yml",
-    "image: ccam-dashboard:2.3.0\nsidecar: ccam-mcp:2.3.0\n"
-  );
+  write(root, "docker-compose.yml", "image: ccam-dashboard:2.3.0\nsidecar: ccam-mcp:2.3.0\n");
   write(root, "deployments/helm/agent-monitor/Chart.yaml", 'version: 2.3.0\nappVersion: "2.3.0"\n');
   write(
     root,
@@ -83,11 +79,7 @@ function fixture() {
     "deployments/kubernetes/components/mcp-sidecar/deployment-patch.yaml",
     "image: ccam-mcp:2.3.0\n"
   );
-  write(
-    root,
-    "deployments/kubernetes/overlays/production/kustomization.yaml",
-    "newTag: 2.3.0\n"
-  );
+  write(root, "deployments/kubernetes/overlays/production/kustomization.yaml", "newTag: 2.3.0\n");
   write(root, "deployments/scripts/deploy.sh", "--tag 2.3.0\nccam-dashboard:2.3.0\n");
   write(root, "DEPLOYMENT.md", "ccam-dashboard:2.3.0\n");
   write(root, "docs/DEPLOYMENT.md", "ccam-dashboard:2.3.0\n");
@@ -143,7 +135,10 @@ describe("release surface planning", () => {
     }
 
     const changed = applyReleasePlan(plan, { dryRun: false });
-    assert.deepEqual(changed, plan.mutations.map((mutation) => mutation.path));
+    assert.deepEqual(
+      changed,
+      plan.mutations.map((mutation) => mutation.path)
+    );
 
     for (const mutation of plan.mutations) {
       assert.equal(read(root, mutation.path), mutation.after, mutation.path);
@@ -151,9 +146,8 @@ describe("release surface planning", () => {
     assert.equal(JSON.parse(read(root, "client/package.json")).version, "1.0.0");
     assert.equal(JSON.parse(read(root, "mcp/package.json")).version, "1.0.0");
     assert.equal(
-      JSON.parse(read(root, "package-lock.json")).packages[
-        "node_modules/same-number-dependency"
-      ].version,
+      JSON.parse(read(root, "package-lock.json")).packages["node_modules/same-number-dependency"]
+        .version,
       "2.3.0"
     );
     assert.equal(
@@ -203,6 +197,7 @@ describe("previous version sweep", () => {
     write(root, "forgotten.yaml", "image: ccam-dashboard:2.3.0\n");
     write(root, "package-lock.json", '{"dependency":"2.3.0"}\n');
     write(root, "mcp/package-lock.json", '{"dependency":"2.3.0"}\n');
+    write(root, "server/__tests__/release-version-bump.test.js", 'fixture = "2.3.0";\n');
     write(root, "docs/superpowers/specs/history.md", "2.3.0 design example\n");
     write(root, "docs/HISTORY.md", "pre-v2.3.0 sessions used the old schema\n");
 
@@ -214,6 +209,7 @@ describe("previous version sweep", () => {
           "forgotten.yaml",
           "package-lock.json",
           "mcp/package-lock.json",
+          "server/__tests__/release-version-bump.test.js",
           "docs/superpowers/specs/history.md",
           "docs/HISTORY.md",
         ],

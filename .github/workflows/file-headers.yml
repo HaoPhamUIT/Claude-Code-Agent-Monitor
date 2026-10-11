@@ -8,6 +8,16 @@ name: 📋 File Headers
 on:
   pull_request:
     branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: "Base commit for a token-created pull request"
+        type: string
+        required: true
+      head_sha:
+        description: "Head commit for a token-created pull request"
+        type: string
+        required: true
 
 jobs:
   file-headers:
@@ -20,23 +30,29 @@ jobs:
 
       - name: Check headers on PR diff
         id: check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.head_sha }}
         run: |
           set +e
           bash .claude/skills/file-headers/scripts/check-headers-pr.sh \
-            "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.head.sha }}" | tee /tmp/header-check.log
+            "$BASE_SHA" \
+            "$HEAD_SHA" | tee /tmp/header-check.log
           code=${PIPESTATUS[0]}
           echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
           exit "${code}"
 
       - name: Write job summary
         if: always()
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.head_sha }}
         run: |
           {
             echo "## 📋 File header check"
             echo
-            echo "**Base:** \`${{ github.event.pull_request.base.sha }}\`"
-            echo "**Head:** \`${{ github.event.pull_request.head.sha }}\`"
+            echo "**Base:** \`$BASE_SHA\`"
+            echo "**Head:** \`$HEAD_SHA\`"
             echo
             echo '```'
             cat /tmp/header-check.log || true
