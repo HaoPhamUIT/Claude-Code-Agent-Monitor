@@ -1136,7 +1136,12 @@ const processEvent = db.transaction((hookType, data, origin = null) => {
       // genuinely current error (tail) is left in place.
       {
         const curSession = stmts.getSession.get(sessionId);
-        if (curSession && curSession.status === "error" && !isErrorAtTail(result)) {
+        if (
+          hookType !== "RemoteSync" &&
+          curSession &&
+          curSession.status === "error" &&
+          !isErrorAtTail(result)
+        ) {
           stmts.reactivateSession.run(sessionId);
           broadcast("session_updated", stmts.getSession.get(sessionId));
           const curMain = mainAgentId ? stmts.getAgent.get(mainAgentId) : null;
@@ -2561,6 +2566,11 @@ const REMOTE_TRANSCRIPT_MAX_FILE_BYTES = (() => {
 /** Re-derive everything CCAM derives from a session's transcript files, then import subagents. */
 function syncRemoteTranscript(sessionId, mainAbs, meta) {
   if (!fs.existsSync(mainAbs)) return;
+  const session = stmts.getSession.get(sessionId);
+  if (!session || session.source !== REMOTE_PUSH_SOURCE) return;
+  // A forwarded hook may have stored the origin machine's absolute path first. Once the validated
+  // upload exists locally, every transcript reader and background scanner must use this copy.
+  stmts.replaceSessionTranscriptPath.run(mainAbs, sessionId);
   processEvent(
     "RemoteSync",
     {

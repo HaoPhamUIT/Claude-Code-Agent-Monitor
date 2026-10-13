@@ -136,6 +136,70 @@ describe("POST /api/hooks/ingest-transcript", () => {
     );
   });
 
+  it("does not reactivate an error session during metadata-only synchronization", async () => {
+    const sessionId = crypto.randomUUID();
+    await registerRemoteSession(sessionId);
+    db.prepare("UPDATE sessions SET status = 'error' WHERE id = ?").run(sessionId);
+    db.prepare("UPDATE agents SET status = 'error' WHERE id = ?").run(`${sessionId}-main`);
+    const transcriptLine =
+      JSON.stringify({
+        type: "user",
+        uuid: crypto.randomUUID(),
+        timestamp: "2026-10-11T00:00:00.000Z",
+        message: { role: "user", content: "error-session-sync" },
+      }) + "\n";
+
+    const result = await postJson("/api/hooks/ingest-transcript", {
+      session_id: sessionId,
+      rel_path: `error-project/${sessionId}.jsonl`,
+      offset: 0,
+      content_b64: Buffer.from(transcriptLine).toString("base64"),
+      sync: true,
+    });
+    assert.equal(result.response.status, 200);
+
+    const session = await waitFor(
+      () => stmts.getSession.get(sessionId),
+      (row) => row.card_prompt_preview === "error-session-sync"
+    );
+    assert.equal(session.status, "error");
+    assert.equal(stmts.getAgent.get(`${sessionId}-main`).status, "error");
+  });
+
+  it("replaces an origin-machine transcript path with the uploaded local main file", async () => {
+    const sessionId = crypto.randomUUID();
+    await registerRemoteSession(sessionId);
+    stmts.replaceSessionTranscriptPath.run(
+      "/origin-machine/.claude/projects/session.jsonl",
+      sessionId
+    );
+    const transcriptLine =
+      JSON.stringify({
+        type: "user",
+        uuid: crypto.randomUUID(),
+        timestamp: "2026-10-11T00:00:00.000Z",
+        message: { role: "user", content: "local-path-sync" },
+      }) + "\n";
+
+    const result = await postJson("/api/hooks/ingest-transcript", {
+      session_id: sessionId,
+      rel_path: `path-project/${sessionId}.jsonl`,
+      offset: 0,
+      content_b64: Buffer.from(transcriptLine).toString("base64"),
+      sync: true,
+    });
+    assert.equal(result.response.status, 200);
+
+    const session = await waitFor(
+      () => stmts.getSession.get(sessionId),
+      (row) => row.card_prompt_preview === "local-path-sync"
+    );
+    assert.equal(
+      session.transcript_path,
+      path.join(process.env.CLAUDE_HOME, "projects", "path-project", `${sessionId}.jsonl`)
+    );
+  });
+
   it(
     "returns INVALID_INPUT when the final transcript target is a symbolic link",
     {

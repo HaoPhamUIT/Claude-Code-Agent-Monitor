@@ -343,7 +343,7 @@ Dashboard 覆盖完整的本地 Agent 生命周期。详细运行契约仍见相
 | **既有会话检测** | 启动导入会将最近修改的 Transcript 标记为活跃；之后到达的 Stop 事件会先重新激活已导入的 completed 或 abandoned 会话，再更新状态。 |
 | **连续项目同步** | 立即启动扫描、防抖文件系统监听器与 `DASHBOARD_SESSION_SYNC_MS` 轮询共用 mtime 缓存和合并扫描，默认 30 秒。只重新解析新增或有进展的文件，监听范围适配 Linux，并实时广播会话。 |
 | **远程数据源** | SSH 数据源通过 `scp` 或 WSL `tar` 分别镜像 Claude 和 Codex 主目录，标记 `sessions.source`，协调生命周期，并在任一 Provider 正常时保持健康。默认每 15 秒轮询；陈旧回退仅影响失败的 Provider。凭据保留在宿主 SSH 中。 |
-| **远程推送摄取** | `POST /api/hooks/ingest-batch` 从 NAT 后方机器发送会话总计和事件，`POST /api/hooks/ingest-transcript` 则补充经过偏移量校验的主 Agent 与 Subagent JSONL，用于标题、历史记录、Token 和 Subagent 导入。两者在配置 `REMOTE_PUSH_TOKEN` 前均保持禁用，拒绝查询字符串凭据和本机拥有的会话，并在较大的 transcript 解析器运行前完成认证。 |
+| **远程推送摄取** | `POST /api/hooks/ingest-batch` 从 NAT 后方机器发送会话总计和事件，`POST /api/hooks/ingest-transcript` 则补充经过偏移量校验的主 Agent 与 Subagent JSONL，用于标题、历史记录、Token 和 Subagent 导入。两者在配置 `REMOTE_PUSH_TOKEN` 前均保持禁用，并拒绝查询字符串凭据和本机拥有的会话；`ingest-transcript` 会在其较大的解析器运行前完成认证。 |
 | **响应式设计** | 移动端布局会堆叠网格、滚动宽表格并收起导航。 |
 | **UI 本地化** | 英语、中文、越南语、韩语和西班牙语覆盖 UI 文案、无障碍标签、工作流说明与 Tooltip、模型定价指引、Provider 主目录和 Import History。 |
 | **示例数据** | 内置脚本提供贴近实际的演示和开发数据。 |

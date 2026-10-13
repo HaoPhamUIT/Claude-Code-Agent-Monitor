@@ -17,6 +17,7 @@ const {
 
 const SID = "3d9c5424-7921-402a-acef-e038490164e2";
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "rt-"));
+const DIRECTORY_LINK_TYPE = process.platform === "win32" ? "junction" : "dir";
 
 test("main and subagent layouts resolve under the projects dir", () => {
   const root = tmp();
@@ -60,7 +61,7 @@ test("rejects an existing project symlink that escapes the projects dir", () => 
   const outside = path.join(base, "outside");
   fs.mkdirSync(root);
   fs.mkdirSync(outside);
-  fs.symlinkSync(outside, path.join(root, "redirected-project"), "dir");
+  fs.symlinkSync(outside, path.join(root, "redirected-project"), DIRECTORY_LINK_TYPE);
 
   assert.throws(
     () => resolveTranscriptPath(root, SID, `redirected-project/${SID}.jsonl`),
@@ -76,7 +77,7 @@ test("append rechecks containment when a project path becomes a symlink after re
   fs.mkdirSync(root);
   fs.mkdirSync(outside);
   const resolved = resolveTranscriptPath(root, SID, `redirected-project/${SID}.jsonl`);
-  fs.symlinkSync(outside, path.join(root, "redirected-project"), "dir");
+  fs.symlinkSync(outside, path.join(root, "redirected-project"), DIRECTORY_LINK_TYPE);
 
   assert.throws(
     () =>
