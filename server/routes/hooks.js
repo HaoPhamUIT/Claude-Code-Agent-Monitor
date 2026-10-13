@@ -1312,12 +1312,16 @@ const processEvent = db.transaction((hookType, data, origin = null) => {
     transcriptCache.invalidate(data.transcript_path);
   }
 
-  // Bump session updated_at on every event
-  stmts.touchSession.run(sessionId);
-
   // A transcript-sync pass exists for the derived data written above (tokens, compactions, turn
-  // timings, titles); recording it as an event would add a feed row per push.
+  // timings, titles); recording it as an event would add a feed row per push. Derived metadata
+  // writers normally bump updated_at, so restore the pre-sync value to keep inactivity semantics.
   if (hookType === "RemoteSync") {
+    const restored = stmts.restoreSessionUpdatedAt.run(
+      session.updated_at,
+      sessionId,
+      session.updated_at
+    );
+    if (restored.changes > 0) broadcast("session_updated", stmts.getSession.get(sessionId));
     return {
       session_id: sessionId,
       agent_id: agentId,
@@ -1327,6 +1331,9 @@ const processEvent = db.transaction((hookType, data, origin = null) => {
       created_at: new Date().toISOString(),
     };
   }
+
+  // Bump session updated_at on every real hook event.
+  stmts.touchSession.run(sessionId);
 
   stmts.insertEvent.run(
     sessionId,
@@ -2654,9 +2661,16 @@ router.post("/ingest-transcript", (req, res) => {
   const chunk = decodeBase64Strict(body.content_b64);
   if (!chunk) return invalid("content_b64 is not valid base64");
 
-  const result = appendChunk(resolved.abs, body.offset, chunk, {
-    maxFileBytes: REMOTE_TRANSCRIPT_MAX_FILE_BYTES,
-  });
+  let result;
+  try {
+    result = appendChunk(resolved.abs, body.offset, chunk, {
+      maxFileBytes: REMOTE_TRANSCRIPT_MAX_FILE_BYTES,
+      projectsDir: getProjectsDir(),
+    });
+  } catch (err) {
+    if (err instanceof TranscriptPathError) return invalid(err.message);
+    throw err;
+  }
   if (!result.ok) {
     return res
       .status(result.status)

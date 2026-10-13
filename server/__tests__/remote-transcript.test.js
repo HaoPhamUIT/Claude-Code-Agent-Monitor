@@ -54,6 +54,62 @@ test("rejects traversal, wrong session, wrong extension and odd layouts", () => 
   assert.throws(() => resolveTranscriptPath(root, "", "p/.jsonl"));
 });
 
+test("rejects an existing project symlink that escapes the projects dir", () => {
+  const base = tmp();
+  const root = path.join(base, "projects");
+  const outside = path.join(base, "outside");
+  fs.mkdirSync(root);
+  fs.mkdirSync(outside);
+  fs.symlinkSync(outside, path.join(root, "redirected-project"), "dir");
+
+  assert.throws(
+    () => resolveTranscriptPath(root, SID, `redirected-project/${SID}.jsonl`),
+    /path escapes projects dir/
+  );
+  assert.equal(fs.readdirSync(outside).length, 0);
+});
+
+test("append rechecks containment when a project path becomes a symlink after resolution", () => {
+  const base = tmp();
+  const root = path.join(base, "projects");
+  const outside = path.join(base, "outside");
+  fs.mkdirSync(root);
+  fs.mkdirSync(outside);
+  const resolved = resolveTranscriptPath(root, SID, `redirected-project/${SID}.jsonl`);
+  fs.symlinkSync(outside, path.join(root, "redirected-project"), "dir");
+
+  assert.throws(
+    () =>
+      appendChunk(resolved.abs, 0, Buffer.from("outside-root\n"), {
+        projectsDir: root,
+      }),
+    /path escapes projects dir/
+  );
+  assert.equal(fs.readdirSync(outside).length, 0);
+});
+
+test(
+  "append rejects a final-file symlink after path resolution",
+  {
+    skip:
+      process.platform === "win32" ? "creating file symlinks requires elevated privileges" : false,
+  },
+  () => {
+    const root = tmp();
+    const resolved = resolveTranscriptPath(root, SID, `project/${SID}.jsonl`);
+    fs.mkdirSync(path.dirname(resolved.abs), { recursive: true });
+    const realFile = path.join(root, "real.jsonl");
+    fs.writeFileSync(realFile, "");
+    fs.symlinkSync(realFile, resolved.abs, "file");
+
+    assert.throws(
+      () => appendChunk(resolved.abs, 0, Buffer.from("must-not-follow\n"), { projectsDir: root }),
+      /symbolic link/
+    );
+    assert.equal(fs.readFileSync(realFile, "utf8"), "");
+  }
+);
+
 test("append is offset-checked and idempotent on retry", () => {
   const root = tmp();
   const { abs } = resolveTranscriptPath(root, SID, `p/${SID}.jsonl`);
