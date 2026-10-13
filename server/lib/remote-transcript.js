@@ -139,6 +139,8 @@ function resolveTranscriptPath(projectsDir, sessionId, relPath) {
   const abs = path.resolve(root, ...segs);
   assertCanonicalContainment(root, abs);
   const mainAbs = path.join(root, segs[0], `${sessionId}.jsonl`);
+  assertCanonicalContainment(root, mainAbs);
+  statRegularTarget(mainAbs);
   return { abs, mainAbs, isMain };
 }
 

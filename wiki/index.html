@@ -1236,7 +1236,7 @@
                   <div class="feature-icon ic-blue">📤</div>
                   <h3>Remote Push Ingestion</h3>
                   <p>
-                    Some machines SSH can never reach — a roaming laptop behind NAT, a CGNAT'd home line. Those push instead: <code>ingest-batch</code> sends full token buckets, tool events, and turn durations, while <code>ingest-transcript</code> appends offset-checked main and subagent JSONL for titles, history, and import. Both public routes stay disabled until <code>REMOTE_PUSH_TOKEN</code> is set, reject <code>?token=</code>, and refuse sessions owned by local or SSH-pulled runs; <code>ingest-transcript</code> authenticates before its larger body parser. Batches cap at 1000 items; transcripts cap at 4 MiB per chunk and 256 MiB per file by default.
+                    Some machines SSH can never reach — a roaming laptop behind NAT, a CGNAT'd home line. Those push instead: <code>ingest-batch</code> sends full token buckets, tool events, and turn durations, while <code>ingest-transcript</code> appends offset-checked main and subagent JSONL for titles, history, and import. Both public routes stay disabled until <code>REMOTE_PUSH_TOKEN</code> or <code>REMOTE_PUSH_TOKEN_FILE</code> is configured, reject <code>?token=</code>, and refuse sessions owned by local or SSH-pulled runs; <code>ingest-transcript</code> authenticates before its larger body parser. Batches cap at 1000 items; transcripts cap at 4 MiB per chunk and 256 MiB per file by default.
                   </p>
                 </div>
                 <div class="feature-card">
@@ -7260,7 +7260,7 @@ npm run install-hooks</code></pre>
     <!-- Body-content translations — must load before script.js so the
          i18n engine sees window.__WIKI_CONTENT_I18N. Both are deferred, so they
          run in document order. -->
-    <script src="i18n-content.js?v=111" defer></script>
+    <script src="i18n-content.js?v=112" defer></script>
     <script src="script.js?v=59" defer></script>
     <script>
       (function () {

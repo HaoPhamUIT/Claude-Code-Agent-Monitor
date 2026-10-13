@@ -90,6 +90,28 @@ test("append rechecks containment when a project path becomes a symlink after re
 });
 
 test(
+  "subagent resolution rejects a main transcript symlink that escapes the projects dir",
+  {
+    skip:
+      process.platform === "win32" ? "creating file symlinks requires elevated privileges" : false,
+  },
+  () => {
+    const base = tmp();
+    const root = path.join(base, "projects");
+    const projectDir = path.join(root, "project");
+    const outsideFile = path.join(base, "outside.jsonl");
+    fs.mkdirSync(projectDir, { recursive: true });
+    fs.writeFileSync(outsideFile, "{}\n");
+    fs.symlinkSync(outsideFile, path.join(projectDir, `${SID}.jsonl`), "file");
+
+    assert.throws(
+      () => resolveTranscriptPath(root, SID, `project/${SID}/subagents/agent-a.jsonl`),
+      /path escapes projects dir/
+    );
+  }
+);
+
+test(
   "append rejects a final-file symlink after path resolution",
   {
     skip:
