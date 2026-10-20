@@ -51,7 +51,7 @@ describe("automated release bump workflow", () => {
     assert.match(config.concurrency.group, /release-bump/);
   });
 
-  it("uses the release command and preserves the coordinator and PR safety boundaries", () => {
+  it("uses the release command without querying repository-admin APIs from GITHUB_TOKEN", () => {
     const scripts = runScripts(workflow(".github/workflows/release-bump.yml"));
 
     assert.match(scripts, /scripts\/bump-release\.js/);
@@ -60,8 +60,8 @@ describe("automated release bump workflow", () => {
       /Co-authored-by: hoangsonww <124531104\+hoangsonww@users\.noreply\.github\.com>/
     );
     assert.match(scripts, /milestones\?state=all/);
-    assert.match(scripts, /actions\/permissions\/workflow/);
-    assert.match(scripts, /can_approve_pull_request_reviews/);
+    assert.doesNotMatch(scripts, /actions\/permissions\/workflow/);
+    assert.doesNotMatch(scripts, /can_approve_pull_request_reviews/);
     assert.match(scripts, /closingIssuesReferences/);
     assert.match(scripts, /gh workflow run ci\.yml --ref/);
     assert.match(scripts, /gh workflow run file-headers\.yml --ref/);
