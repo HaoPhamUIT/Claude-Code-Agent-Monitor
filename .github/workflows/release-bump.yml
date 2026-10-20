@@ -40,6 +40,18 @@ jobs:
       BUMP: ${{ inputs.bump }}
       DRY_RUN: ${{ inputs.dry_run }}
     steps:
+      - name: Authorize repository owner
+        env:
+          ACTOR: ${{ github.actor }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          if [ "$ACTOR" != "$OWNER" ] || [ "$TRIGGERING_ACTOR" != "$OWNER" ]; then
+            echo "::error::Only the repository owner may run or rerun release automation"
+            exit 1
+          fi
+
       - name: Check out the current default branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

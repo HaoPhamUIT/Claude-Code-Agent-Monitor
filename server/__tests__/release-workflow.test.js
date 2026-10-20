@@ -51,6 +51,19 @@ describe("automated release bump workflow", () => {
     assert.match(config.concurrency.group, /release-bump/);
   });
 
+  it("rejects dispatches and reruns not initiated by the repository owner", () => {
+    const config = workflow(".github/workflows/release-bump.yml");
+    const firstStep = config.jobs.prepare.steps[0];
+
+    assert.equal(firstStep.name, "Authorize repository owner");
+    assert.equal(firstStep.env.ACTOR, "${{ github.actor }}");
+    assert.equal(firstStep.env.TRIGGERING_ACTOR, "${{ github.triggering_actor }}");
+    assert.equal(firstStep.env.OWNER, "${{ github.repository_owner }}");
+    assert.match(firstStep.run, /\[ "\$ACTOR" != "\$OWNER" \]/);
+    assert.match(firstStep.run, /\[ "\$TRIGGERING_ACTOR" != "\$OWNER" \]/);
+    assert.match(firstStep.run, /exit 1/);
+  });
+
   it("uses the release command without querying repository-admin APIs from GITHUB_TOKEN", () => {
     const scripts = runScripts(workflow(".github/workflows/release-bump.yml"));
 
