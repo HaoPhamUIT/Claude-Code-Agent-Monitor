@@ -455,9 +455,15 @@ function applyFirstUserDescriptor(sessionId, result) {
   const label = firstUserLabel(result);
   if (!label) return;
 
+  // A transcript title already had its turn in syncSessionName. It can look
+  // like a placeholder (a /rename to the project folder's name matches the
+  // cwd-basename fallback), so never let the descriptor take the name back.
+  const hasTitle = Boolean(
+    (result.customTitle && result.customTitle.trim()) || (result.aiTitle && result.aiTitle.trim())
+  );
   const session = stmts.getSession.get(sessionId);
   const split = splitRemoteLabel(session);
-  if (session && isAutoSessionName(split.bare, session.id, session.cwd)) {
+  if (session && !hasTitle && isAutoSessionName(split.bare, session.id, session.cwd)) {
     const desiredName0 = split.label + label;
     const upd = stmts.updateSessionName.run(desiredName0, session.id, desiredName0);
     if (upd.changes > 0) {

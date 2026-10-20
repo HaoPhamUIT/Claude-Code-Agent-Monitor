@@ -1,7 +1,8 @@
 /**
  * @file ingest-transcript.test.js
  * @description HTTP-level regression coverage for authenticated remote transcript uploads,
- * storage containment, and metadata-only synchronization that must preserve session liveness.
+ * storage containment, and metadata-only synchronization that preserves session liveness
+ * and remote title precedence.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 const { describe, it, before, after, beforeEach, afterEach } = require("node:test");
@@ -134,6 +135,38 @@ describe("POST /api/hooks/ingest-transcript", () => {
         .get(sessionId).count,
       0
     );
+  });
+
+  it("keeps a remote custom title matching the cwd folder over the first prompt", async () => {
+    const sessionId = crypto.randomUUID();
+    const created = await postJson("/api/hooks/ingest-batch", {
+      session_id: sessionId,
+      provider: "claude",
+      session_name: "[workstation] myrepo",
+      cwd: "/tmp/myrepo",
+    });
+    assert.equal(created.response.status, 200);
+
+    const transcript = [
+      { type: "user", message: { role: "user", content: "Fix the build errors please" } },
+      { type: "custom-title", customTitle: "myrepo", sessionId },
+    ]
+      .map((line) => JSON.stringify(line))
+      .join("\n");
+    const uploaded = await postJson("/api/hooks/ingest-transcript", {
+      session_id: sessionId,
+      rel_path: `myrepo/${sessionId}.jsonl`,
+      offset: 0,
+      content_b64: Buffer.from(`${transcript}\n`).toString("base64"),
+      sync: true,
+    });
+    assert.equal(uploaded.response.status, 200);
+
+    const session = await waitFor(
+      () => stmts.getSession.get(sessionId),
+      (row) => row.card_prompt_preview === "Fix the build errors please"
+    );
+    assert.equal(session.name, "[workstation] myrepo");
   });
 
   it("does not reactivate an error session during metadata-only synchronization", async () => {
