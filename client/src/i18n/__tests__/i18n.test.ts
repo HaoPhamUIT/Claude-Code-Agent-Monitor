@@ -25,7 +25,8 @@
  * Protected behavior
  * - keeps every locale's keys, value types, and interpolation tokens aligned with English
  * - should provide Vietnamese translations for navigation keys
- * - should keep Agent terminology untranslated in zh, vi, ko, and es locales
+ * - keeps Agent terminology untranslated in zh, vi, and ko; Spanish UI nouns remain `agente` and
+ *   `subagente`, while the `Agent` tool name stays untranslated
  * - should provide Spanish translations for navigation keys
  * - should provide Spanish translations across every feature namespace
  * - should support non-explicit Spanish locale tags

@@ -36,7 +36,7 @@
  * - should render completed status
  * - should render error status
  * - should apply pulse animation for working status by default
- * - should not apply pulse for connected status (now working - has pulse)
+ * - the legacy connected-status case now renders `working` and confirms that its dot pulses
  * - should apply pulse animation for waiting status by default
  * - should respect explicit pulse=false override
  * - should respect explicit pulse=true override

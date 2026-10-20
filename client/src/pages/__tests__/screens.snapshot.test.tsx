@@ -40,7 +40,8 @@
  * - React Testing Library drives the rendered UI through accessible roles, labels, and user-visible
  *   text.
  * - `MemoryRouter` provides deterministic navigation without coupling the suite to browser history.
- * - Fake timers control debounce, timeout, or interval boundaries; restore real timers during teardown.
+ * - Only `Date` is faked: the clock is pinned for stable timestamps, while timeout timers remain real
+ *   so `settle()` can flush queued renders.
  * - Realtime inputs are simulated locally so connection timing and event ordering stay reproducible.
  * - Snapshots protect deliberate presentation structure and must be reviewed as UI contracts, not
  *   refreshed blindly.
