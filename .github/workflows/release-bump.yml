@@ -270,12 +270,47 @@ jobs:
             printf '%s\n' "$CROSS_REPO"
             exit 1
           fi
-          gh pr edit "$PR_NUMBER" --repo "$REPO" --milestone "$MILESTONE"
+          PR_JSON="$(gh pr view "$PR_NUMBER" --repo "$REPO" --json title,body,headRefName,files,labels)"
+          LABEL_PLAN="$(
+            PR_JSON="$PR_JSON" node <<'NODE'
+          const rules = require("./.github/scripts/label-rules.js");
+          const pr = JSON.parse(process.env.PR_JSON);
+          const files = pr.files.map((file) => ({
+            filename: file.path,
+            additions: file.additions,
+            deletions: file.deletions,
+          }));
+          const desired = rules.computeLabels({
+            kind: "pull_request",
+            title: pr.title,
+            body: pr.body || "",
+            branch: pr.headRefName,
+            files,
+          });
+          const current = pr.labels.map((label) => label.name);
+          process.stdout.write(JSON.stringify({ desired, ...rules.reconcile(current, desired) }));
+          NODE
+          )"
+          EXPECTED_LABELS_JSON="$(jq -c .desired <<<"$LABEL_PLAN")"
+
+          gh pr edit "$PR_NUMBER" --repo "$REPO" \
+            --milestone "$MILESTONE" --add-assignee "$OWNER"
+          jq -r '.add[]' <<<"$LABEL_PLAN" | while read -r LABEL; do
+            [ -z "$LABEL" ] || gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "$LABEL"
+          done
+          jq -r '.remove[]' <<<"$LABEL_PLAN" | while read -r LABEL; do
+            [ -z "$LABEL" ] || gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "$LABEL"
+          done
           jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[].number' <<<"$ISSUES" |
             while read -r ISSUE; do
               [ -z "$ISSUE" ] || gh issue edit "$ISSUE" --repo "$REPO" --milestone "$MILESTONE"
             done
-          [ "$(gh pr view "$PR_NUMBER" --repo "$REPO" --json milestone --jq .milestone.title)" = "$MILESTONE" ]
+          PR_METADATA="$(gh pr view "$PR_NUMBER" --repo "$REPO" --json assignees,labels,milestone)"
+          [ "$(jq -r .milestone.title <<<"$PR_METADATA")" = "$MILESTONE" ]
+          jq -e --arg owner "$OWNER" 'any(.assignees[]; .login == $owner)' <<<"$PR_METADATA" >/dev/null
+          jq -e --argjson expected "$EXPECTED_LABELS_JSON" \
+            '[.labels[].name] as $actual | all($expected[]; . as $label | ($actual | index($label)) != null)' \
+            <<<"$PR_METADATA" >/dev/null
           jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[].number' <<<"$ISSUES" |
             while read -r ISSUE; do
               [ -z "$ISSUE" ] || [ "$(gh issue view "$ISSUE" --repo "$REPO" --json milestone --jq .milestone.title)" = "$MILESTONE" ]

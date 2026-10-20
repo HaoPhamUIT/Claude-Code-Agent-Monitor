@@ -86,6 +86,20 @@ describe("automated release bump workflow", () => {
     assert.doesNotMatch(scripts, /gh pr merge|gh release create|git tag/);
   });
 
+  it("assigns generated release PRs to the owner and applies deterministic labels", () => {
+    const scripts = runScripts(workflow(".github/workflows/release-bump.yml"));
+
+    assert.match(scripts, /\.github\/scripts\/label-rules\.js/);
+    assert.match(scripts, /computeLabels/);
+    assert.match(scripts, /reconcile/);
+    assert.match(scripts, /--add-assignee "\$OWNER"/);
+    assert.match(scripts, /--add-label "\$LABEL"/);
+    assert.match(scripts, /--remove-label "\$LABEL"/);
+    assert.match(scripts, /EXPECTED_LABELS_JSON/);
+    assert.match(scripts, /assignees/);
+    assert.match(scripts, /labels/);
+  });
+
   it("allows explicit CI dispatch without weakening default-branch release gating", () => {
     const config = workflow(".github/workflows/ci.yml");
 
