@@ -35,8 +35,10 @@ Run **Prepare Release Bump** from the Actions tab. The component mapping is:
 - `intermediate`: `X.Y.Z` becomes `X.Y+1.0`
 - `minor`: `X.Y.Z` becomes `X.Y.Z+1`
 
+Only the repository owner may start or rerun this workflow. GitHub may show the manual-dispatch control to other users with write access, but the first job step rejects both an original actor and a rerun actor unless each matches `github.repository_owner`. The check runs before checkout or any repository write.
+
 The generated commit is authored by `github-actions[bot]` and carries `hoangsonww` as release coordinator through the required coauthor trailer. The workflow uses the repository token, then explicitly dispatches `ci.yml`, `file-headers.yml`, and the release-automation path in `cla.yml` because token-created pull requests do not emit secondary workflow runs.
 
-One repository setting is required: **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. The workflow checks this setting before any branch, milestone, or pull request write and stops with a direct error when it is disabled. Default workflow permissions may remain read-only because each workflow declares its narrower job permissions explicitly.
+One repository setting is required: **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. GitHub does not allow a workflow's `GITHUB_TOKEN` to read that repository-administration setting, so the workflow does not attempt an admin-API preflight. The actual pull-request creation is the capability check and reports GitHub's permission error if the setting is disabled. Default workflow permissions may remain read-only because each workflow declares its narrower job permissions explicitly.
 
 The workflow stops with an open pull request. Merging remains a maintainer decision. A successful merge to `master` lets the existing CI release job create the tag and published GitHub Release.

@@ -51,7 +51,20 @@ describe("automated release bump workflow", () => {
     assert.match(config.concurrency.group, /release-bump/);
   });
 
-  it("uses the release command and preserves the coordinator and PR safety boundaries", () => {
+  it("rejects dispatches and reruns not initiated by the repository owner", () => {
+    const config = workflow(".github/workflows/release-bump.yml");
+    const firstStep = config.jobs.prepare.steps[0];
+
+    assert.equal(firstStep.name, "Authorize repository owner");
+    assert.equal(firstStep.env.ACTOR, "${{ github.actor }}");
+    assert.equal(firstStep.env.TRIGGERING_ACTOR, "${{ github.triggering_actor }}");
+    assert.equal(firstStep.env.OWNER, "${{ github.repository_owner }}");
+    assert.match(firstStep.run, /\[ "\$ACTOR" != "\$OWNER" \]/);
+    assert.match(firstStep.run, /\[ "\$TRIGGERING_ACTOR" != "\$OWNER" \]/);
+    assert.match(firstStep.run, /exit 1/);
+  });
+
+  it("uses the release command without querying repository-admin APIs from GITHUB_TOKEN", () => {
     const scripts = runScripts(workflow(".github/workflows/release-bump.yml"));
 
     assert.match(scripts, /scripts\/bump-release\.js/);
@@ -60,8 +73,8 @@ describe("automated release bump workflow", () => {
       /Co-authored-by: hoangsonww <124531104\+hoangsonww@users\.noreply\.github\.com>/
     );
     assert.match(scripts, /milestones\?state=all/);
-    assert.match(scripts, /actions\/permissions\/workflow/);
-    assert.match(scripts, /can_approve_pull_request_reviews/);
+    assert.doesNotMatch(scripts, /actions\/permissions\/workflow/);
+    assert.doesNotMatch(scripts, /can_approve_pull_request_reviews/);
     assert.match(scripts, /closingIssuesReferences/);
     assert.match(scripts, /gh workflow run ci\.yml --ref/);
     assert.match(scripts, /gh workflow run file-headers\.yml --ref/);
