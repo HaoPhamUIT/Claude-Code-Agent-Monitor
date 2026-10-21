@@ -1,6 +1,6 @@
 # Prepares complete CCAM root-version bump pull requests from one manual input.
 # File mutation lives in scripts/bump-release.js; this workflow owns only the
-# GitHub branch, commit, milestone, release PR, included merged-PR,
+# GitHub branch, commit, milestone, release PR, merged-PR backfill,
 # linked-issue, and CI state.
 #
 # Author: Son Nguyen <hoangson091104@gmail.com>
@@ -139,54 +139,6 @@ jobs:
             echo "pr_number=$PR_NUMBER"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Resolve included pull request boundary
-        if: ${{ !inputs.dry_run }}
-        id: release_boundary
-        env:
-          REPO: ${{ steps.state.outputs.repo }}
-          DEFAULT_BRANCH: ${{ steps.state.outputs.default_branch }}
-          DEFAULT_HEAD: ${{ steps.state.outputs.default_head }}
-          CURRENT_VERSION: ${{ steps.plan.outputs.current }}
-        run: |
-          set -euo pipefail
-          TAG="v$CURRENT_VERSION"
-          if TAG_SHA="$(git rev-parse --verify --quiet "$TAG^{commit}")"; then
-            BOUNDARY_SHA="$TAG_SHA"
-            BOUNDARY_SOURCE="$TAG"
-          else
-            RELEASE_BRANCH="chore/release-v$CURRENT_VERSION"
-            RELEASE_PRS="$(gh pr list --repo "$REPO" --state merged \
-              --base "$DEFAULT_BRANCH" --head "$RELEASE_BRANCH" --limit 100 \
-              --json number,mergeCommit,url)"
-            RELEASE_COUNT="$(jq length <<<"$RELEASE_PRS")"
-            if [ "$RELEASE_COUNT" -ne 1 ]; then
-              echo "::error::Expected one merged release PR for $CURRENT_VERSION while $TAG is unavailable"
-              jq -c '.[]' <<<"$RELEASE_PRS"
-              exit 1
-            fi
-            RELEASE_PR="$(jq -r '.[0].number' <<<"$RELEASE_PRS")"
-            BOUNDARY_SHA="$(jq -r '.[0].mergeCommit.oid // empty' <<<"$RELEASE_PRS")"
-            if [ -z "$BOUNDARY_SHA" ]; then
-              echo "::error::Merged release PR $RELEASE_PR has no merge commit"
-              exit 1
-            fi
-            BOUNDARY_SOURCE="merged release PR #$RELEASE_PR"
-            echo "::notice::$TAG is not published yet; using $BOUNDARY_SOURCE at $BOUNDARY_SHA"
-          fi
-          if ! git merge-base --is-ancestor "$BOUNDARY_SHA" "$DEFAULT_HEAD"; then
-            echo "::error::Release boundary $BOUNDARY_SOURCE is not an ancestor of $DEFAULT_HEAD"
-            exit 1
-          fi
-          BOUNDARY_VERSION="$(git show "${BOUNDARY_SHA}:package.json" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).version')"
-          if [ "$BOUNDARY_VERSION" != "$CURRENT_VERSION" ]; then
-            echo "::error::Release boundary $BOUNDARY_SOURCE contains version $BOUNDARY_VERSION, expected $CURRENT_VERSION"
-            exit 1
-          fi
-          {
-            echo "sha=$BOUNDARY_SHA"
-            echo "source=$BOUNDARY_SOURCE"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Verify reusable release branch
         if: ${{ !inputs.dry_run && steps.state.outputs.branch_exists == 'true' }}
         env:
@@ -301,46 +253,46 @@ jobs:
           fi
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
-      - name: Backfill milestone on included merged pull requests
+      - name: Backfill milestone on unmilestoned merged pull requests
         if: ${{ !inputs.dry_run }}
         id: merged_pull_requests
         env:
           REPO: ${{ steps.state.outputs.repo }}
           DEFAULT_BRANCH: ${{ steps.state.outputs.default_branch }}
-          DEFAULT_HEAD: ${{ steps.state.outputs.default_head }}
-          BOUNDARY_SHA: ${{ steps.release_boundary.outputs.sha }}
           MILESTONE_NUMBER: ${{ steps.milestone.outputs.number }}
-          MILESTONE: ${{ steps.plan.outputs.milestone }}
         run: |
           set -euo pipefail
-          PULLS_JSONL="$RUNNER_TEMP/release-merged-pulls.jsonl"
-          : > "$PULLS_JSONL"
-          while read -r SHA; do
-            gh api --paginate "repos/$REPO/commits/$SHA/pulls?per_page=100" \
-              -H "Accept: application/vnd.github+json" \
-              --jq '.[] | select(.merged_at != null and .base.ref == env.DEFAULT_BRANCH) | {number, milestone: (.milestone.title // null)}' \
-              >> "$PULLS_JSONL"
-          done < <(git rev-list --first-parent --reverse "$BOUNDARY_SHA..$DEFAULT_HEAD")
+          list_unmilestoned() {
+            gh api --paginate --method GET "repos/$REPO/pulls" \
+              -f state=closed -f base="$DEFAULT_BRANCH" -F per_page=100 \
+              -f sort=created -f direction=asc \
+              --jq '.[] | select(.merged_at != null and .milestone == null) | .number'
+          }
 
-          if [ -s "$PULLS_JSONL" ]; then
-            PULLS="$(jq -s 'sort_by(.number) | unique_by(.number)' "$PULLS_JSONL")"
-          else
-            PULLS='[]'
-          fi
-          UNASSIGNED="$(jq '[.[] | select(.milestone == null)]' <<<"$PULLS")"
+          CANDIDATES="$RUNNER_TEMP/release-unmilestoned-pulls.txt"
+          list_unmilestoned > "$CANDIDATES"
 
           ASSIGNED_PRS=()
           while read -r MERGED_PR; do
             [ -z "$MERGED_PR" ] && continue
-            CURRENT_MILESTONE="$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.title // ""')"
-            [ -n "$CURRENT_MILESTONE" ] && continue
+            CURRENT_MILESTONE="$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.number // 0')"
+            [ "$CURRENT_MILESTONE" != 0 ] && continue
             gh api --method PATCH "repos/$REPO/issues/$MERGED_PR" \
               -F milestone="$MILESTONE_NUMBER" >/dev/null
             ASSIGNED_PRS+=("$MERGED_PR")
-          done < <(jq -r '.[].number' <<<"$UNASSIGNED")
+          done < "$CANDIDATES"
           for MERGED_PR in "${ASSIGNED_PRS[@]}"; do
             [ "$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.number // 0')" = "$MILESTONE_NUMBER" ]
           done
+
+          REMAINING_UNASSIGNED="$(list_unmilestoned)"
+          if [ -n "$REMAINING_UNASSIGNED" ]; then
+            echo "::error::Merged pull requests still have no milestone after backfill"
+            while read -r MERGED_PR; do
+              printf '#%s\n' "$MERGED_PR"
+            done <<< "$REMAINING_UNASSIGNED"
+            exit 1
+          fi
 
           ASSIGNED_COUNT="${#ASSIGNED_PRS[@]}"
           ASSIGNED_NUMBERS="$(IFS=,; echo "${ASSIGNED_PRS[*]}")"

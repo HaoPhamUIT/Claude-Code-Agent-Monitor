@@ -101,50 +101,32 @@ describe("automated release bump workflow", () => {
     assert.match(scripts, /labels/);
   });
 
-  it("resolves a release boundary before writes and backfills only after milestone creation", () => {
+  it("backfills every unmilestoned merged PR only after milestone creation", () => {
     const config = workflow(".github/workflows/release-bump.yml");
     const steps = config.jobs.prepare.steps;
-    const boundary = steps.find((step) => step.name === "Resolve included pull request boundary");
     const backfill = steps.find(
-      (step) => step.name === "Backfill milestone on included merged pull requests"
+      (step) => step.name === "Backfill milestone on unmilestoned merged pull requests"
     );
     const milestoneIndex = steps.findIndex(
       (step) => step.name === "Create or reuse release milestone"
     );
 
-    assert.ok(boundary);
     assert.ok(backfill);
-    assert.ok(
-      steps.indexOf(boundary) <
-        steps.findIndex((step) => step.name === "Apply, validate, commit, and push the bump")
+    assert.equal(
+      steps.find((step) => step.name === "Resolve included pull request boundary"),
+      undefined
     );
-    assert.match(boundary.run, /git rev-parse --verify --quiet "\$TAG\^\{commit\}"/);
-    assert.match(boundary.run, /RELEASE_BRANCH="chore\/release-v\$CURRENT_VERSION"/);
-    assert.match(
-      boundary.run,
-      /gh pr list --repo "\$REPO" --state merged[\s\S]*?--head "\$RELEASE_BRANCH"/
-    );
-    assert.match(boundary.run, /BOUNDARY_SHA=.*mergeCommit\.oid/);
-    assert.match(boundary.run, /BOUNDARY_VERSION/);
-    assert.doesNotMatch(boundary.run, /gh (?:api --method (?:PATCH|POST)|pr edit|issue edit)/);
     assert.ok(
       steps.indexOf(backfill) >
         steps.findIndex((step) => step.name === "Create or reuse release pull request")
     );
     assert.ok(steps.indexOf(backfill) > milestoneIndex);
-    assert.equal(backfill.env.DEFAULT_HEAD, "${{ steps.state.outputs.default_head }}");
-    assert.equal(backfill.env.BOUNDARY_SHA, "${{ steps.release_boundary.outputs.sha }}");
+    assert.equal(backfill.env.DEFAULT_BRANCH, "${{ steps.state.outputs.default_branch }}");
     assert.equal(backfill.env.MILESTONE_NUMBER, "${{ steps.milestone.outputs.number }}");
-    assert.match(
-      backfill.run,
-      /git rev-list --first-parent --reverse "\$BOUNDARY_SHA\.\.\$DEFAULT_HEAD"/
-    );
-    assert.match(
-      backfill.run,
-      /gh api --paginate "repos\/\$REPO\/commits\/\$SHA\/pulls\?per_page=100"/
-    );
-    assert.match(backfill.run, /\.merged_at != null and \.base\.ref == env\.DEFAULT_BRANCH/);
-    assert.match(backfill.run, /select\(\.milestone == null\)/);
+    assert.match(backfill.run, /gh api --paginate --method GET "repos\/\$REPO\/pulls"/);
+    assert.match(backfill.run, /-f state=closed -f base="\$DEFAULT_BRANCH" -F per_page=100/);
+    assert.match(backfill.run, /select\(\.merged_at != null and \.milestone == null\) \| \.number/);
+    assert.match(backfill.run, /list_unmilestoned > "\$CANDIDATES"/);
     assert.ok(
       backfill.run.indexOf("CURRENT_MILESTONE=") <
         backfill.run.indexOf('gh api --method PATCH "repos/$REPO/issues/$MERGED_PR"')
@@ -154,7 +136,9 @@ describe("automated release bump workflow", () => {
       /gh api --method PATCH "repos\/\$REPO\/issues\/\$MERGED_PR"[\s\S]*?-F milestone="\$MILESTONE_NUMBER"/
     );
     assert.match(backfill.run, /gh pr view "\$MERGED_PR"[\s\S]*?--json milestone/);
-    assert.doesNotMatch(backfill.run, /gh pr list[^\n]*--state merged/);
+    assert.match(backfill.run, /REMAINING_UNASSIGNED="\$\(list_unmilestoned\)"/);
+    assert.match(backfill.run, /Merged pull requests still have no milestone after backfill/);
+    assert.doesNotMatch(backfill.run, /git rev-list|commits\/\$SHA\/pulls/);
 
     const bookkeeping = steps.find((step) => step.name === "Assign and verify release bookkeeping");
     assert.ok(steps.indexOf(bookkeeping) > milestoneIndex);
