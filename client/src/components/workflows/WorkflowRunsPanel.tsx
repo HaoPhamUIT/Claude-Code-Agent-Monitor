@@ -254,6 +254,7 @@ import type {
   TranscriptMessage,
 } from "../../lib/types";
 import { fmt, formatMs, timeAgo, truncate } from "../../lib/format";
+import { WorkflowInteractionGraph } from "./WorkflowInteractionGraph";
 
 /** Run status filter; `active` maps to running runs on the server. */
 type StatusFilter = "all" | "active" | "completed";
@@ -693,6 +694,8 @@ export function WorkflowRunsPanel({
                     )}
                   </div>
                 )}
+
+                <WorkflowInteractionGraph run={run} />
 
                 {shown.length > 0 ? (
                   <div className="overflow-x-auto">

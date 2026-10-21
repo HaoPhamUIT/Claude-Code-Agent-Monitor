@@ -45,6 +45,20 @@
       "tokens": "Token",
       "tools": "Công cụ",
       "duration": "Thời lượng"
+    },
+    "graph": {
+      "title": "Tương tác giữa các Agent",
+      "file": "Chuyển qua file",
+      "result": "Chuyển kết quả",
+      "hint": "Rê chuột vào Agent để xem chi tiết, bấm để ghim",
+      "empty": "Chưa phát hiện Agent nào chuyển dữ liệu cho nhau.",
+      "received": "Nhận từ",
+      "sent": "Chuyển cho",
+      "wrote": "File đã ghi",
+      "tools_one": "{{count}} lệnh gọi công cụ",
+      "tools_other": "{{count}} lệnh gọi công cụ",
+      "resultPreview": "Kết quả",
+      "pinHint": "Bấm để ghim và cuộn xem"
     }
   },
   "chartInfo": {

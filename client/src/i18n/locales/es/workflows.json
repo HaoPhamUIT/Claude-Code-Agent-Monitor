@@ -45,6 +45,20 @@
       "tokens": "Tokens",
       "tools": "Herramientas",
       "duration": "Duración"
+    },
+    "graph": {
+      "title": "Interacciones entre agentes",
+      "file": "Entrega por archivo",
+      "result": "Resultado transferido",
+      "hint": "Pasa el cursor sobre un agente para ver detalles; haz clic para fijar",
+      "empty": "Aún no se detectaron entregas entre agentes.",
+      "received": "Recibido de",
+      "sent": "Entregado a",
+      "wrote": "Archivos escritos",
+      "tools_one": "{{count}} llamada a herramienta",
+      "tools_other": "{{count}} llamadas a herramientas",
+      "resultPreview": "Resultado",
+      "pinHint": "Haz clic para fijar y desplazarte"
     }
   },
   "chartInfo": {

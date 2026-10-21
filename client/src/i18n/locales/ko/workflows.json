@@ -45,6 +45,20 @@
       "tokens": "토큰",
       "tools": "도구",
       "duration": "지속 시간"
+    },
+    "graph": {
+      "title": "에이전트 상호작용",
+      "file": "파일 전달",
+      "result": "결과 전달",
+      "hint": "에이전트에 마우스를 올려 상세 보기, 클릭하여 고정",
+      "empty": "아직 에이전트 간 전달이 감지되지 않았습니다.",
+      "received": "받은 곳",
+      "sent": "전달 대상",
+      "wrote": "작성한 파일",
+      "tools_one": "도구 호출 {{count}}회",
+      "tools_other": "도구 호출 {{count}}회",
+      "resultPreview": "결과",
+      "pinHint": "클릭하여 고정하고 스크롤"
     }
   },
   "chartInfo": {

@@ -45,6 +45,20 @@
       "tokens": "Tokens",
       "tools": "Tools",
       "duration": "Duration"
+    },
+    "graph": {
+      "title": "Agent interactions",
+      "file": "File hand-off",
+      "result": "Result passed",
+      "hint": "Hover an agent for details, click to pin",
+      "empty": "No hand-offs between agents detected yet.",
+      "received": "Received from",
+      "sent": "Handed to",
+      "wrote": "Files written",
+      "tools_one": "{{count}} tool call",
+      "tools_other": "{{count}} tool calls",
+      "resultPreview": "Result",
+      "pinHint": "Click to pin and scroll"
     }
   },
   "chartInfo": {
