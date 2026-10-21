@@ -462,8 +462,8 @@ export function Tip({
             }}
             className={
               variant === "info"
-                ? `min-w-[260px] px-3.5 py-3 text-xs leading-5 font-sans text-gray-300 bg-[#12121f] border border-[#30304d] rounded-xl shadow-2xl break-words ${interactive ? "pointer-events-auto" : "pointer-events-none"}`
-                : "px-2.5 py-1.5 text-[11px] leading-relaxed font-mono text-gray-100 bg-[#12121f] border border-[#2a2a4a] rounded-lg shadow-xl pointer-events-none whitespace-pre-wrap break-words"
+                ? `min-w-[260px] px-3.5 py-3 text-xs leading-5 font-sans text-gray-300 bg-surface-1 border border-border rounded-xl shadow-2xl break-words ${interactive ? "pointer-events-auto" : "pointer-events-none"}`
+                : "px-2.5 py-1.5 text-[11px] leading-relaxed font-mono text-gray-100 bg-surface-1 border border-border rounded-lg shadow-xl pointer-events-none whitespace-pre-wrap break-words"
             }
           >
             {hasContent ? (

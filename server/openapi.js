@@ -51,11 +51,6 @@ function createOpenApiSpec() {
       version: pkg.version || "1.0.0",
       description:
         "HTTP API for real-time Claude Code, Cursor, and Codex session monitoring, agent lifecycle tracking, analytics, provider-specific pricing, hooks ingestion, and workflow intelligence.",
-      contact: {
-        name: "Son Nguyen",
-        email: "hoangson091104@gmail.com",
-        ...(repositoryUrl ? { url: repositoryUrl } : {}),
-      },
       license: {
         name: pkg.license || "MIT",
         ...(repositoryUrl ? { url: `${repositoryUrl}/blob/main/LICENSE` } : {}),

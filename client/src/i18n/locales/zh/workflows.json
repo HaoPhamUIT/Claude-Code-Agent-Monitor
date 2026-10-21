@@ -58,7 +58,15 @@
       "tools_one": "{{count}} 次工具调用",
       "tools_other": "{{count}} 次工具调用",
       "resultPreview": "结果",
-      "pinHint": "点击固定并滚动查看"
+      "pinHint": "点击固定并滚动查看",
+      "replay": "回放",
+      "pause": "暂停",
+      "restart": "回到最终状态",
+      "speed": "回放速度",
+      "fullscreen": "全屏",
+      "exitFullscreen": "退出全屏",
+      "viewGraph": "关系图",
+      "viewOffice": "办公室"
     }
   },
   "chartInfo": {
