@@ -65,7 +65,7 @@ npm run release:bump -- minor                   # X.Y.Z -> X.Y.Z+1
 node scripts/bump-release.js intermediate --dry-run --json
 ```
 
-The JSON form is invoked directly with `node` so stdout contains only the JSON document. The manual **Prepare Release Bump** workflow creates the coordinated commit, milestone, branch, and pull request, then assigns the milestone to included PRs merged since the current release tag when they do not already have one. It does not merge, tag, or publish.
+The JSON form is invoked directly with `node` so stdout contains only the JSON document. The manual **Prepare Release Bump** workflow creates the coordinated commit, milestone, branch, and pull request, then assigns the milestone to included PRs that do not already have one. It uses the current release tag as the lower boundary, or the unique merged current-version release PR while that tag is still awaiting publication. Assignments use the numeric milestone returned by this workflow's completed milestone step. The workflow does not merge, tag, or publish.
 
 ## Tests
 

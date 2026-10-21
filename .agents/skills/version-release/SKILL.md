@@ -41,7 +41,7 @@ The workflow creates one branch, one coordinated commit, the exact open mileston
 - Run `npm run extensions:sync` to regenerate Claude/Codex plugin manifests and both marketplaces.
 - Keep independently shipped client/MCP/monitoring/VS Code package versions unchanged unless explicitly included.
 - Create or reuse the exact open GitHub milestone `v<version>` for the new root version. Query all milestones first. If the exact title already exists closed or more than once, stop and resolve that release state instead of creating a duplicate.
-- Resolve pull requests merged into the default branch after the current release tag and through the captured pre-bump head. Assign only those with no milestone to `v<version>`, preserve every existing milestone assignment, and verify each write with a fresh read.
+- Resolve pull requests merged into the default branch after the current release tag and through the captured pre-bump head. If that tag is not published yet, use the unique merged `chore/release-v<current-version>` PR's merge commit after verifying it contains the current root version. Only after the new-version milestone step completes, assign its returned numeric milestone ID to included PRs with no milestone, preserve every existing milestone assignment, and verify each write with a fresh read.
 - Assign the current open pull request containing the bump to `v<version>`. Read its `closingIssuesReferences` and assign every linked closing issue to the same milestone. If no PR exists yet, leave this step explicitly incomplete until the PR is created.
 - Verify the PR and every linked issue report the expected milestone with fresh GitHub reads.
 - Run `npm run extensions:validate`, relevant tests/builds, and the CLI version check.
@@ -97,9 +97,9 @@ existing="$(
 - Empty `existing`: create with `gh api --method POST "repos/${repo}/milestones" -f title="${milestone}"`.
 - One open match: reuse it.
 - Closed or duplicate matches: stop. Do not create another release milestone.
-- Assign every unmilestoned pull request included between the current release tag and the captured default-branch head. Preserve PRs that already have any milestone, and verify every changed PR with a fresh read.
-- Assign the PR with `gh pr edit "$pr" --milestone "$milestone"`.
-- Read linked issues with `gh pr view "$pr" --json closingIssuesReferences`, then assign each same-repository issue with `gh issue edit <number> --milestone "$milestone"`.
+- Resolve the lower boundary read-only before remote writes: use the current release tag when present, otherwise the unique merged `chore/release-v<current-version>` PR's verified merge commit. Assign every unmilestoned pull request included through the captured default-branch head only after the new-version milestone step completes. Preserve PRs that already have any milestone, and verify every changed PR with a fresh read.
+- Assign the PR through `PATCH /repos/{owner}/{repo}/issues/{number}` with the numeric milestone returned by the completed milestone step.
+- Read linked issues with `gh pr view "$pr" --json closingIssuesReferences`, then assign each same-repository issue through the same numeric-milestone REST field.
 - If a closing issue belongs to another repository, stop and report it. Milestones are repository-scoped, so do not mutate another repository implicitly.
 - Verify with `gh pr view "$pr" --json milestone,closingIssuesReferences` and fresh `gh issue view <number> --json milestone` calls.
 

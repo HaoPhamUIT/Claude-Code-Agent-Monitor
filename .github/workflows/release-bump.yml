@@ -139,6 +139,54 @@ jobs:
             echo "pr_number=$PR_NUMBER"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Resolve included pull request boundary
+        if: ${{ !inputs.dry_run }}
+        id: release_boundary
+        env:
+          REPO: ${{ steps.state.outputs.repo }}
+          DEFAULT_BRANCH: ${{ steps.state.outputs.default_branch }}
+          DEFAULT_HEAD: ${{ steps.state.outputs.default_head }}
+          CURRENT_VERSION: ${{ steps.plan.outputs.current }}
+        run: |
+          set -euo pipefail
+          TAG="v$CURRENT_VERSION"
+          if TAG_SHA="$(git rev-parse --verify --quiet "$TAG^{commit}")"; then
+            BOUNDARY_SHA="$TAG_SHA"
+            BOUNDARY_SOURCE="$TAG"
+          else
+            RELEASE_BRANCH="chore/release-v$CURRENT_VERSION"
+            RELEASE_PRS="$(gh pr list --repo "$REPO" --state merged \
+              --base "$DEFAULT_BRANCH" --head "$RELEASE_BRANCH" --limit 100 \
+              --json number,mergeCommit,url)"
+            RELEASE_COUNT="$(jq length <<<"$RELEASE_PRS")"
+            if [ "$RELEASE_COUNT" -ne 1 ]; then
+              echo "::error::Expected one merged release PR for $CURRENT_VERSION while $TAG is unavailable"
+              jq -c '.[]' <<<"$RELEASE_PRS"
+              exit 1
+            fi
+            RELEASE_PR="$(jq -r '.[0].number' <<<"$RELEASE_PRS")"
+            BOUNDARY_SHA="$(jq -r '.[0].mergeCommit.oid // empty' <<<"$RELEASE_PRS")"
+            if [ -z "$BOUNDARY_SHA" ]; then
+              echo "::error::Merged release PR $RELEASE_PR has no merge commit"
+              exit 1
+            fi
+            BOUNDARY_SOURCE="merged release PR #$RELEASE_PR"
+            echo "::notice::$TAG is not published yet; using $BOUNDARY_SOURCE at $BOUNDARY_SHA"
+          fi
+          if ! git merge-base --is-ancestor "$BOUNDARY_SHA" "$DEFAULT_HEAD"; then
+            echo "::error::Release boundary $BOUNDARY_SOURCE is not an ancestor of $DEFAULT_HEAD"
+            exit 1
+          fi
+          BOUNDARY_VERSION="$(git show "${BOUNDARY_SHA}:package.json" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).version')"
+          if [ "$BOUNDARY_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "::error::Release boundary $BOUNDARY_SOURCE contains version $BOUNDARY_VERSION, expected $CURRENT_VERSION"
+            exit 1
+          fi
+          {
+            echo "sha=$BOUNDARY_SHA"
+            echo "source=$BOUNDARY_SOURCE"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Verify reusable release branch
         if: ${{ !inputs.dry_run && steps.state.outputs.branch_exists == 'true' }}
         env:
@@ -260,20 +308,11 @@ jobs:
           REPO: ${{ steps.state.outputs.repo }}
           DEFAULT_BRANCH: ${{ steps.state.outputs.default_branch }}
           DEFAULT_HEAD: ${{ steps.state.outputs.default_head }}
-          CURRENT_VERSION: ${{ steps.plan.outputs.current }}
+          BOUNDARY_SHA: ${{ steps.release_boundary.outputs.sha }}
+          MILESTONE_NUMBER: ${{ steps.milestone.outputs.number }}
           MILESTONE: ${{ steps.plan.outputs.milestone }}
         run: |
           set -euo pipefail
-          TAG="v$CURRENT_VERSION"
-          if ! TAG_SHA="$(git rev-parse --verify "$TAG^{commit}")"; then
-            echo "::error::Current release tag $TAG does not exist"
-            exit 1
-          fi
-          if ! git merge-base --is-ancestor "$TAG_SHA" "$DEFAULT_HEAD"; then
-            echo "::error::Current release tag $TAG is not an ancestor of $DEFAULT_HEAD"
-            exit 1
-          fi
-
           PULLS_JSONL="$RUNNER_TEMP/release-merged-pulls.jsonl"
           : > "$PULLS_JSONL"
           while read -r SHA; do
@@ -281,7 +320,7 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               --jq '.[] | select(.merged_at != null and .base.ref == env.DEFAULT_BRANCH) | {number, milestone: (.milestone.title // null)}' \
               >> "$PULLS_JSONL"
-          done < <(git rev-list --first-parent --reverse "$TAG_SHA..$DEFAULT_HEAD")
+          done < <(git rev-list --first-parent --reverse "$BOUNDARY_SHA..$DEFAULT_HEAD")
 
           if [ -s "$PULLS_JSONL" ]; then
             PULLS="$(jq -s 'sort_by(.number) | unique_by(.number)' "$PULLS_JSONL")"
@@ -295,11 +334,12 @@ jobs:
             [ -z "$MERGED_PR" ] && continue
             CURRENT_MILESTONE="$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.title // ""')"
             [ -n "$CURRENT_MILESTONE" ] && continue
-            gh pr edit "$MERGED_PR" --repo "$REPO" --milestone "$MILESTONE"
+            gh api --method PATCH "repos/$REPO/issues/$MERGED_PR" \
+              -F milestone="$MILESTONE_NUMBER" >/dev/null
             ASSIGNED_PRS+=("$MERGED_PR")
           done < <(jq -r '.[].number' <<<"$UNASSIGNED")
           for MERGED_PR in "${ASSIGNED_PRS[@]}"; do
-            [ "$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.title // ""')" = "$MILESTONE" ]
+            [ "$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.number // 0')" = "$MILESTONE_NUMBER" ]
           done
 
           ASSIGNED_COUNT="${#ASSIGNED_PRS[@]}"
@@ -315,6 +355,7 @@ jobs:
         env:
           REPO: ${{ steps.state.outputs.repo }}
           PR_NUMBER: ${{ steps.pull_request.outputs.number }}
+          MILESTONE_NUMBER: ${{ steps.milestone.outputs.number }}
           MILESTONE: ${{ steps.plan.outputs.milestone }}
         run: |
           set -euo pipefail
@@ -351,8 +392,9 @@ jobs:
           )"
           EXPECTED_LABELS_JSON="$(jq -c .desired <<<"$LABEL_PLAN")"
 
-          gh pr edit "$PR_NUMBER" --repo "$REPO" \
-            --milestone "$MILESTONE" --add-assignee "$OWNER"
+          gh api --method PATCH "repos/$REPO/issues/$PR_NUMBER" \
+            -F milestone="$MILESTONE_NUMBER" >/dev/null
+          gh pr edit "$PR_NUMBER" --repo "$REPO" --add-assignee "$OWNER"
           jq -r '.add[]' <<<"$LABEL_PLAN" | while read -r LABEL; do
             [ -z "$LABEL" ] || gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "$LABEL"
           done
@@ -361,17 +403,18 @@ jobs:
           done
           jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[].number' <<<"$ISSUES" |
             while read -r ISSUE; do
-              [ -z "$ISSUE" ] || gh issue edit "$ISSUE" --repo "$REPO" --milestone "$MILESTONE"
+              [ -z "$ISSUE" ] || gh api --method PATCH "repos/$REPO/issues/$ISSUE" \
+                -F milestone="$MILESTONE_NUMBER" >/dev/null
             done
           PR_METADATA="$(gh pr view "$PR_NUMBER" --repo "$REPO" --json assignees,labels,milestone)"
-          [ "$(jq -r .milestone.title <<<"$PR_METADATA")" = "$MILESTONE" ]
+          [ "$(jq -r .milestone.number <<<"$PR_METADATA")" = "$MILESTONE_NUMBER" ]
           jq -e --arg owner "$OWNER" 'any(.assignees[]; .login == $owner)' <<<"$PR_METADATA" >/dev/null
           jq -e --argjson expected "$EXPECTED_LABELS_JSON" \
             '[.labels[].name] as $actual | all($expected[]; . as $label | ($actual | index($label)) != null)' \
             <<<"$PR_METADATA" >/dev/null
           jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[].number' <<<"$ISSUES" |
             while read -r ISSUE; do
-              [ -z "$ISSUE" ] || [ "$(gh issue view "$ISSUE" --repo "$REPO" --json milestone --jq .milestone.title)" = "$MILESTONE" ]
+              [ -z "$ISSUE" ] || [ "$(gh issue view "$ISSUE" --repo "$REPO" --json milestone --jq '.milestone.number // 0')" = "$MILESTONE_NUMBER" ]
             done
 
       - name: Dispatch required checks for the release branch
