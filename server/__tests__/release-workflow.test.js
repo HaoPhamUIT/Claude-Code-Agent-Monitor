@@ -1,6 +1,7 @@
 /**
  * @file Validates the executable GitHub Actions contract for coordinated
- * release bump pull requests and explicit branch CI dispatch.
+ * release bump pull requests, merged-PR milestone backfill, and explicit
+ * branch CI dispatch.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 
@@ -98,6 +99,45 @@ describe("automated release bump workflow", () => {
     assert.match(scripts, /EXPECTED_LABELS_JSON/);
     assert.match(scripts, /assignees/);
     assert.match(scripts, /labels/);
+  });
+
+  it("backfills only unmilestoned merged PRs included since the current release tag", () => {
+    const config = workflow(".github/workflows/release-bump.yml");
+    const steps = config.jobs.prepare.steps;
+    const backfill = steps.find(
+      (step) => step.name === "Backfill milestone on included merged pull requests"
+    );
+
+    assert.ok(backfill);
+    assert.ok(
+      steps.indexOf(backfill) >
+        steps.findIndex((step) => step.name === "Create or reuse release pull request")
+    );
+    assert.ok(
+      steps.indexOf(backfill) >
+        steps.findIndex((step) => step.name === "Create or reuse release milestone")
+    );
+    assert.equal(backfill.env.DEFAULT_HEAD, "${{ steps.state.outputs.default_head }}");
+    assert.equal(backfill.env.CURRENT_VERSION, "${{ steps.plan.outputs.current }}");
+    assert.match(backfill.run, /TAG="v\$CURRENT_VERSION"/);
+    assert.match(backfill.run, /git merge-base --is-ancestor "\$TAG_SHA" "\$DEFAULT_HEAD"/);
+    assert.match(
+      backfill.run,
+      /git rev-list --first-parent --reverse "\$TAG_SHA\.\.\$DEFAULT_HEAD"/
+    );
+    assert.match(
+      backfill.run,
+      /gh api --paginate "repos\/\$REPO\/commits\/\$SHA\/pulls\?per_page=100"/
+    );
+    assert.match(backfill.run, /\.merged_at != null and \.base\.ref == env\.DEFAULT_BRANCH/);
+    assert.match(backfill.run, /select\(\.milestone == null\)/);
+    assert.ok(backfill.run.indexOf("CURRENT_MILESTONE=") < backfill.run.indexOf("gh pr edit"));
+    assert.match(
+      backfill.run,
+      /gh pr edit "\$MERGED_PR" --repo "\$REPO" --milestone "\$MILESTONE"/
+    );
+    assert.match(backfill.run, /gh pr view "\$MERGED_PR"[\s\S]*?--json milestone/);
+    assert.doesNotMatch(backfill.run, /gh pr list[^\n]*--state merged/);
   });
 
   it("allows explicit CI dispatch without weakening default-branch release gating", () => {

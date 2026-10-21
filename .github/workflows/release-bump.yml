@@ -1,6 +1,7 @@
 # Prepares complete CCAM root-version bump pull requests from one manual input.
 # File mutation lives in scripts/bump-release.js; this workflow owns only the
-# GitHub branch, commit, milestone, pull request, linked-issue, and CI state.
+# GitHub branch, commit, milestone, release PR, included merged-PR,
+# linked-issue, and CI state.
 #
 # Author: Son Nguyen <hoangson091104@gmail.com>
 name: 🔢 Prepare Release Bump
@@ -252,6 +253,63 @@ jobs:
           fi
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
+      - name: Backfill milestone on included merged pull requests
+        if: ${{ !inputs.dry_run }}
+        id: merged_pull_requests
+        env:
+          REPO: ${{ steps.state.outputs.repo }}
+          DEFAULT_BRANCH: ${{ steps.state.outputs.default_branch }}
+          DEFAULT_HEAD: ${{ steps.state.outputs.default_head }}
+          CURRENT_VERSION: ${{ steps.plan.outputs.current }}
+          MILESTONE: ${{ steps.plan.outputs.milestone }}
+        run: |
+          set -euo pipefail
+          TAG="v$CURRENT_VERSION"
+          if ! TAG_SHA="$(git rev-parse --verify "$TAG^{commit}")"; then
+            echo "::error::Current release tag $TAG does not exist"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$TAG_SHA" "$DEFAULT_HEAD"; then
+            echo "::error::Current release tag $TAG is not an ancestor of $DEFAULT_HEAD"
+            exit 1
+          fi
+
+          PULLS_JSONL="$RUNNER_TEMP/release-merged-pulls.jsonl"
+          : > "$PULLS_JSONL"
+          while read -r SHA; do
+            gh api --paginate "repos/$REPO/commits/$SHA/pulls?per_page=100" \
+              -H "Accept: application/vnd.github+json" \
+              --jq '.[] | select(.merged_at != null and .base.ref == env.DEFAULT_BRANCH) | {number, milestone: (.milestone.title // null)}' \
+              >> "$PULLS_JSONL"
+          done < <(git rev-list --first-parent --reverse "$TAG_SHA..$DEFAULT_HEAD")
+
+          if [ -s "$PULLS_JSONL" ]; then
+            PULLS="$(jq -s 'sort_by(.number) | unique_by(.number)' "$PULLS_JSONL")"
+          else
+            PULLS='[]'
+          fi
+          UNASSIGNED="$(jq '[.[] | select(.milestone == null)]' <<<"$PULLS")"
+
+          ASSIGNED_PRS=()
+          while read -r MERGED_PR; do
+            [ -z "$MERGED_PR" ] && continue
+            CURRENT_MILESTONE="$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.title // ""')"
+            [ -n "$CURRENT_MILESTONE" ] && continue
+            gh pr edit "$MERGED_PR" --repo "$REPO" --milestone "$MILESTONE"
+            ASSIGNED_PRS+=("$MERGED_PR")
+          done < <(jq -r '.[].number' <<<"$UNASSIGNED")
+          for MERGED_PR in "${ASSIGNED_PRS[@]}"; do
+            [ "$(gh pr view "$MERGED_PR" --repo "$REPO" --json milestone --jq '.milestone.title // ""')" = "$MILESTONE" ]
+          done
+
+          ASSIGNED_COUNT="${#ASSIGNED_PRS[@]}"
+          ASSIGNED_NUMBERS="$(IFS=,; echo "${ASSIGNED_PRS[*]}")"
+
+          {
+            echo "assigned_count=$ASSIGNED_COUNT"
+            echo "assigned_numbers=$ASSIGNED_NUMBERS"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Assign and verify release bookkeeping
         if: ${{ !inputs.dry_run }}
         env:
@@ -340,6 +398,8 @@ jobs:
           NEXT_VERSION: ${{ steps.plan.outputs.next }}
           BRANCH: ${{ steps.plan.outputs.branch }}
           MILESTONE: ${{ steps.plan.outputs.milestone }}
+          MERGED_PR_COUNT: ${{ steps.merged_pull_requests.outputs.assigned_count }}
+          MERGED_PR_NUMBERS: ${{ steps.merged_pull_requests.outputs.assigned_numbers }}
         run: |
           URL="$(gh pr view "$PR_NUMBER" --repo "$REPO" --json url --jq .url)"
           {
@@ -349,6 +409,11 @@ jobs:
             echo "- Branch: \`$BRANCH\`"
             echo "- Milestone: \`$MILESTONE\`"
             echo "- Pull request: $URL"
+            if [ "$MERGED_PR_COUNT" -eq 0 ]; then
+              echo "- Previously unmilestoned merged pull requests assigned: none"
+            else
+              echo "- Previously unmilestoned merged pull requests assigned: #${MERGED_PR_NUMBERS//,/, #}"
+            fi
             echo "- Required checks: CI, file headers, and CLA explicitly dispatched"
             echo "- Merge and tag: not performed"
           } >> "$GITHUB_STEP_SUMMARY"
