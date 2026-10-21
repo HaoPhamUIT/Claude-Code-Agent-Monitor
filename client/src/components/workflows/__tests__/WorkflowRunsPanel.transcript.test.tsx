@@ -65,7 +65,11 @@ import { MemoryRouter } from "react-router";
 
 const { transcriptMock } = vi.hoisted(() => ({ transcriptMock: vi.fn() }));
 vi.mock("../../../lib/api", () => ({
-  api: { sessions: { transcript: transcriptMock } },
+  api: {
+    sessions: { transcript: transcriptMock },
+    // The interaction graph fetches on mount; an empty graph renders nothing.
+    workflows: { interactions: () => Promise.resolve({ columns: [], nodes: [], edges: [] }) },
+  },
 }));
 
 import { WorkflowRunsPanel, extractPromptResult } from "../WorkflowRunsPanel";

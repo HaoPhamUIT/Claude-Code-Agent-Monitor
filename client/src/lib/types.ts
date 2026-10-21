@@ -2493,6 +2493,56 @@ export interface WorkflowRunsResponse {
 
 /** Response shape of GET /api/workflows/runs/:runId - a single run plus its
  *  linked inner agents (as regular `Agent` rows) and their attributed events. */
+/** One inner agent in a run's interaction graph. */
+export interface WorkflowInteractionNode {
+  /** Inner agent id (the `agent-<id>.jsonl` basename). */
+  id: string;
+  /** Script-given label, e.g. `"QA: tests"`; null when the run gave none. */
+  label: string | null;
+  /** Phase title, or null for phase-less runs. */
+  phase: string | null;
+  /** Journal state (`"running"`, `"done"`, `"error"`, ...). */
+  state: string | null;
+  /** Start time (epoch ms), when known. */
+  startedAt: number | null;
+  /** End time (epoch ms), when known. */
+  endedAt: number | null;
+  /** Total tokens the agent used. */
+  tokens: number;
+  /** Tool calls the agent made. */
+  toolCalls: number;
+  /** Index into {@link WorkflowInteractions.columns}. */
+  column: number;
+  /** Tool calls in order, each with a one-line summary; `error` when the call failed. */
+  tools: { name: string; summary: string; at: number | null; error: boolean }[];
+  /** Basenames of files the agent wrote. */
+  writes: string[];
+  /** Result preview (truncated), null until the agent returns. */
+  result: string | null;
+}
+
+/** A hand-off between two inner agents. */
+export interface WorkflowInteractionEdge {
+  /** Source agent id. */
+  from: string;
+  /** Target agent id. */
+  to: string;
+  /** `file`: target read a file the source wrote; `result`: the source's result was forwarded into the target's prompt. */
+  kind: "file" | "result";
+  /** File basenames handed over (empty for `result`). */
+  files: string[];
+}
+
+/** GET /api/workflows/runs/:runId/interactions payload. */
+export interface WorkflowInteractions {
+  /** Graph columns in start order; `title` is the phase, null when phase-less. */
+  columns: { key: string; title: string | null }[];
+  /** Inner agents. */
+  nodes: WorkflowInteractionNode[];
+  /** Detected hand-offs. */
+  edges: WorkflowInteractionEdge[];
+}
+
 export interface WorkflowRunDetail {
   /** The run itself; see {@link WorkflowRun}. */
   workflow: WorkflowRun;

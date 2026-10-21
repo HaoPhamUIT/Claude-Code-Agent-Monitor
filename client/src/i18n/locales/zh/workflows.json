@@ -45,6 +45,20 @@
       "tokens": "Token",
       "tools": "工具",
       "duration": "时长"
+    },
+    "graph": {
+      "title": "Agent 交互",
+      "file": "文件传递",
+      "result": "结果传递",
+      "hint": "悬停 Agent 查看详情，点击固定",
+      "empty": "尚未检测到 Agent 之间的传递。",
+      "received": "接收自",
+      "sent": "传递给",
+      "wrote": "写入的文件",
+      "tools_one": "{{count}} 次工具调用",
+      "tools_other": "{{count}} 次工具调用",
+      "resultPreview": "结果",
+      "pinHint": "点击固定并滚动查看"
     }
   },
   "chartInfo": {

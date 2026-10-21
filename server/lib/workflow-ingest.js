@@ -407,9 +407,8 @@ function bucketTotal(tokensByModel) {
  * exists. Builds progress[] + aggregates in real time from the streaming
  * `<runDir>/journal.jsonl` (started/result events per agent) plus the growing
  * `<runDir>/agent-<id>.jsonl` transcripts (real token/tool/duration usage via
- * parseSubagentFile). Phase/label aren't available live (those come from the
- * terminal journal), so phaseTitle is null and label falls back to the agent's
- * prompt. The fast poll re-runs this as the files grow, so tokens/tools/agents
+ * parseSubagentFile). Each `started` event carries the agent's label and phase,
+ * so those show live too; label falls back to the agent's prompt when absent. The fast poll re-runs this as the files grow, so tokens/tools/agents
  * update live. Returns { row, tokens } or null.
  */
 async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, scriptPath) {
@@ -420,7 +419,7 @@ async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, script
   if (!fs.existsSync(dir)) return null;
 
   // Streaming journal: which agents started / finished (+ their result payload).
-  const started = new Set();
+  const started = new Map(); // agentId → { label, phase } from `started` events
   const doneResults = new Map();
   try {
     const jj = path.join(dir, "journal.jsonl");
@@ -434,8 +433,9 @@ async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, script
           continue;
         }
         if (!o || !o.agentId) continue;
-        if (o.type === "started") started.add(o.agentId);
-        else if (o.type === "result") doneResults.set(o.agentId, o.result);
+        if (o.type === "started") {
+          started.set(o.agentId, { label: o.label || null, phase: o.phase || null });
+        } else if (o.type === "result") doneResults.set(o.agentId, o.result);
       }
     }
   } catch {
@@ -473,7 +473,8 @@ async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, script
     const startedAt = parsed && parsed.startedAt ? parsed.startedAt : null;
     const endedAt = parsed && parsed.endedAt ? parsed.endedAt : null;
     const durationMs = startedAt && endedAt ? Date.parse(endedAt) - Date.parse(startedAt) : null;
-    const label = parsed && parsed.task ? shortLabel(parsed.task) : null;
+    const info = started.get(agentId) || {};
+    const label = info.label || (parsed && parsed.task ? shortLabel(parsed.task) : null);
     if (parsed && parsed.model && !model) model = parsed.model;
     totalTokens += aTok;
     totalToolCalls += tools.length;
@@ -490,9 +491,10 @@ async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, script
       type: "workflow_agent",
       agentId,
       label,
-      phaseTitle: null,
+      phaseTitle: info.phase || null,
       model: parsed ? parsed.model : null,
       state,
+      startedAt,
       tokens: aTok,
       toolCalls: tools.length,
       durationMs,
@@ -519,20 +521,20 @@ async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, script
           JSON.stringify({ imported: true, source: "workflow-live", workflow_run_id: runId })
         );
       }
-      stmts.setAgentWorkflow.run(runId, null, mapState(state), jsonlId);
+      stmts.setAgentWorkflow.run(runId, info.phase || null, mapState(state), jsonlId);
     } catch {
       /* one bad agent must not abort the live ingest */
     }
   }
 
   // Agents that have a `started` event but no transcript file yet (queued).
-  for (const agentId of started) {
+  for (const [agentId, info] of started) {
     if (agentFiles.includes(`agent-${agentId}.jsonl`)) continue;
     progress.push({
       type: "workflow_agent",
       agentId,
-      label: null,
-      phaseTitle: null,
+      label: info.label,
+      phaseTitle: info.phase,
       model: null,
       state: doneResults.has(agentId) ? "done" : "running",
       tokens: 0,
@@ -551,6 +553,7 @@ async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, script
     }
   }
   const durationMs = earliest && latest ? latest - earliest : null;
+  const livePhases = [...new Set([...started.values()].map((i) => i.phase).filter(Boolean))];
 
   stmts.upsertWorkflow.run(
     runId,
@@ -565,7 +568,7 @@ async function ingestLiveWorkflow(dbModule, sessionId, sessionDir, runId, script
     progress.length,
     totalTokens,
     totalToolCalls,
-    null,
+    livePhases.length ? JSON.stringify(livePhases.map((title) => ({ title }))) : null,
     JSON.stringify(progress),
     scriptPath || null,
     null,
@@ -798,6 +801,7 @@ module.exports = {
   ingestLiveWorkflow,
   workflowsMaxMtime,
   findSessionWorkflows,
+  resolveTranscriptPath,
   parseWorkflowJournal,
   ingestWorkflowJournal,
   detectRunningWorkflows,

@@ -409,6 +409,7 @@ import type {
   WorkflowRun,
   WorkflowRunsResponse,
   WorkflowRunDetail,
+  WorkflowInteractions,
 } from "./types";
 
 import { activeProvidersParam, activeSourcesParam } from "./dataScope";
@@ -1347,6 +1348,19 @@ export const api = {
       const qs = applyScope(new URLSearchParams());
       return request<WorkflowRunDetail>(
         `/workflows/runs/${encodeURIComponent(runId)}${qs.size ? `?${qs.toString()}` : ""}`
+      );
+    },
+    /**
+     * GET /api/workflows/runs/:runId/interactions - agent hand-off graph
+     * (files written then read, results forwarded into later prompts).
+     *
+     * @param runId The Workflow-tool run id.
+     * @returns {@link WorkflowInteractions} — columns, agent nodes and edges.
+     */
+    interactions: (runId: string) => {
+      const qs = applyScope(new URLSearchParams());
+      return request<WorkflowInteractions>(
+        `/workflows/runs/${encodeURIComponent(runId)}/interactions${qs.size ? `?${qs.toString()}` : ""}`
       );
     },
   },

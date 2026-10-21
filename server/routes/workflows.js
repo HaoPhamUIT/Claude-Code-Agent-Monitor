@@ -941,4 +941,28 @@ router.get("/runs/:runId", (req, res) => {
   }
 });
 
+// GET /runs/:runId/interactions — agent hand-off graph (files written then
+// read, results forwarded into later prompts), rebuilt from the run's on-disk
+// transcripts so it works while the run is still going.
+router.get("/runs/:runId/interactions", (req, res) => {
+  try {
+    const wf = includesProvider(requestScope(req), "claude")
+      ? stmts.getWorkflow.get(req.params.runId)
+      : null;
+    if (!wf) {
+      return res
+        .status(404)
+        .json({ error: { code: "WORKFLOW_NOT_FOUND", message: "Workflow run not found" } });
+    }
+    const { resolveTranscriptPath, findSessionWorkflows } = require("../lib/workflow-ingest");
+    const { buildInteractions } = require("../lib/workflow-interactions");
+    const session = stmts.getSession.get(wf.session_id);
+    const { sessionDir } = findSessionWorkflows(resolveTranscriptPath(session));
+    if (!sessionDir) return res.json({ columns: [], nodes: [], edges: [] });
+    res.json(buildInteractions(hydrateWorkflow(wf), sessionDir));
+  } catch (err) {
+    res.status(500).json({ error: { code: "WORKFLOW_INTERACTIONS_FAILED", message: err.message } });
+  }
+});
+
 module.exports = router;
