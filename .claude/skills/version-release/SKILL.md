@@ -28,7 +28,7 @@ Preview the exact plan locally without writes:
 node scripts/bump-release.js intermediate --dry-run --json
 ```
 
-The workflow creates one branch, one coordinated commit, the exact open milestone, and one pull request. Every automation-created commit ends with `Co-authored-by: hoangsonww <124531104+hoangsonww@users.noreply.github.com>`. It requires the repository setting **Allow GitHub Actions to create and approve pull requests**, checks that prerequisite before remote writes, and keeps default workflow permissions read-only. It explicitly dispatches CI, file-header, and CLA checks because repository-token PR creation does not emit secondary workflow events. It never merges, force-pushes, tags, or publishes. Existing default-branch CI publishes only after a maintainer merges the PR.
+The workflow creates one branch, one coordinated commit, the exact open milestone, and one pull request. It also assigns that milestone to included PRs merged after the current release tag when they do not already have a milestone, preserving existing assignments. Every automation-created commit ends with `Co-authored-by: hoangsonww <124531104+hoangsonww@users.noreply.github.com>`. It requires the repository setting **Allow GitHub Actions to create and approve pull requests**, checks that prerequisite before remote writes, and keeps default workflow permissions read-only. It explicitly dispatches CI, file-header, and CLA checks because repository-token PR creation does not emit secondary workflow events. It never merges, force-pushes, tags, or publishes. Existing default-branch CI publishes only after a maintainer merges the PR.
 
 ## CCAM release workflow
 
@@ -42,10 +42,11 @@ The workflow creates one branch, one coordinated commit, the exact open mileston
 8. Run `npm run extensions:sync` so every Claude/Codex plugin manifest and marketplace stays on the root release.
 9. Update release/version documentation only where the concrete version is intentionally shown.
 10. Create or reuse the open GitHub milestone named exactly `v<version>` for the new root version. Query all milestones before creating one. If an exact-title milestone already exists and is closed, stop and verify whether that version has already shipped instead of creating a duplicate.
-11. Identify the current open pull request containing the bump and assign it to that milestone. Read `closingIssuesReferences` from the PR and assign every linked closing issue to the same milestone. If the branch has no PR yet, create/reuse the milestone now and treat PR/issue assignment as an incomplete release step until the PR exists.
-12. Verify the milestone on the PR and every linked issue with fresh GitHub reads. Do not infer completion from a successful edit command alone.
-13. Run `npm run extensions:validate`, relevant tests/builds, and `ccam version` or `node bin/ccam.js version`.
-14. Confirm only independently shipped packages remain on their own versions; do not bump `client`, `mcp`, `monitoring`, or VS Code extension packages unless those products are also being released.
+11. Resolve pull requests merged into the default branch after the current release tag and through the captured pre-bump head. Assign only those with no milestone to `v<version>`, preserve every existing milestone assignment, and verify each write with a fresh read.
+12. Identify the current open pull request containing the bump and assign it to that milestone. Read `closingIssuesReferences` from the PR and assign every linked closing issue to the same milestone. If the branch has no PR yet, create/reuse the milestone now and treat PR/issue assignment as an incomplete release step until the PR exists.
+13. Verify the milestone on the PR and every linked issue with fresh GitHub reads. Do not infer completion from a successful edit command alone.
+14. Run `npm run extensions:validate`, relevant tests/builds, and `ccam version` or `node bin/ccam.js version`.
+15. Confirm only independently shipped packages remain on their own versions; do not bump `client`, `mcp`, `monitoring`, or VS Code extension packages unless those products are also being released.
 
 ## The authoritative surface list
 
@@ -113,6 +114,7 @@ existing="$(
 - If `existing` is empty, create the milestone with `gh api --method POST "repos/${repo}/milestones" -f title="${milestone}"`.
 - If it reports one open milestone, reuse it.
 - If it reports more than one match or a closed match, stop and resolve the repository state. Do not create another milestone with the same release title.
+- Assign every unmilestoned pull request included between the current release tag and the captured default-branch head. Preserve PRs that already have any milestone, and verify every changed PR with a fresh read.
 - Assign the PR with `gh pr edit "$pr" --milestone "$milestone"`.
 - Read linked issues with `gh pr view "$pr" --json closingIssuesReferences`. Assign each same-repository issue with `gh issue edit <number> --milestone "$milestone"`.
 - If a closing issue belongs to another repository, stop and report it. Milestones are repository-scoped, so do not silently create or reuse a similarly named milestone in another repository.
