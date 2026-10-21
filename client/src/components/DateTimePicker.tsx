@@ -217,7 +217,7 @@ export function DateTimePicker({
               ? "bg-accent text-white font-medium"
               : isToday
                 ? "bg-surface-3 text-accent font-medium"
-                : "hover:bg-surface-2 text-gray-300 hover:text-white"
+                : "hover:bg-surface-2 text-gray-300 hover:text-gray-100"
           }`}
       >
         {i}
@@ -244,7 +244,7 @@ export function DateTimePicker({
           {dateObj ? formatDisplay(dateObj) : placeholder}
         </span>
         {dateObj && (
-          <X className="w-3 h-3 text-gray-500 hover:text-white shrink-0" onClick={clearValue} />
+          <X className="w-3 h-3 text-gray-500 hover:text-gray-100 shrink-0" onClick={clearValue} />
         )}
       </button>
 
@@ -259,7 +259,7 @@ export function DateTimePicker({
               onClick={() =>
                 setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))
               }
-              className="p-1 hover:bg-surface-2 rounded text-gray-400 hover:text-white"
+              className="p-1 hover:bg-surface-2 rounded text-gray-400 hover:text-gray-100"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -271,7 +271,7 @@ export function DateTimePicker({
               onClick={() =>
                 setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))
               }
-              className="p-1 hover:bg-surface-2 rounded text-gray-400 hover:text-white"
+              className="p-1 hover:bg-surface-2 rounded text-gray-400 hover:text-gray-100"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -594,7 +594,7 @@ function PricingInfoTooltip({ provider = "claude" }: { provider?: "claude" | "cu
         <div
           ref={popoverRef}
           role="tooltip"
-          className="fixed z-50 p-3 bg-[#12121f] border border-[#2a2a4a] rounded-lg shadow-2xl text-[11px] text-gray-300 pointer-events-none"
+          className="fixed z-50 p-3 bg-surface-1 border border-border rounded-lg shadow-2xl text-[11px] text-gray-300 pointer-events-none"
           style={{ left: pos.left, top: pos.top, width: 320 }}
         >
           <p className="text-xs font-semibold text-gray-100 mb-2">{t(`${key}.title`)}</p>

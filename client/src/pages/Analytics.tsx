@@ -93,7 +93,7 @@ function ChartTooltip({ x, y, children }: { x: number; y: number; children: Reac
   const nearRight = x > window.innerWidth - 200;
   return (
     <div
-      className="fixed z-50 px-2 py-1.5 text-xs bg-[#12121f] border border-[#2a2a4a] rounded shadow-xl text-gray-200 pointer-events-none whitespace-nowrap"
+      className="fixed z-50 px-2 py-1.5 text-xs bg-surface-1 border border-border rounded shadow-xl text-gray-200 pointer-events-none whitespace-nowrap"
       style={{
         left: nearRight ? x - 14 : x + 14,
         top: y - 10,
@@ -141,33 +141,18 @@ function useTooltip() {
 
 /**
  * Fill color for a heatmap cell. Uses a log scale, so a few very busy days do not wash out the
- * rest, interpolated across an indigo-to-lavender ramp; empty days get a fixed dark color.
+ * rest, mixed from the empty-cell surface toward the brand accent so the ramp reads in both
+ * light and dark themes.
  *
  * @param count - Events on the day.
  * @param max - Busiest day's count.
  * @returns A CSS color.
  */
 function cellColor(count: number, max: number) {
-  if (count === 0) return "#161625";
-  // Log scale + RGB interpolation across a wide color ramp for maximum perceptual range
+  if (count === 0) return "rgb(var(--surface-5))";
   const t = Math.log(count + 1) / Math.log(Math.max(max, 1) + 1);
-  // Ramp: near-black indigo → deep indigo → bright indigo → lavender
-  type RGB = [number, number, number];
-  const stops: RGB[] = [
-    [22, 20, 60], // near-black indigo
-    [55, 48, 163], // deep indigo
-    [99, 102, 241], // bright indigo
-    [199, 210, 254], // lavender
-  ];
-  const scaled = t * (stops.length - 1);
-  const lo = Math.min(Math.floor(scaled), stops.length - 2);
-  const frac = scaled - lo;
-  const [r1, g1, b1]: RGB = stops[lo] as RGB;
-  const [r2, g2, b2]: RGB = stops[lo + 1] as RGB;
-  const r = Math.round(r1 + (r2 - r1) * frac);
-  const g = Math.round(g1 + (g2 - g1) * frac);
-  const b = Math.round(b1 + (b2 - b1) * frac);
-  return `rgb(${r},${g},${b})`;
+  const pct = Math.round(20 + 80 * t);
+  return `color-mix(in srgb, rgb(var(--accent)) ${pct}%, rgb(var(--surface-5)))`;
 }
 
 /**
@@ -563,7 +548,14 @@ function DonutChart({
     <div className="flex items-center justify-center gap-6 w-full">
       {node}
       <svg width={128} height={128} viewBox="0 0 128 128" className="flex-shrink-0">
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e1e2e" strokeWidth={stroke} />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          fill="none"
+          stroke="rgb(var(--surface-5))"
+          strokeWidth={stroke}
+        />
         {segments.map(({ label, value, color }, i) => {
           const dash = (value / total) * circumference;
           const gap = circumference - dash;

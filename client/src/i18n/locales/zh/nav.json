@@ -125,5 +125,7 @@
     "actionMuteTabby": "静音 Tabby",
     "actionReportIssue": "在 GitHub 上报告问题",
     "actionReleases": "查看发布说明"
-  }
+  },
+  "themeLight": "浅色模式",
+  "themeDark": "深色模式"
 }

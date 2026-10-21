@@ -70,10 +70,12 @@ import {
   Settings,
   Wifi,
   WifiOff,
-  Github,
   Globe,
   PanelLeftClose,
   PanelLeftOpen,
+  Leaf,
+  Moon,
+  Sun,
   RefreshCw,
   X,
   Plug,
@@ -112,6 +114,9 @@ const NAV_KEYS = [
   { to: "/run", icon: Play, key: "nav:run" },
   { to: "/settings", icon: Settings, key: "nav:settings" },
 ] as const;
+
+/** localStorage key for the color theme; read before first paint by index.html. */
+const THEME_KEY = "ccam-theme";
 
 /** localStorage key remembering whether the sidebar is collapsed. */
 const STORAGE_KEY = "sidebar-collapsed";
@@ -416,7 +421,19 @@ function CollapsedLanguagePicker({
  */
 export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
   const { t, i18n } = useTranslation();
-  const websiteLabel = "sonnguyenhoang.com";
+  const [dark, setDark] = useState(() => document.documentElement.dataset.theme === "dark");
+  /** Flip light/dark, persist the choice, and retheme via the root data attribute. */
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    if (next) document.documentElement.dataset.theme = "dark";
+    else delete document.documentElement.dataset.theme;
+    try {
+      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
+    } catch {
+      /* storage unavailable: the choice lasts for this page only */
+    }
+  };
   // Track whether nav items are clipped by overflow so we can render
   // chevron affordances pointing toward the hidden items. Recomputed on
   // scroll, resize, and any structural change (e.g. collapse toggle).
@@ -661,12 +678,17 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
       {/* Brand */}
       <div className="px-3 py-4 border-b border-border flex-shrink-0">
         <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3 px-2"}`}>
-          <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
-            <Activity className="w-4 h-4 text-accent" />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <h1 className="text-sm font-semibold text-gray-100 truncate">{t("nav:brand")}</h1>
+          {collapsed ? (
+            <div className="w-9 h-9 rounded-lg bg-brand-green/15 flex items-center justify-center flex-shrink-0">
+              <Leaf className="w-4 h-4 text-brand-green" />
+            </div>
+          ) : (
+            <div className="min-w-0 flex-1">
+              {/* White pad keeps the full-color logo legible in dark mode. */}
+              <div className="inline-block rounded-lg bg-white px-2 py-1">
+                <img src="/pharmacity-logo.png" alt="Pharmacity" className="h-9 w-auto" />
+              </div>
+              <h1 className="mt-2 text-sm font-bold text-gray-100 truncate">{t("nav:brand")}</h1>
               <p className="text-[11px] text-gray-500">{t("nav:brandSub")}</p>
             </div>
           )}
@@ -750,6 +772,29 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Theme toggle */}
+      <div className="px-2 pt-2 flex-shrink-0">
+        <button
+          onClick={toggleTheme}
+          className={`w-full h-10 rounded-lg border border-border bg-surface-2 transition-colors text-gray-300 hover:text-gray-100 hover:bg-surface-3 flex items-center ${
+            collapsed ? "justify-center" : "gap-2.5 px-3"
+          }`}
+          title={dark ? t("nav:themeLight") : t("nav:themeDark")}
+          aria-label={dark ? t("nav:themeLight") : t("nav:themeDark")}
+        >
+          {dark ? (
+            <Sun className="w-4 h-4 flex-shrink-0" />
+          ) : (
+            <Moon className="w-4 h-4 flex-shrink-0" />
+          )}
+          {!collapsed && (
+            <span className="text-[11px] font-semibold uppercase tracking-wide">
+              {dark ? t("nav:themeLight") : t("nav:themeDark")}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Collapse toggle */}
@@ -861,58 +906,6 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
             )}
           </button>
-        )}
-        {!collapsed && (
-          <div className="space-y-1.5">
-            <a
-              href="https://github.com/hoangsonww"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-2.5 rounded-lg border border-transparent px-2.5 py-2 text-xs text-gray-300 hover:text-gray-200 hover:bg-surface-3 hover:border-border transition-colors"
-              title={t("nav:github")}
-            >
-              <span className="w-6 h-6 rounded-md bg-surface-3 flex items-center justify-center">
-                <Github className="w-3.5 h-3.5 flex-shrink-0" />
-              </span>
-              <span className="font-medium">{t("nav:github")}</span>
-            </a>
-            <a
-              href="https://sonnguyenhoang.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-2.5 rounded-lg border border-transparent px-2.5 py-2 text-xs text-gray-300 hover:text-gray-200 hover:bg-surface-3 hover:border-border transition-colors"
-              title={websiteLabel}
-            >
-              <span className="w-6 h-6 rounded-md bg-surface-3 flex items-center justify-center">
-                <Globe className="w-3.5 h-3.5 flex-shrink-0" />
-              </span>
-              <span className="font-medium text-gray-300 truncate">{websiteLabel}</span>
-            </a>
-          </div>
-        )}
-        {collapsed && (
-          <div className="flex flex-col items-center gap-2 pt-0.5">
-            <a
-              href="https://github.com/hoangsonww"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-md border border-transparent flex items-center justify-center text-gray-400 hover:text-gray-300 hover:bg-surface-3 hover:border-border transition-colors"
-              title={t("nav:github")}
-              aria-label={t("nav:github")}
-            >
-              <Github className="w-3.5 h-3.5" />
-            </a>
-            <a
-              href="https://sonnguyenhoang.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-md border border-transparent flex items-center justify-center text-gray-400 hover:text-gray-300 hover:bg-surface-3 hover:border-border transition-colors"
-              title={websiteLabel}
-              aria-label={websiteLabel}
-            >
-              <Globe className="w-3.5 h-3.5" />
-            </a>
-          </div>
         )}
       </div>
 

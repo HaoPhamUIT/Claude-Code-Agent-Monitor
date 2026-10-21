@@ -153,7 +153,7 @@ function appendTooltipRow(parent: HTMLElement, label: string, value: string) {
   lbl.style.color = "#64748b";
   lbl.textContent = label;
   const val = document.createElement("span");
-  val.style.cssText = "color:#cbd5e1;font-weight:500";
+  val.style.cssText = "color:rgb(var(--gray-300));font-weight:500";
   val.textContent = value;
   row.appendChild(lbl);
   row.appendChild(val);
@@ -169,7 +169,7 @@ function appendTooltipRow(parent: HTMLElement, label: string, value: string) {
 function appendTooltipDescription(parent: HTMLElement, text: string) {
   const p = document.createElement("p");
   p.style.cssText =
-    "font-size:11px;color:#94a3b8;line-height:1.45;margin:8px 0 0;padding-top:8px;border-top:1px solid #2a2a4a";
+    "font-size:11px;color:#94a3b8;line-height:1.45;margin:8px 0 0;padding-top:8px;border-top:1px solid rgb(var(--border))";
   p.textContent = text;
   parent.appendChild(p);
 }
@@ -224,7 +224,7 @@ function showTooltip(
   el.textContent = "";
 
   const title = document.createElement("p");
-  title.style.cssText = "font-size:12px;font-weight:600;color:#e2e8f0;margin:0 0 2px";
+  title.style.cssText = "font-size:12px;font-weight:600;color:rgb(var(--gray-200));margin:0 0 2px";
   title.textContent = d.id;
   el.appendChild(title);
 
@@ -440,7 +440,7 @@ export function AgentCollaborationNetwork({
       .append("text")
       .attr("text-anchor", "middle")
       .attr("dy", (d) => rScale(d.total) + 14)
-      .attr("fill", "#cbd5e1")
+      .attr("fill", "rgb(var(--gray-300))")
       .attr("font-size", "10px")
       .attr("font-weight", "500")
       .attr("font-family", "Inter, sans-serif")
@@ -479,7 +479,8 @@ export function AgentCollaborationNetwork({
         if (tipEl) {
           tipEl.textContent = "";
           const title = document.createElement("p");
-          title.style.cssText = "font-size:12px;font-weight:600;color:#e2e8f0;margin:0 0 2px";
+          title.style.cssText =
+            "font-size:12px;font-weight:600;color:rgb(var(--gray-200));margin:0 0 2px";
           title.textContent = `${src.id} \u2192 ${tgt.id}`;
           tipEl.appendChild(title);
 
@@ -674,7 +675,7 @@ export function AgentCollaborationNetwork({
         ref={tooltipRef}
         role="tooltip"
         aria-hidden="true"
-        className="fixed z-50 px-3 py-2 bg-[#12121f] border border-[#2a2a4a] rounded-lg shadow-2xl pointer-events-none"
+        className="fixed z-50 px-3 py-2 bg-surface-1 border border-border rounded-lg shadow-2xl pointer-events-none"
         style={{
           opacity: 0,
           left: 0,

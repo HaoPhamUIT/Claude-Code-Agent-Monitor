@@ -5,10 +5,6 @@ info:
   title: Agent Dashboard for Claude Code, Cursor, and Codex API
   version: 2.4.0
   description: HTTP API for real-time Claude Code, Cursor, and Codex session monitoring, agent lifecycle tracking, analytics, provider-specific pricing, hooks ingestion, and workflow intelligence.
-  contact:
-    name: Son Nguyen
-    email: hoangson091104@gmail.com
-    url: https://github.com/hoangsonww/Claude-Code-Agent-Monitor
   license:
     name: MIT
     url: https://github.com/hoangsonww/Claude-Code-Agent-Monitor/blob/main/LICENSE

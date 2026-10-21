@@ -58,7 +58,15 @@
       "tools_one": "도구 호출 {{count}}회",
       "tools_other": "도구 호출 {{count}}회",
       "resultPreview": "결과",
-      "pinHint": "클릭하여 고정하고 스크롤"
+      "pinHint": "클릭하여 고정하고 스크롤",
+      "replay": "다시 보기",
+      "pause": "일시 정지",
+      "restart": "최종 상태로",
+      "speed": "재생 속도",
+      "fullscreen": "전체 화면",
+      "exitFullscreen": "전체 화면 종료",
+      "viewGraph": "그래프",
+      "viewOffice": "사무실"
     }
   },
   "chartInfo": {

@@ -125,5 +125,7 @@
     "actionMuteTabby": "Tắt tiếng Tabby",
     "actionReportIssue": "Báo lỗi trên GitHub",
     "actionReleases": "Xem ghi chú phát hành"
-  }
+  },
+  "themeLight": "Giao diện sáng",
+  "themeDark": "Giao diện tối"
 }

@@ -58,7 +58,15 @@
       "tools_one": "{{count}} llamada a herramienta",
       "tools_other": "{{count}} llamadas a herramientas",
       "resultPreview": "Resultado",
-      "pinHint": "Haz clic para fijar y desplazarte"
+      "pinHint": "Haz clic para fijar y desplazarte",
+      "replay": "Reproducir",
+      "pause": "Pausar",
+      "restart": "Volver al estado final",
+      "speed": "Velocidad de reproducción",
+      "fullscreen": "Pantalla completa",
+      "exitFullscreen": "Salir de pantalla completa",
+      "viewGraph": "Grafo",
+      "viewOffice": "Oficina"
     }
   },
   "chartInfo": {

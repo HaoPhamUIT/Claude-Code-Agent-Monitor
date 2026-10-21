@@ -109,7 +109,14 @@ export function TodoProgressPanel({ snapshot }: { snapshot: SessionTodoSnapshot 
         <div className="flex items-center justify-center">
           <div className="relative h-28 w-28">
             <svg width={112} height={112} viewBox="0 0 112 112" aria-hidden="true">
-              <circle cx={56} cy={56} r={46} fill="none" stroke="#303044" strokeWidth={12} />
+              <circle
+                cx={56}
+                cy={56}
+                r={46}
+                fill="none"
+                stroke="rgb(var(--surface-5))"
+                strokeWidth={12}
+              />
               {segments.map((segment) => {
                 const dash = (segment.value / snapshot.total) * circumference;
                 const currentOffset = offset;

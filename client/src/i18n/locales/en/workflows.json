@@ -58,7 +58,15 @@
       "tools_one": "{{count}} tool call",
       "tools_other": "{{count}} tool calls",
       "resultPreview": "Result",
-      "pinHint": "Click to pin and scroll"
+      "pinHint": "Click to pin and scroll",
+      "replay": "Replay",
+      "pause": "Pause",
+      "restart": "Back to final state",
+      "speed": "Replay speed",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Exit full screen",
+      "viewGraph": "Graph",
+      "viewOffice": "Office"
     }
   },
   "chartInfo": {

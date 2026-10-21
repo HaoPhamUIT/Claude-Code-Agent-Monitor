@@ -441,7 +441,14 @@ function SystemHealthTab() {
                 viewBox="0 0 96 96"
                 className="flex-shrink-0 cursor-default"
               >
-                <circle cx="48" cy="48" r="38" fill="none" stroke="#1e1e2e" strokeWidth="14" />
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="38"
+                  fill="none"
+                  stroke="rgb(var(--surface-5))"
+                  strokeWidth="14"
+                />
                 {(() => {
                   const r = 38,
                     cx = 48,
@@ -562,7 +569,14 @@ function SystemHealthTab() {
               raw={`Score: ${healthScore.toFixed(1)} / 100\n\n• Success Rate (40%): ${successRate.toFixed(1)}%\n• Cache Hit (25%): ${cacheHitRate.toFixed(1)}%\n• Error Avoidance (25%): ${(100 - errorRate).toFixed(1)}%\n• Memory Health (10%): ${(100 - heapUsedPct).toFixed(1)}%`}
             >
               <svg width="120" height="120" viewBox="0 0 120 120" className="cursor-default">
-                <circle cx="60" cy="60" r="48" fill="none" stroke="#1e1e2e" strokeWidth="10" />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="48"
+                  fill="none"
+                  stroke="rgb(var(--surface-5))"
+                  strokeWidth="10"
+                />
                 <circle
                   cx="60"
                   cy="60"
@@ -738,7 +752,7 @@ function SystemHealthTab() {
                       ? "#fbbf24"
                       : lane.count > 0
                         ? "#34d399"
-                        : "#1e1e2e";
+                        : "rgb(var(--surface-5))";
                 return (
                   <div
                     key={i}

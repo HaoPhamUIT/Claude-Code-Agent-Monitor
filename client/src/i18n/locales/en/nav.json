@@ -125,5 +125,7 @@
     "actionMuteTabby": "Mute Tabby",
     "actionReportIssue": "Report an issue on GitHub",
     "actionReleases": "View release notes"
-  }
+  },
+  "themeLight": "Light mode",
+  "themeDark": "Dark mode"
 }

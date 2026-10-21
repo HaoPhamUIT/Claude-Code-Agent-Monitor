@@ -157,7 +157,7 @@ export function TodoProgressIndicator({
           <div
             id={tooltipId}
             role="tooltip"
-            className="fixed z-[99999] w-[340px] max-w-[calc(100vw-24px)] rounded-lg border border-[#2a2a4a] bg-[#12121f] p-3 text-left shadow-2xl"
+            className="fixed z-[99999] w-[340px] max-w-[calc(100vw-24px)] rounded-lg border border-border bg-surface-1 p-3 text-left shadow-2xl"
             style={{ left: position.left, top: position.top }}
           >
             <div className="flex items-start gap-3">
@@ -182,7 +182,7 @@ export function TodoProgressIndicator({
             <StatusSummary progress={progress} />
 
             {progress.previewItems.length > 0 && (
-              <div className="mt-3 space-y-1.5 border-t border-[#2a2a4a] pt-2.5">
+              <div className="mt-3 space-y-1.5 border-t border-border pt-2.5">
                 {progress.previewItems.map((item) => (
                   <TaskPreviewRow key={`${item.agentId}-${item.id}`} item={item} />
                 ))}
@@ -194,7 +194,7 @@ export function TodoProgressIndicator({
               </div>
             )}
 
-            <div className="mt-3 flex items-center justify-between border-t border-[#2a2a4a] pt-2 text-[10px] text-gray-500">
+            <div className="mt-3 flex items-center justify-between border-t border-border pt-2 text-[10px] text-gray-500">
               <span>{taskSourceLabel(progress.sourceTool, t("taskProgress.title"))}</span>
               {progress.updatedAt && <span>{timeAgo(progress.updatedAt)}</span>}
             </div>
@@ -241,7 +241,7 @@ export function ProgressDonut({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#303044"
+          stroke="rgb(var(--surface-5))"
           strokeWidth={strokeWidth}
         />
         <circle

@@ -313,10 +313,10 @@ function InfoPopover({ calculationKey, interp, valueDisplay, metricPhraseKey }: 
         <div
           ref={popoverRef}
           role="tooltip"
-          className="fixed z-50 p-3 bg-[#12121f] border border-[#2a2a4a] rounded-lg shadow-2xl text-[11px] text-gray-300 pointer-events-none"
+          className="fixed z-50 p-3 bg-surface-1 border border-border rounded-lg shadow-2xl text-[11px] text-gray-300 pointer-events-none"
           style={{ left: coords.left, top: coords.top, width: POPOVER_W }}
         >
-          <div className="flex items-baseline gap-2 mb-2 pb-2 border-b border-[#2a2a4a]">
+          <div className="flex items-baseline gap-2 mb-2 pb-2 border-b border-border">
             <span className="text-base font-semibold text-gray-100 tabular-nums">
               {valueDisplay}
             </span>

@@ -144,7 +144,6 @@ import {
   FilterX,
   FolderOpen,
   FolderTree,
-  Github,
   Globe,
   Heart,
   History,
@@ -728,27 +727,6 @@ export function buildPaletteCommands(ctx: PaletteContext): PaletteCommand[] {
       run: ctx.clearRecents,
     },
     {
-      id: "action:github",
-      label: t("nav:github"),
-      detail: "github.com",
-      group: "actions",
-      icon: Github,
-      run: () =>
-        window.open(
-          "https://github.com/hoangsonww/Claude-Code-Agent-Monitor",
-          "_blank",
-          "noopener,noreferrer"
-        ),
-    },
-    {
-      id: "action:website",
-      label: t("nav:website"),
-      detail: "sonnguyenhoang.com",
-      group: "actions",
-      icon: Globe,
-      run: () => window.open("https://sonnguyenhoang.com", "_blank", "noopener,noreferrer"),
-    },
-    {
       id: "action:api-docs",
       label: t("nav:palette.actionApiDocs"),
       detail: "/api/docs",
@@ -756,34 +734,6 @@ export function buildPaletteCommands(ctx: PaletteContext): PaletteCommand[] {
       group: "actions",
       icon: BookOpen,
       run: () => window.open("/api/docs", "_blank", "noopener,noreferrer"),
-    },
-    {
-      id: "action:issues",
-      label: t("nav:palette.actionReportIssue"),
-      detail: "github.com",
-      keywords: ["bug", "issue", "feedback", "support"],
-      group: "actions",
-      icon: Github,
-      run: () =>
-        window.open(
-          "https://github.com/hoangsonww/Claude-Code-Agent-Monitor/issues/new",
-          "_blank",
-          "noopener,noreferrer"
-        ),
-    },
-    {
-      id: "action:releases",
-      label: t("nav:palette.actionReleases"),
-      detail: "github.com",
-      keywords: ["changelog", "version", "notes"],
-      group: "actions",
-      icon: History,
-      run: () =>
-        window.open(
-          "https://github.com/hoangsonww/Claude-Code-Agent-Monitor/releases",
-          "_blank",
-          "noopener,noreferrer"
-        ),
     },
   ];
 

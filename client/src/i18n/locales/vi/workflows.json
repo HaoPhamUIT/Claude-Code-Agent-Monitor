@@ -58,7 +58,15 @@
       "tools_one": "{{count}} lệnh gọi công cụ",
       "tools_other": "{{count}} lệnh gọi công cụ",
       "resultPreview": "Kết quả",
-      "pinHint": "Bấm để ghim và cuộn xem"
+      "pinHint": "Bấm để ghim và cuộn xem",
+      "replay": "Phát lại",
+      "pause": "Tạm dừng",
+      "restart": "Về trạng thái cuối",
+      "speed": "Tốc độ phát lại",
+      "fullscreen": "Toàn màn hình",
+      "exitFullscreen": "Thoát toàn màn hình",
+      "viewGraph": "Sơ đồ",
+      "viewOffice": "Văn phòng"
     }
   },
   "chartInfo": {

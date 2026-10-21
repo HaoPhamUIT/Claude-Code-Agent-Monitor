@@ -57,10 +57,21 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 // Latin-only subset (matches the app's previous Google Fonts request) so Vite
 // bundles just the latin WOFF2 per weight instead of every subset.
-import "@fontsource/inter/latin-400.css";
-import "@fontsource/inter/latin-500.css";
-import "@fontsource/inter/latin-600.css";
-import "@fontsource/inter/latin-700.css";
+import "@fontsource/manrope/latin-400.css";
+import "@fontsource/manrope/latin-ext-400.css";
+import "@fontsource/manrope/vietnamese-400.css";
+import "@fontsource/manrope/latin-500.css";
+import "@fontsource/manrope/latin-ext-500.css";
+import "@fontsource/manrope/vietnamese-500.css";
+import "@fontsource/manrope/latin-600.css";
+import "@fontsource/manrope/latin-ext-600.css";
+import "@fontsource/manrope/vietnamese-600.css";
+import "@fontsource/manrope/latin-700.css";
+import "@fontsource/manrope/latin-ext-700.css";
+import "@fontsource/manrope/vietnamese-700.css";
+import "@fontsource/manrope/latin-800.css";
+import "@fontsource/manrope/latin-ext-800.css";
+import "@fontsource/manrope/vietnamese-800.css";
 import "@fontsource/jetbrains-mono/latin-400.css";
 import "@fontsource/jetbrains-mono/latin-500.css";
 import App from "./App";
