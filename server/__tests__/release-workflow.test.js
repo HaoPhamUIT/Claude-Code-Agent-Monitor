@@ -101,6 +101,22 @@ describe("automated release bump workflow", () => {
     assert.match(scripts, /labels/);
   });
 
+  it("reuses a valid one-commit release branch after the default branch advances", () => {
+    const config = workflow(".github/workflows/release-bump.yml");
+    const reuse = config.jobs.prepare.steps.find(
+      (step) => step.name === "Verify reusable release branch"
+    );
+
+    assert.ok(reuse);
+    assert.match(reuse.run, /RELEASE_BASE="\$\(git rev-parse "\$REMOTE\^"\)"/);
+    assert.match(reuse.run, /git merge-base --is-ancestor "\$RELEASE_BASE" "\$DEFAULT_HEAD"/);
+    assert.match(reuse.run, /git rev-list --count "\$RELEASE_BASE\.\.\$REMOTE"/);
+    assert.match(reuse.run, /git rev-list --count "\$DEFAULT_HEAD\.\.\$REMOTE"/);
+    assert.match(reuse.run, /git merge-tree --write-tree "\$DEFAULT_HEAD" "\$REMOTE"/);
+    assert.doesNotMatch(reuse.run, /git merge-base --is-ancestor "\$DEFAULT_HEAD" "\$REMOTE"/);
+    assert.doesNotMatch(reuse.run, /git rev-parse "\$REMOTE\^"\)" = "\$DEFAULT_HEAD"/);
+  });
+
   it("backfills every unmilestoned merged PR only after milestone creation", () => {
     const config = workflow(".github/workflows/release-bump.yml");
     const steps = config.jobs.prepare.steps;

@@ -149,9 +149,11 @@ jobs:
           set -euo pipefail
           git fetch origin "refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
           REMOTE="origin/$BRANCH"
-          git merge-base --is-ancestor "$DEFAULT_HEAD" "$REMOTE"
+          RELEASE_BASE="$(git rev-parse "$REMOTE^")"
+          git merge-base --is-ancestor "$RELEASE_BASE" "$DEFAULT_HEAD"
+          [ "$(git rev-list --count "$RELEASE_BASE..$REMOTE")" -eq 1 ]
           [ "$(git rev-list --count "$DEFAULT_HEAD..$REMOTE")" -eq 1 ]
-          [ "$(git rev-parse "$REMOTE^")" = "$DEFAULT_HEAD" ]
+          git merge-tree --write-tree "$DEFAULT_HEAD" "$REMOTE" >/dev/null
           VERSION="$(git show "$REMOTE:package.json" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).version')"
           [ "$VERSION" = "$NEXT_VERSION" ]
           [ "$(git show -s --format=%s "$REMOTE")" = "chore(release): bump version to $NEXT_VERSION" ]
