@@ -9,7 +9,8 @@
  *   - Local-first dashboard. The dashboard server is expected to bind to
  *     localhost (or the user's intranet at most). To prevent a malicious
  *     webpage from drive-by spawning processes via CSRF, we enforce a
- *     same-origin / loopback-Origin check on every route here. curl from the
+ *     same-origin / loopback-Origin check on every route here (hosts listed in
+ *     DASHBOARD_ALLOWED_HOSTS are accepted too, for edge deployments). curl from the
  *     terminal (no Origin header) is allowed; browser requests must come from
  *     a localhost-ish origin.
  *   - cwd is sanitised: must be absolute and exist as a directory at request
@@ -25,6 +26,7 @@ const path = require("node:path");
 const claudeRuns = require("../lib/run-spawner");
 const codexRuns = require("../lib/codex-run-spawner");
 const { startCodexAppServer } = require("../lib/codex-app-server");
+const { allowedHostnames } = require("../lib/security");
 
 const router = Router();
 
@@ -41,7 +43,11 @@ function sameOriginGuard(req, res, next) {
   const checkHost = (raw) => {
     try {
       const u = new URL(raw);
-      return ALLOWED_ORIGIN_HOSTS.has(u.hostname);
+      // Loopback, plus hosts the operator allowlisted for a LAN/edge deployment.
+      return (
+        ALLOWED_ORIGIN_HOSTS.has(u.hostname) ||
+        allowedHostnames().includes(u.hostname.toLowerCase())
+      );
     } catch {
       return false;
     }
