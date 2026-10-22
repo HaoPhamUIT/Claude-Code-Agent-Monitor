@@ -1,0 +1,13 @@
+# Edge-only variant: Nginx in Docker, dashboard running natively on the host
+# (`npm start` bound to 127.0.0.1:4820) so Run Agent can use the host's
+# `claude` CLI and sign-in. Run Agent is reachable through this edge for anyone
+# holding the dashboard token; hook (re)install stays host-only.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.host-backend.yml \
+#     --profile edge up -d --no-deps nginx
+services:
+  nginx:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./deployments/nginx/host-backend:/etc/nginx/conf.d:ro

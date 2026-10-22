@@ -78,6 +78,21 @@ import App from "./App";
 import "./i18n";
 import "./index.css";
 
+// Sign-in link: `?token=<DASHBOARD_TOKEN>` is saved where lib/api.ts reads it
+// (localStorage "dashboard_token"), then removed from the address bar so it
+// does not linger in history or get shared with a copied URL.
+try {
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get("token");
+  if (token) {
+    localStorage.setItem("dashboard_token", token);
+    url.searchParams.delete("token");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+  }
+} catch {
+  /* storage blocked: the token can still be pasted via DevTools */
+}
+
 if ("serviceWorker" in navigator) {
   // Detect whether the page is already controlled by an SW *before* we
   // register. On a truly fresh install there is no controller yet, so the
