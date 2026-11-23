@@ -3113,6 +3113,35 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CcConfigMdItem'
+    CcConfigWorkflowsResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - scope
+              - name
+              - description
+              - file
+            properties:
+              scope:
+                type: string
+                enum:
+                  - user
+                  - project
+              name:
+                type: string
+                description: The script's `meta.name`; falls back to the file name without `.js`.
+              description:
+                type: string
+                description: The script's `meta.description`; empty when absent.
+              file:
+                type: string
+                description: Absolute path to the workflow script.
     CcConfigOutputStylesResponse:
       type: object
       required:
@@ -9209,6 +9238,46 @@ paths:
                     frontmatter:
                       description: Create a commit
                     preview: Commit the staged changes with a descriptive message...
+  /api/cc-config/workflows:
+    get:
+      tags:
+        - CcConfig
+      summary: List saved workflows
+      description: Read-only. Lists saved Workflow-tool scripts (<root>/workflows/*.js) under the user and/or project roots, with each script's `meta.name` and `meta.description` (the CLI exposes each as `/<meta.name>`). Unreadable files are skipped; degrades to empty on errors.
+      operationId: ccConfigGetWorkflows
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - user
+              - project
+              - all
+            default: all
+          description: 'Discovery scope: `user`, `project`, or `all` (default). Unrecognized values fall back to `all`.'
+          example: all
+        - name: cwd
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Override the working directory used to resolve the project root and project .claude dir. Defaults to the dashboard server's own cwd.
+          example: /repo
+      responses:
+        '200':
+          description: Workflows list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CcConfigWorkflowsResponse'
+              example:
+                items:
+                  - scope: project
+                    name: ship-it
+                    description: Ship the feature end-to-end
+                    file: /repo/.claude/workflows/ship.js
   /api/cc-config/output-styles:
     get:
       tags:

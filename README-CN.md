@@ -1199,6 +1199,7 @@ API 文档现已**全面覆盖**：每个后端路由都有文档说明（共 82
 | `GET` | `/api/cc-config/skills` | `<scope>/.claude/skills/<name>/SKILL.md` 中的技能及解析后的 Frontmatter；`?scope=user\|project\|all` |
 | `GET` | `/api/cc-config/agents` | `<scope>/.claude/agents/*.md` 中的 Subagent |
 | `GET` | `/api/cc-config/commands` | `<scope>/.claude/commands/*.md` 中的斜杠命令 |
+| `GET` | `/api/cc-config/workflows` | `<scope>/.claude/workflows/*.js` 中保存的 Workflow 脚本（`meta.name` / `meta.description`） |
 | `GET` | `/api/cc-config/output-styles` | `<scope>/.claude/output-styles/*.md` 中的输出样式 |
 | `GET` | `/api/cc-config/plugins` | 来自 `~/.claude/plugins/installed_plugins.json` 的已安装插件，与 Settings 中的 `enabledPlugins` 关联；每项包含 `contributes` 数量和 `plugin.json` 元数据 |
 | `GET` | `/api/cc-config/marketplaces` | 来自 `known_marketplaces.json` 的已注册市场，并补充各市场 `marketplace.json` 中的插件数、所有者和说明 |

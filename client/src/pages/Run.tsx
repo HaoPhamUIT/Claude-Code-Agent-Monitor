@@ -1215,30 +1215,56 @@ export function Run() {
         }
       })
       .catch(() => undefined);
-    // Discover user / project / plugin slash commands. The CLI's built-ins
-    // are appended client-side.
-    Promise.all([api.ccConfig.commands(), api.ccConfig.plugins()])
-      .then(([cmdsResp, pluginsResp]) => {
-        const userProject = cmdsResp.items.map<SlashCommand>((c) => ({
-          name: c.name,
-          description: (c.frontmatter?.description as string | undefined) || c.preview.slice(0, 80),
-          source: c.scope === "project" ? "project" : "user",
-          filePath: c.file,
-        }));
-        const pluginCmds: SlashCommand[] = [];
-        for (const p of pluginsResp.plugins || []) {
-          const cmds = p.contributes?.commands ?? 0;
-          if (!cmds || !p.installPath) continue;
-          // Plugin commands are listed by name only via the plugin's
-          // contributions count; we don't enumerate them per-file here. The
-          // user can still type the command and the autocomplete from
-          // user/project covers most cases. For richer enumeration we'd
-          // need a dedicated /plugins/:key/commands endpoint.
-        }
-        setSlashCommands([...userProject, ...pluginCmds, ...BUILTIN_SLASH_COMMANDS]);
-      })
-      .catch(() => undefined);
   }, []);
+
+  // Discover user / project slash commands, skills and saved workflows for the
+  // chosen working directory, re-read (debounced) whenever it changes. The
+  // CLI's built-ins are appended client-side. Plugin commands and skills are
+  // not enumerated: the user can still type them and they pass through verbatim.
+  useEffect(() => {
+    const dir = cwd.trim() || undefined;
+    let stale = false;
+    const tid = setTimeout(() => {
+      Promise.all([
+        api.ccConfig.commands(undefined, dir),
+        api.ccConfig.skills(undefined, dir),
+        api.ccConfig.workflows(dir),
+      ])
+        .then(([cmdsResp, skillsResp, wfResp]) => {
+          if (stale) return;
+          const userProject = cmdsResp.items.map<SlashCommand>((c) => ({
+            name: c.name,
+            description:
+              (c.frontmatter?.description as string | undefined) || c.preview.slice(0, 80),
+            source: c.scope === "project" ? "project" : "user",
+            filePath: c.file,
+          }));
+          // No filePath: the CLI resolves `/<skill>` and `/<workflow>` itself,
+          // so the prompt is sent verbatim instead of being template-expanded.
+          const skills = skillsResp.items.map<SlashCommand>((s) => ({
+            name: s.name,
+            description: (s.frontmatter?.description as string | undefined) || "",
+            source: s.scope,
+          }));
+          const workflows = wfResp.items.map<SlashCommand>((w) => ({
+            name: w.name,
+            description: w.description,
+            source: w.scope,
+          }));
+          // A skill and a workflow may share a name; list it once.
+          const seen = new Set<string>();
+          const discovered = [...userProject, ...skills, ...workflows].filter(
+            (c) => !seen.has(c.name) && !!seen.add(c.name)
+          );
+          setSlashCommands([...discovered, ...BUILTIN_SLASH_COMMANDS]);
+        })
+        .catch(() => undefined);
+    }, 300);
+    return () => {
+      stale = true;
+      clearTimeout(tid);
+    };
+  }, [cwd]);
 
   useEffect(() => {
     if (!provider) return;

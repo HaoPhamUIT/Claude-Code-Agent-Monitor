@@ -1199,6 +1199,7 @@ Read-only inspection of every Claude Code configuration surface, plus carefully-
 | `GET`    | `/api/cc-config/skills`             | Skills under `<scope>/.claude/skills/<name>/SKILL.md` with parsed frontmatter; `?scope=user\|project\|all` |
 | `GET`    | `/api/cc-config/agents`             | Subagents `<scope>/.claude/agents/*.md` |
 | `GET`    | `/api/cc-config/commands`           | Slash commands `<scope>/.claude/commands/*.md` |
+| `GET`    | `/api/cc-config/workflows`          | Saved Workflow scripts `<scope>/.claude/workflows/*.js` (`meta.name` / `meta.description`) |
 | `GET`    | `/api/cc-config/output-styles`      | Output styles `<scope>/.claude/output-styles/*.md` |
 | `GET`    | `/api/cc-config/plugins`            | Installed plugins from `~/.claude/plugins/installed_plugins.json`, joined with `enabledPlugins` from settings; each entry includes `contributes` (count of skills/agents/commands/hooks/output-styles inside the plugin's install dir) plus `plugin.json` metadata |
 | `GET`    | `/api/cc-config/marketplaces`       | Registered marketplaces from `known_marketplaces.json`, enriched with each marketplace's own `marketplace.json` (plugin count, owner, description) |

@@ -1180,6 +1180,7 @@ Kiểm tra chỉ đọc mọi bề mặt cấu hình Claude Code, kèm mutation 
 | `GET` | `/api/cc-config/skills` | Skill trong `<scope>/.claude/skills/<name>/SKILL.md` kèm frontmatter đã phân tích; `?scope=user\|project\|all` |
 | `GET` | `/api/cc-config/agents` | Subagent trong `<scope>/.claude/agents/*.md` |
 | `GET` | `/api/cc-config/commands` | Lệnh slash trong `<scope>/.claude/commands/*.md` |
+| `GET` | `/api/cc-config/workflows` | Script Workflow đã lưu trong `<scope>/.claude/workflows/*.js` (`meta.name` / `meta.description`) |
 | `GET` | `/api/cc-config/output-styles` | Output style trong `<scope>/.claude/output-styles/*.md` |
 | `GET` | `/api/cc-config/plugins` | Plugin đã cài từ `~/.claude/plugins/installed_plugins.json`, kết hợp `enabledPlugins` từ cài đặt; mỗi mục có `contributes` và metadata `plugin.json` |
 | `GET` | `/api/cc-config/marketplaces` | Marketplace từ `known_marketplaces.json`, được bổ sung `marketplace.json` riêng của từng marketplace |

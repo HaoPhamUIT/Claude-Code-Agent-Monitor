@@ -1187,6 +1187,7 @@ Inspección de lectura única de cada superficie de configuración de Claude Cod
 | `GET` | `/api/cc-config/skills` | Habilidades bajo `<scope>/.claude/skills/<name>/SKILL.md` con materia principal parseada; `?scope=user\|project\|all` |
 | `GET` | `/api/cc-config/agents` | Subagentes `<scope>/.claude/agents/*.md` |
 | `GET` | `/api/cc-config/commands` | Comandos de guiones bajos `<scope>/.claude/commands/*.md` |
+| `GET` | `/api/cc-config/workflows` | Scripts de Workflow guardados `<scope>/.claude/workflows/*.js` (`meta.name` / `meta.description`) |
 | `GET` | `/api/cc-config/output-styles` | Estilos de salida `<scope>/.claude/output-styles/*.md` |
 | `GET` | `/api/cc-config/plugins` | Plugins instalados desde `~/.claude/plugins/installed_plugins.json`, unidos con `enabledPlugins` de la configuración; cada entrada incluye `contributes` (cuenta de habilidades/agentes/comandos/gatillos/estilos de salida dentro de la carpeta de instalación del plugin) más metadatos `plugin.json` |
 | `GET` | `/api/cc-config/marketplaces` | Mercados registrados de `known_marketplaces.json`, enriquecidos con el propio `marketplace.json` de cada mercado (número de complementos, propietario, descripción) |

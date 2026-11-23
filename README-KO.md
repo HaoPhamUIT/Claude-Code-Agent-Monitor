@@ -1193,6 +1193,7 @@ Claude Code의 모든 설정 표면을 읽기 전용으로 검사할 수 있으�
 | `GET`    | `/api/cc-config/skills`             | 파싱된 프런트매터를 포함한 `<scope>/.claude/skills/<name>/SKILL.md` 아래의 스킬; `?scope=user\|project\|all` |
 | `GET`    | `/api/cc-config/agents`             | 서브에이전트 `<scope>/.claude/agents/*.md` |
 | `GET`    | `/api/cc-config/commands`           | 슬래시 명령어 `<scope>/.claude/commands/*.md` |
+| `GET`    | `/api/cc-config/workflows`          | 저장된 Workflow 스크립트 `<scope>/.claude/workflows/*.js` (`meta.name` / `meta.description`) |
 | `GET`    | `/api/cc-config/output-styles`      | 출력 스타일 `<scope>/.claude/output-styles/*.md` |
 | `GET`    | `/api/cc-config/plugins`            | `~/.claude/plugins/installed_plugins.json`의 설치된 플러그인을 설정의 `enabledPlugins`와 조인한 결과; 각 항목에는 `contributes`(플러그인 설치 디렉터리 내부의 스킬/에이전트/명령어/Hook/출력 스타일 개수)와 `plugin.json` 메타데이터가 포함됩니다 |
 | `GET`    | `/api/cc-config/marketplaces`       | `known_marketplaces.json`에 등록된 마켓플레이스로, 각 마켓플레이스 자체의 `marketplace.json`(플러그인 수, 소유자, 설명)으로 보강됩니다 |

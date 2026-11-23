@@ -226,6 +226,8 @@ vi.mock("../../lib/api", async (importOriginal) => {
       },
       ccConfig: {
         commands: r({ items: [] }),
+        skills: r({ items: [] }),
+        workflows: r({ items: [] }),
         plugins: r({ plugins: [] }),
         file: r({ content: "" }),
       },

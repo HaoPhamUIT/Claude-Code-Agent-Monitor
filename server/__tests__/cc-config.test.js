@@ -49,6 +49,11 @@ fs.writeFileSync(
   path.join(FAKE_PROJECT_CLAUDE, "agents", "proj-agent.md"),
   `---\nname: proj-agent\n---\n\nProject agent.`
 );
+fs.mkdirSync(path.join(FAKE_PROJECT_CLAUDE, "workflows"), { recursive: true });
+fs.writeFileSync(
+  path.join(FAKE_PROJECT_CLAUDE, "workflows", "ship.js"),
+  `export const meta = {\n  name: 'ship-it',\n  description: "Ship the feature, don't ask",\n}\nawait agent('x', { name: 'inner' })\n`
+);
 fs.writeFileSync(
   path.join(FAKE_PROJECT_CLAUDE, "settings.local.json"),
   JSON.stringify({
@@ -279,6 +284,17 @@ describe("/api/cc-config", () => {
       `/api/cc-config/skills?scope=user&cwd=${encodeURIComponent(FAKE_PROJECT)}`
     );
     assert.ok(body.items.every((s) => s.scope === "user"));
+  });
+
+  it("workflows reads meta name/description from the project's .claude/workflows", async () => {
+    const { status, body } = await fetchJson(
+      `/api/cc-config/workflows?cwd=${encodeURIComponent(FAKE_PROJECT)}`
+    );
+    assert.equal(status, 200);
+    assert.deepEqual(
+      body.items.map(({ scope, name, description }) => ({ scope, name, description })),
+      [{ scope: "project", name: "ship-it", description: "Ship the feature, don't ask" }]
+    );
   });
 
   it("agents parses tools/model frontmatter", async () => {

@@ -1988,10 +1988,15 @@ export const api = {
      * list endpoints below (`agents`, `commands`, `outputStyles`).
      *
      * @param scope Optional {@link CcScope} ("user"|"project"|"all") filter.
+     * @param cwd Project directory to read; defaults to the dashboard's own cwd.
      * @returns `{ items }` — the {@link CcMdItem} summaries for each skill.
      */
-    skills: (scope?: CcScope) =>
-      request<{ items: CcMdItem[] }>(`/cc-config/skills${scope ? `?scope=${scope}` : ""}`),
+    skills: (scope?: CcScope, cwd?: string) => {
+      const qs = new URLSearchParams();
+      if (scope) qs.set("scope", scope);
+      if (cwd) qs.set("cwd", cwd);
+      return request<{ items: CcMdItem[] }>(`/cc-config/skills?${qs}`);
+    },
     /**
      * GET /api/cc-config/agents - user and/or project subagent definitions.
      * @param scope Optional {@link CcScope} filter.
@@ -2002,10 +2007,24 @@ export const api = {
     /**
      * GET /api/cc-config/commands - user and/or project slash commands.
      * @param scope Optional {@link CcScope} filter.
+     * @param cwd Project directory to read; defaults to the dashboard's own cwd.
      * @returns `{ items }` — {@link CcMdItem} summaries for each command.
      */
-    commands: (scope?: CcScope) =>
-      request<{ items: CcMdItem[] }>(`/cc-config/commands${scope ? `?scope=${scope}` : ""}`),
+    commands: (scope?: CcScope, cwd?: string) => {
+      const qs = new URLSearchParams();
+      if (scope) qs.set("scope", scope);
+      if (cwd) qs.set("cwd", cwd);
+      return request<{ items: CcMdItem[] }>(`/cc-config/commands?${qs}`);
+    },
+    /**
+     * GET /api/cc-config/workflows - user and/or project saved Workflow scripts.
+     * @param cwd Project directory to read; defaults to the dashboard's own cwd.
+     * @returns `{ items }` — each script's `meta.name` and `meta.description`.
+     */
+    workflows: (cwd?: string) =>
+      request<{
+        items: { scope: "user" | "project"; name: string; description: string; file: string }[];
+      }>(`/cc-config/workflows${cwd ? `?cwd=${encodeURIComponent(cwd)}` : ""}`),
     /**
      * GET /api/cc-config/output-styles.
      * @param scope Optional {@link CcScope} filter.

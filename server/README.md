@@ -759,6 +759,7 @@ Reads — and carefully gated mutations for low-risk text-file artifacts — for
 | `GET`    | `/api/cc-config/skills`               | Skills with parsed frontmatter, `?scope=user\|project\|all` |
 | `GET`    | `/api/cc-config/agents`               | Subagents under `<scope>/.claude/agents/*.md` |
 | `GET`    | `/api/cc-config/commands`             | Slash commands under `<scope>/.claude/commands/*.md` |
+| `GET`    | `/api/cc-config/workflows`            | Saved Workflow scripts under `<scope>/.claude/workflows/*.js` (`meta.name` / `meta.description`) |
 | `GET`    | `/api/cc-config/output-styles`        | Output styles under `<scope>/.claude/output-styles/*.md` |
 | `GET`    | `/api/cc-config/plugins`              | Installed plugins joined with `enabledPlugins` + per-plugin `contributes` count + `plugin.json` metadata |
 | `GET`    | `/api/cc-config/marketplaces`         | `known_marketplaces.json` enriched with each marketplace's own `marketplace.json` |

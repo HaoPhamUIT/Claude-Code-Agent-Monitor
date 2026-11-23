@@ -79,6 +79,10 @@ router.get("/commands", (req, res) => {
   res.json({ items: cc.readCommands({ scope: scopeOf(req), cwd: cwdOf(req) }) });
 });
 
+router.get("/workflows", (req, res) => {
+  res.json({ items: cc.readWorkflows({ scope: scopeOf(req), cwd: cwdOf(req) }) });
+});
+
 router.get("/output-styles", (req, res) => {
   res.json({ items: cc.readOutputStyles({ scope: scopeOf(req), cwd: cwdOf(req) }) });
 });

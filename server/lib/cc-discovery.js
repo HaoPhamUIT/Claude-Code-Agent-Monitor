@@ -271,6 +271,40 @@ const readAgents = readSimpleMdSurface("agents");
 const readCommands = readSimpleMdSurface("commands");
 const readOutputStyles = readSimpleMdSurface("output-styles");
 
+// ── Workflows ───────────────────────────────────────────────────────────
+// Saved Workflow-tool scripts (<root>/workflows/*.js). The CLI exposes each
+// as `/<meta.name>`. The script must open with its `meta` literal, so the
+// first `name:` / `description:` in the file are the meta fields.
+
+function readWorkflowsAt(scope, claudeDir) {
+  const dir = path.join(claudeDir, "workflows");
+  const out = [];
+  for (const ent of listDir(dir)) {
+    if (!ent.name.endsWith(".js")) continue;
+    const file = path.join(dir, ent.name);
+    if (!isFileLike(ent, file)) continue;
+    const read = safeReadText(file);
+    if (!read) continue;
+    const field = (key) => read.text.match(new RegExp(`\\b${key}\\s*:\\s*(['"\`])(.*?)\\1`))?.[2];
+    out.push({
+      scope,
+      name: field("name") || ent.name.replace(/\.js$/, ""),
+      description: field("description") || "",
+      file,
+    });
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function readWorkflows(opts = {}) {
+  const out = [];
+  if (opts.scope !== "project") out.push(...readWorkflowsAt("user", getClaudeHome()));
+  if (opts.scope !== "user") {
+    out.push(...readWorkflowsAt("project", getProjectClaudeDir(opts.cwd)));
+  }
+  return out;
+}
+
 // ── Plugins ─────────────────────────────────────────────────────────────
 
 function countMdIn(dir) {
@@ -829,6 +863,7 @@ module.exports = {
   readSkills,
   readAgents,
   readCommands,
+  readWorkflows,
   readOutputStyles,
   readPlugins,
   readMcpServers,

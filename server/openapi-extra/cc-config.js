@@ -926,6 +926,31 @@ const schemas = {
       items: { type: "array", items: { $ref: "#/components/schemas/CcConfigMdItem" } },
     },
   },
+  CcConfigWorkflowsResponse: {
+    type: "object",
+    required: ["items"],
+    properties: {
+      items: {
+        type: "array",
+        items: {
+          type: "object",
+          required: ["scope", "name", "description", "file"],
+          properties: {
+            scope: { type: "string", enum: ["user", "project"] },
+            name: {
+              type: "string",
+              description: "The script's `meta.name`; falls back to the file name without `.js`.",
+            },
+            description: {
+              type: "string",
+              description: "The script's `meta.description`; empty when absent.",
+            },
+            file: { type: "string", description: "Absolute path to the workflow script." },
+          },
+        },
+      },
+    },
+  },
   CcConfigOutputStylesResponse: {
     type: "object",
     required: ["items"],
@@ -1351,6 +1376,37 @@ const paths = {
                     truncated: false,
                     frontmatter: { description: "Create a commit" },
                     preview: "Commit the staged changes with a descriptive message...",
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+
+  "/api/cc-config/workflows": {
+    get: {
+      tags: ["CcConfig"],
+      summary: "List saved workflows",
+      description:
+        "Read-only. Lists saved Workflow-tool scripts (<root>/workflows/*.js) under the user and/or project roots, with each script's `meta.name` and `meta.description` (the CLI exposes each as `/<meta.name>`). Unreadable files are skipped; degrades to empty on errors.",
+      operationId: "ccConfigGetWorkflows",
+      parameters: [scopeParam, cwdParam],
+      responses: {
+        200: {
+          description: "Workflows list.",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/CcConfigWorkflowsResponse" },
+              example: {
+                items: [
+                  {
+                    scope: "project",
+                    name: "ship-it",
+                    description: "Ship the feature end-to-end",
+                    file: "/repo/.claude/workflows/ship.js",
                   },
                 ],
               },

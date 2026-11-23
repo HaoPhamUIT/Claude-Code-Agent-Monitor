@@ -1467,6 +1467,7 @@ GET /api/cc-config/overview
 GET /api/cc-config/skills?scope=user|project|all
 GET /api/cc-config/agents
 GET /api/cc-config/commands
+GET /api/cc-config/workflows
 GET /api/cc-config/output-styles
 GET /api/cc-config/plugins
 GET /api/cc-config/marketplaces
