@@ -5,7 +5,8 @@
  * that stand in for real sign-in commands: a device-code login, a login that
  * waits for a pasted redirect URL, one that never ends, and status/sign-out
  * commands. Covers the off-by-default behaviour, config validation, link and
- * code extraction, the job lifecycle, input validation and the origin guard.
+ * code extraction, the job lifecycle, input validation, required connections,
+ * the signed-in marker and the origin guard.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 
@@ -371,6 +372,87 @@ describe("/api/connections", () => {
     const noJob = await fetchJson("/api/connections/device/job");
     assert.equal(noJob.status, 404);
     assert.equal(noJob.body.error.code, "ENOJOB");
+  });
+
+  it("says which connections are required, deciding conditional ones at request time", async () => {
+    writeConfig({
+      connections: [
+        { id: "always", name: "Always", required: true, login: [NODE, DEVICE] },
+        {
+          id: "yes",
+          name: "When yes",
+          required: { when: [NODE, "-e", "process.exit(0)"] },
+          login: [NODE, DEVICE],
+        },
+        {
+          id: "no",
+          name: "When no",
+          required: { when: [NODE, "-e", "process.exit(3)"] },
+          login: [NODE, DEVICE],
+        },
+        { id: "plain", name: "Optional", login: [NODE, DEVICE] },
+      ],
+    });
+    const { body } = await fetchJson("/api/connections");
+    assert.equal(body.error, null);
+    assert.deepEqual(
+      body.items.map((i) => [i.id, i.required]),
+      [
+        ["always", true],
+        ["yes", true],
+        ["no", false],
+        ["plain", false],
+      ]
+    );
+    // The cheap probe runs no command, so only unconditional requirements show.
+    const quick = await fetchJson("/api/connections?status=0");
+    assert.deepEqual(
+      quick.body.items.map((i) => i.required),
+      [true, false, false, false]
+    );
+
+    writeConfig({ connections: [{ id: "a", name: "x", required: "yes", login: ["true"] }] });
+    assert.match((await fetchJson("/api/connections")).body.error, /required must be/);
+    writeConfig({
+      connections: [{ id: "a", name: "x", required: { when: "sh" }, login: ["true"] }],
+    });
+    assert.match((await fetchJson("/api/connections")).body.error, /required\.when/);
+    writeConfig({
+      connections: [{ id: "a", name: "x", login: { command: ["true"], signedInPattern: "(" } }],
+    });
+    assert.match((await fetchJson("/api/connections")).body.error, /signedInPattern/);
+  });
+
+  it("marks a job signed in once the operator's pattern appears, and reports its latest line", async () => {
+    const AFTER = script(
+      "after-sign-in.js",
+      `console.log("Enter the code WXYZ9876 at https://login.example.com/device");
+setTimeout(() => console.log("  ✔ signed in: carol"), 100);
+setTimeout(() => console.log("cloning repo-a"), 200);
+setTimeout(() => process.exit(0), 600);`
+    );
+    writeConfig({
+      connections: [
+        {
+          id: "work",
+          name: "Work",
+          login: { command: [NODE, AFTER], signedInPattern: "✔ signed in" },
+        },
+        { id: "plain", name: "Plain", login: [NODE, DEVICE] },
+      ],
+    });
+    await fetchJson("/api/connections/work/login", { method: "POST" });
+    const prompted = await waitForJob("work", (j) => j.code !== null);
+    assert.equal(prompted.signedIn, false);
+    const cloning = await waitForJob("work", (j) => j.progress === "cloning repo-a");
+    assert.equal(cloning.state, "running");
+    assert.equal(cloning.signedIn, true);
+
+    // Without a pattern a job never claims to be signed in.
+    await fetchJson("/api/connections/plain/login", { method: "POST" });
+    const plain = await waitForJob("plain", (j) => j.state !== "running");
+    assert.equal(plain.signedIn, false);
+    assert.equal(plain.progress, "Signed in.");
   });
 
   it("rejects cross-origin browser requests, like Run Agent", async () => {

@@ -1592,7 +1592,12 @@ The operator's file:
       "name": "Azure DevOps",
       "description": "Git, pull requests and work items with your own account.",
       "status": ["az", "account", "show", "--query", "user.name", "-o", "tsv"],
-      "login": ["az", "login", "--use-device-code"],
+      "required": { "when": ["sh", "-c", "test -n \"$PROJECT\""] },
+      "login": {
+        "command": ["connect-and-clone"],
+        "signedInPattern": "^Signed in as ",
+        "timeoutSeconds": 1800
+      },
       "logout": ["az", "logout"]
     },
     {
@@ -1612,10 +1617,12 @@ The operator's file:
 | --- | --- | --- |
 | `id` | yes | Lowercase letters, digits and dashes (1–40 characters); unique in the file |
 | `name` / `description` | `name` | Shown on the page as written (not translated) |
-| `login` | yes | A command (argv array), or `{ command, input?, codePattern?, timeoutSeconds? }` |
+| `login` | yes | A command (argv array), or `{ command, input?, codePattern?, signedInPattern?, timeoutSeconds? }` |
 | `login.input` | no | `true` or `{ label?, placeholder? }`: the page shows a field, and one pasted line is written to the command's stdin |
 | `login.codePattern` | no | Regular expression with one capture group for the device code. Default: the word after `code` |
+| `login.signedInPattern` | no | Regular expression (multiline) that the output matches once the sign-in itself is done. The job then reports `signedIn: true`, and the page replaces the sign-in steps with the command's latest line (`progress`) while it finishes, for example while it clones repositories |
 | `login.timeoutSeconds` | no | 10–3600, default 600. The command is stopped after this long |
+| `required` | no | `true`, or `{ "when": [command] }` (required when that command exits 0, checked on every full list). A required connection that is not signed in, or whose sign-in job is still running or ended in failure, opens a dialog over every page until it is done; the person can choose **Later** for the rest of the browser session. `?status=0` reports only unconditional requirements |
 | `status` | no | Command that exits 0 when signed in; its first output line is shown as the account |
 | `logout` | no | Sign-out command; without it the page offers no **Disconnect** |
 

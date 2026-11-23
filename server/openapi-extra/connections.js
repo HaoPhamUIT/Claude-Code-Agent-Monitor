@@ -110,6 +110,8 @@ const schemas = {
       "urls",
       "code",
       "acceptsInput",
+      "signedIn",
+      "progress",
       "inputLabel",
       "inputPlaceholder",
     ],
@@ -147,6 +149,16 @@ const schemas = {
         type: "boolean",
         description: "True while the command is running and the connection declares `login.input`.",
       },
+      signedIn: {
+        type: "boolean",
+        description:
+          "True once the output matches the connection's `login.signedInPattern`: the sign-in is done and the command may still be finishing (cloning repositories, say). Always false without a pattern.",
+      },
+      progress: {
+        type: "string",
+        description:
+          "The last non-empty output line (at most 300 characters); empty when there is none.",
+      },
       inputLabel: { type: "string", description: "Operator's label for the paste field." },
       inputPlaceholder: {
         type: "string",
@@ -161,7 +173,7 @@ const schemas = {
   },
   ConnectionItem: {
     type: "object",
-    required: ["id", "name", "description", "canLogout", "status", "job"],
+    required: ["id", "name", "description", "canLogout", "required", "status", "job"],
     properties: {
       id: { type: "string" },
       name: { type: "string" },
@@ -169,6 +181,11 @@ const schemas = {
       canLogout: {
         type: "boolean",
         description: "True when the connection defines a sign-out command.",
+      },
+      required: {
+        type: "boolean",
+        description:
+          "True when the dashboard asks for this connection before anything else: `required: true` in the operator's file, or `required.when` exited 0. With `status=0` only unconditional requirements count.",
       },
       status: {
         allOf: [{ $ref: "#/components/schemas/ConnectionStatus" }],
@@ -246,6 +263,7 @@ const paths = {
                     name: "Azure DevOps",
                     description: "Git, pull requests and work items with your own account.",
                     canLogout: true,
+                    required: true,
                     status: { connected: true, account: "alice@example.com", detail: "" },
                     job: null,
                   },

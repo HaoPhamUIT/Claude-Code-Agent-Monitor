@@ -13,7 +13,8 @@
     "connectedAs": "已连接：{{account}}",
     "notConnected": "未连接",
     "unknown": "状态未知",
-    "signingIn": "正在登录…"
+    "signingIn": "正在登录…",
+    "finishing": "正在完成…"
   },
   "actions": {
     "connect": "连接",
@@ -33,7 +34,8 @@
     "pasteHint": "批准后，浏览器可能会跳转到一个无法加载的页面。这是正常现象：请复制地址栏中的完整地址并粘贴到此处。",
     "otherLinks": "登录命令输出的其他链接",
     "waiting": "正在等待您完成登录…",
-    "starting": "正在启动登录…"
+    "starting": "正在启动登录…",
+    "finishing": "已登录，正在完成设置…"
   },
   "result": {
     "succeeded": "已登录。",
@@ -46,5 +48,14 @@
     "inputFailed": "无法发送地址：{{message}}",
     "cancelFailed": "无法取消登录：{{message}}",
     "disconnectFailed": "无法断开连接：{{message}}"
+  },
+  "onboarding": {
+    "title": "最后一步：连接你的账户",
+    "body": "你的工作区需要先连接这些账户，才能拉取项目代码。请使用你自己的账户登录，代理将以你的权限工作。",
+    "laterHint": "你也可以稍后在“账户”页面连接。",
+    "later": "稍后",
+    "doneTitle": "一切就绪",
+    "doneBody": "账户已连接，你的工作区已准备就绪。",
+    "enter": "打开仪表板"
   }
 }

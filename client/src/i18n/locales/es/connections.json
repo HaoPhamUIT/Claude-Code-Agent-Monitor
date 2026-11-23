@@ -13,7 +13,8 @@
     "connectedAs": "Conectado como {{account}}",
     "notConnected": "Sin conectar",
     "unknown": "Estado desconocido",
-    "signingIn": "Iniciando sesión…"
+    "signingIn": "Iniciando sesión…",
+    "finishing": "Terminando…"
   },
   "actions": {
     "connect": "Conectar",
@@ -33,7 +34,8 @@
     "pasteHint": "Después de aprobar, el navegador puede llegar a una página que no carga. Es lo esperado: copia la dirección completa de la barra de direcciones y pégala aquí.",
     "otherLinks": "Otros enlaces que imprimió el comando de inicio de sesión",
     "waiting": "Esperando a que termines de iniciar sesión…",
-    "starting": "Iniciando el inicio de sesión…"
+    "starting": "Iniciando el inicio de sesión…",
+    "finishing": "Sesión iniciada. Terminando la configuración…"
   },
   "result": {
     "succeeded": "Sesión iniciada.",
@@ -46,5 +48,14 @@
     "inputFailed": "No se pudo enviar la dirección: {{message}}",
     "cancelFailed": "No se pudo cancelar el inicio de sesión: {{message}}",
     "disconnectFailed": "No se pudo desconectar: {{message}}"
+  },
+  "onboarding": {
+    "title": "Último paso: conecta tus cuentas",
+    "body": "Tu espacio de trabajo necesita estas cuentas antes de poder descargar el código del proyecto. Inicia sesión con tu propia cuenta; los agentes trabajarán con tus permisos.",
+    "laterHint": "Puedes conectarlas más tarde desde la página Cuentas.",
+    "later": "Más tarde",
+    "doneTitle": "Todo listo",
+    "doneBody": "Tus cuentas están conectadas y tu espacio de trabajo está listo.",
+    "enter": "Abrir el panel"
   }
 }

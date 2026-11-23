@@ -13,7 +13,14 @@
  *
  * A login is a job: the command's output is kept (ANSI stripped), sign-in links
  * and a device code are extracted from it, and the job ends when the command
- * exits, is cancelled, or times out. One job per connection at a time.
+ * exits, is cancelled, or times out. One job per connection at a time. A login
+ * may keep working after the sign-in itself (cloning repositories, say); the
+ * operator's `signedInPattern` tells the page when to stop showing the sign-in
+ * steps and show the command's latest line instead.
+ *
+ * A connection can be `required` (always, or when an operator command exits 0).
+ * The dashboard then asks for it before anything else, until it is connected
+ * and its sign-in job has finished.
  *
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
@@ -116,6 +123,25 @@ function parseConnection(raw, index) {
       `${where}.login.codePattern must be a regular expression with one capture group`
     );
   }
+  let signedInRegex = null;
+  if (loginRaw.signedInPattern !== undefined) {
+    try {
+      if (typeof loginRaw.signedInPattern !== "string" || loginRaw.signedInPattern.length > 300) {
+        throw new Error("bad");
+      }
+      signedInRegex = new RegExp(loginRaw.signedInPattern, "m");
+    } catch {
+      throw new Error(`${where}.login.signedInPattern must be a regular expression`);
+    }
+  }
+  let required = { always: false, when: null };
+  if (raw.required === true) {
+    required = { always: true, when: null };
+  } else if (raw.required && typeof raw.required === "object" && !Array.isArray(raw.required)) {
+    required = { always: false, when: asCommand(raw.required.when, `${where}.required.when`) };
+  } else if (raw.required !== undefined && raw.required !== false) {
+    throw new Error(`${where}.required must be true, false or { "when": [command] }`);
+  }
   let input = null;
   if (loginRaw.input) {
     const spec = loginRaw.input === true ? {} : loginRaw.input;
@@ -133,10 +159,12 @@ function parseConnection(raw, index) {
     description: asText(raw.description, `${where}.description`, 500),
     status: raw.status === undefined ? null : asCommand(raw.status, `${where}.status`),
     logout: raw.logout === undefined ? null : asCommand(raw.logout, `${where}.logout`),
+    required,
     login: {
       command: asCommand(loginRaw.command, `${where}.login.command`),
       timeoutMs: timeout * 1000,
       codeRegex,
+      signedInRegex,
       input,
     },
   };
@@ -283,6 +311,17 @@ function runOnce(command, timeoutMs) {
  * @returns {Promise<{ connected: boolean|null, account: string, detail: string }>}
  *   `connected` is null when the connection has no status command.
  */
+/**
+ * Whether the dashboard should ask for this connection before anything else.
+ * A `when` command decides at request time: exit 0 means required.
+ */
+async function isRequired(connection) {
+  if (connection.required.always) return true;
+  if (!connection.required.when) return false;
+  const r = await runOnce(connection.required.when, STATUS_TIMEOUT_MS);
+  return r.code === 0;
+}
+
 async function checkStatus(connection) {
   if (!connection.status) return { connected: null, account: "", detail: "" };
   const r = await runOnce(connection.status, STATUS_TIMEOUT_MS);
@@ -292,10 +331,20 @@ async function checkStatus(connection) {
 
 // ── Login jobs ────────────────────────────────────────────────────────────────
 
+/** The last non-empty output line, for showing what a login is doing now. */
+function lastLine(text) {
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  return lines.length ? lines[lines.length - 1].slice(0, 300) : "";
+}
+
 function publicJob(job) {
   if (!job) return null;
   const text = stripEscapes(job.raw);
   const code = job.connection.login.codeRegex.exec(text);
+  const { signedInRegex } = job.connection.login;
   return {
     id: job.id,
     connectionId: job.connection.id,
@@ -307,6 +356,8 @@ function publicJob(job) {
     urls: extractUrls(job.raw),
     code: code && code[1] ? code[1] : null,
     acceptsInput: Boolean(job.connection.login.input) && job.state === "running",
+    signedIn: Boolean(signedInRegex && signedInRegex.test(text)),
+    progress: lastLine(text),
     inputLabel: job.connection.login.input ? job.connection.login.input.label : "",
     inputPlaceholder: job.connection.login.input ? job.connection.login.input.placeholder : "",
   };
@@ -470,7 +521,8 @@ async function logout(id) {
 
 /**
  * @param {{ withStatus?: boolean }} [options] `withStatus: false` skips the
- *   status commands (used to decide whether to show the page at all).
+ *   status commands (used to decide whether to show the page at all); `required`
+ *   is then true only for connections that are always required.
  */
 async function listConnections({ withStatus = true } = {}) {
   const config = loadConfig();
@@ -480,6 +532,7 @@ async function listConnections({ withStatus = true } = {}) {
       name: c.name,
       description: c.description,
       canLogout: Boolean(c.logout),
+      required: withStatus ? await isRequired(c) : c.required.always,
       status: withStatus ? await checkStatus(c) : null,
       job: publicJob(currentJob(c.id)),
     }))

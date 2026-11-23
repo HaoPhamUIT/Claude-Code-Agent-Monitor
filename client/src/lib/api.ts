@@ -3804,6 +3804,10 @@ export interface ConnectionJob {
   code: string | null;
   /** True while the command is running and waits for a pasted line. */
   acceptsInput: boolean;
+  /** True once the operator's signed-in marker appeared: the sign-in is done, the command may still be finishing. */
+  signedIn: boolean;
+  /** The command's latest output line; empty when it printed nothing. */
+  progress: string;
   /** The operator's label for the paste field; may be empty. */
   inputLabel: string;
   /** The operator's placeholder for the paste field; may be empty. */
@@ -3820,6 +3824,8 @@ export interface ConnectionItem {
   description: string;
   /** True when the connection defines a sign-out command. */
   canLogout: boolean;
+  /** True when the dashboard asks for this connection before anything else. */
+  required: boolean;
   /** Sign-in status; null when the list was requested without status. */
   status: ConnectionStatus | null;
   /** The running or most recent sign-in job; null when there is none. */

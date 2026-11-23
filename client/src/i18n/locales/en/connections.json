@@ -13,7 +13,8 @@
     "connectedAs": "Connected as {{account}}",
     "notConnected": "Not connected",
     "unknown": "Status unknown",
-    "signingIn": "Signing in…"
+    "signingIn": "Signing in…",
+    "finishing": "Finishing…"
   },
   "actions": {
     "connect": "Connect",
@@ -33,7 +34,8 @@
     "pasteHint": "After you approve, your browser may land on a page that fails to load. That is expected: copy the full address from the address bar and paste it here.",
     "otherLinks": "Other links the sign-in command printed",
     "waiting": "Waiting for you to finish signing in…",
-    "starting": "Starting the sign-in…"
+    "starting": "Starting the sign-in…",
+    "finishing": "Signed in. Finishing setup…"
   },
   "result": {
     "succeeded": "Signed in.",
@@ -46,5 +48,14 @@
     "inputFailed": "Could not send the address: {{message}}",
     "cancelFailed": "Could not cancel the sign-in: {{message}}",
     "disconnectFailed": "Could not disconnect: {{message}}"
+  },
+  "onboarding": {
+    "title": "One last step: connect your accounts",
+    "body": "Your workspace needs these accounts before it can fetch your project's code. Sign in with your own account; agents will then work with your permissions.",
+    "laterHint": "You can connect later from the Accounts page.",
+    "later": "Later",
+    "doneTitle": "You're all set",
+    "doneBody": "Your accounts are connected and your workspace is ready.",
+    "enter": "Open the dashboard"
   }
 }

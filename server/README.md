@@ -814,9 +814,9 @@ Sign-in flows an operator defines in the JSON file named by `DASHBOARD_CONNECTIO
 
 | Method   | Path                              | Description |
 | -------- | --------------------------------- | ----------- |
-| `GET`    | `/api/connections`                | `{ enabled, error, items }`; each item carries its sign-in status and current job. `?status=0` skips the status commands |
+| `GET`    | `/api/connections`                | `{ enabled, error, items }`; each item carries its sign-in status, whether it is `required` (the operator's `required.when` command is run here), and its current job. `?status=0` skips the status and `required.when` commands |
 | `POST`   | `/api/connections/:id/login`      | Start the sign-in command (202), or return the job already running (200) |
-| `GET`    | `/api/connections/:id/job`        | Job progress: `state`, `output`, the `urls` and device `code` found in the output, `acceptsInput` |
+| `GET`    | `/api/connections/:id/job`        | Job progress: `state`, `output`, the `urls` and device `code` found in the output, `acceptsInput`, `signedIn` (the operator's `login.signedInPattern` matched), `progress` (latest output line) |
 | `POST`   | `/api/connections/:id/job/input`  | Write one pasted line to the command's stdin. Body: `{ text }` |
 | `DELETE` | `/api/connections/:id/job`        | Cancel (SIGTERM → SIGKILL after 3 s) |
 | `POST`   | `/api/connections/:id/logout`     | Run the sign-out command, then report the status |
