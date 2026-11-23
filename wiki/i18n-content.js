@@ -7982,3 +7982,23 @@ Object.assign(window.__WIKI_CONTENT_I18N.es, {
   "Configure per-model input, output, cache, and Codex reasoning rates in Settings, then see consistent totals across Sessions, Session Detail, Analytics, Kanban, and agent cards. Compaction-aware accounting preserves usage across context compression, imports reuse the same pricing table, and rate edits recalculate stored sessions. Subagent cards show only their own transcript cost. An accessible info icon beside Dashboard and Analytics cost labels holds scope and missing-rate details instead of crowding the value hover. GPT pricing distinguishes short and long context for Standard and Fast modes, leaving unpublished tiers explicitly unpriced.":
     "Configura las tarifas de entrada, salida, caché y razonamiento de Codex por modelo en Settings para ver totales coherentes en Sessions, Session Detail, Analytics, Kanban y las tarjetas de agente. La contabilidad consciente de la compactación conserva el uso tras comprimir el contexto, las importaciones reutilizan la misma tabla de precios y los cambios de tarifa recalculan las sesiones guardadas. Las tarjetas de subagentes muestran solo el coste de su propio Transcript. Un icono de información accesible junto a las etiquetas de coste de Dashboard y Analytics contiene el ámbito y las tarifas ausentes sin recargar el hover del valor. Los precios GPT distinguen contexto corto y largo en los modos Standard y Fast; los niveles no publicados quedan explícitamente sin precio.",
 });
+
+Object.assign(window.__WIKI_CONTENT_I18N.zh, {
+  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
+    "列出账户连接（登录命令）的 JSON 文件，供“账户”页面使用。未设置则关闭该功能。",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.vi, {
+  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
+    "Tệp JSON liệt kê các kết nối tài khoản (lệnh đăng nhập) cho trang Tài khoản. Để trống thì tắt tính năng.",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.ko, {
+  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
+    "계정 페이지에서 사용할 계정 연결(로그인 명령)을 나열하는 JSON 파일입니다. 설정하지 않으면 기능이 꺼집니다.",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.es, {
+  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
+    "Archivo JSON que enumera las conexiones de cuentas (comandos de inicio de sesión) para la página Cuentas. Sin definir, la función queda desactivada.",
+});

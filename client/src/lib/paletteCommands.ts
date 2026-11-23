@@ -310,6 +310,7 @@ import {
   Palette,
   PanelLeftClose,
   Play,
+  KeyRound,
   PlugZap,
   RefreshCw,
   Server,
@@ -547,7 +548,7 @@ export const PAGE_ACTION_COMMANDS: {
   },
 ];
 
-/** The nine sidebar destinations. */
+/** The sidebar destinations, plus account connections (in the sidebar only when configured). */
 export const PAGE_COMMANDS: {
   to: string;
   icon: LucideIcon;
@@ -561,6 +562,7 @@ export const PAGE_COMMANDS: {
   { to: "/workflows", icon: Workflow, navKey: "nav:workflows" },
   { to: "/cc-config", icon: Boxes, navKey: "nav:ccConfig" },
   { to: "/run", icon: Play, navKey: "nav:run" },
+  { to: "/connections", icon: KeyRound, navKey: "nav:accounts" },
   { to: "/settings", icon: SettingsIcon, navKey: "nav:settings" },
 ];
 

@@ -28,6 +28,8 @@
  * ## Local dependency edges
  * - `../../i18n` — repository-local contract consumed by this module; review its exports before
  *   changing assumptions here.
+ * - `../../lib/api` — repository-local contract consumed by this module; review its exports before
+ *   changing assumptions here.
  * - `../Sidebar` — repository-local contract consumed by this module; review its exports before
  *   changing assumptions here.
  *
@@ -46,6 +48,10 @@
  *   test selection.
  *
  * ## Named test contracts
+ * - `account connections entry` — executable behavior named by this suite; preserve the observable
+ *   contract or update the test with rationale.
+ * - `appears before Settings once the operator configured connections` — executable behavior named
+ *   by this suite; preserve the observable contract or update the test with rationale.
  * - `should expose all five languages through the custom dropdown` — executable behavior named by
  *   this suite; preserve the observable contract or update the test with rationale.
  * - `should have correct navigation hrefs` — executable behavior named by this suite; preserve the
@@ -71,6 +77,10 @@
  *   with rationale.
  * - `Sidebar` — executable behavior named by this suite; preserve the observable contract or update
  *   the test with rationale.
+ * - `stays hidden when the server cannot be reached` — executable behavior named by this suite;
+ *   preserve the observable contract or update the test with rationale.
+ * - `stays hidden while the server reports the feature off` — executable behavior named by this
+ *   suite; preserve the observable contract or update the test with rationale.
  *
  * ## Area invariants
  * - Name the user-visible or contract-level behavior in each test title so failures explain the
@@ -195,11 +205,12 @@
  *   tests.
  * ============================================================================= */
 
-import { beforeEach, describe, it, expect } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { Sidebar } from "../Sidebar";
+import { api } from "../../lib/api";
 import i18n from "../../i18n";
 
 function renderSidebar(wsConnected: boolean, collapsed = false) {
@@ -259,6 +270,41 @@ describe("Sidebar", () => {
     expect(hrefs).toContain("/kanban");
     expect(hrefs).toContain("/sessions");
     expect(hrefs).toContain("/activity");
+  });
+
+  describe("account connections entry", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("stays hidden while the server reports the feature off", async () => {
+      const list = vi
+        .spyOn(api.connections, "list")
+        .mockResolvedValue({ enabled: false, error: null, items: [] });
+      renderSidebar(true);
+      await waitFor(() => expect(list).toHaveBeenCalledWith({ withStatus: false }));
+      expect(screen.queryByText("Accounts")).not.toBeInTheDocument();
+    });
+
+    it("stays hidden when the server cannot be reached", async () => {
+      const list = vi.spyOn(api.connections, "list").mockRejectedValue(new Error("offline"));
+      renderSidebar(true);
+      await waitFor(() => expect(list).toHaveBeenCalled());
+      expect(screen.queryByText("Accounts")).not.toBeInTheDocument();
+    });
+
+    it("appears before Settings once the operator configured connections", async () => {
+      vi.spyOn(api.connections, "list").mockResolvedValue({
+        enabled: true,
+        error: null,
+        items: [],
+      });
+      renderSidebar(true);
+      const accounts = await screen.findByRole("link", { name: "Accounts" });
+      expect(accounts).toHaveAttribute("href", "/connections");
+      const hrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href"));
+      expect(hrefs.indexOf("/connections")).toBe(hrefs.indexOf("/settings") - 1);
+    });
   });
 
   it("should expose all five languages through the custom dropdown", async () => {

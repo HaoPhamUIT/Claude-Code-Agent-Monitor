@@ -4795,6 +4795,351 @@ exports[`screen snapshots > Claude Config 1`] = `
 </div>
 `;
 
+exports[`screen snapshots > Connections 1`] = `
+<div>
+  <div
+    class="space-y-6 animate-fade-in"
+  >
+    <div
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+    >
+      <div
+        class="flex items-center gap-3"
+      >
+        <div
+          class="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-key-round w-4 h-4 text-accent"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+            />
+            <circle
+              cx="16.5"
+              cy="7.5"
+              fill="currentColor"
+              r=".5"
+            />
+          </svg>
+        </div>
+        <div>
+          <h1
+            class="text-lg font-semibold text-gray-100"
+          >
+            Account connections
+          </h1>
+          <p
+            class="text-xs text-gray-500"
+          >
+            Sign in with your own accounts, so agents work with your permissions.
+          </p>
+        </div>
+      </div>
+      <button
+        class="btn-ghost"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-refresh-cw w-4 h-4"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+          />
+          <path
+            d="M21 3v5h-5"
+          />
+          <path
+            d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+          />
+          <path
+            d="M8 16H3v5"
+          />
+        </svg>
+        Refresh
+      </button>
+    </div>
+    <div
+      class="space-y-4"
+    >
+      <section
+        aria-label="Azure DevOps"
+        class="card p-4"
+      >
+        <div
+          class="flex flex-col sm:flex-row sm:items-start justify-between gap-3"
+        >
+          <div
+            class="min-w-0 space-y-1.5"
+          >
+            <div
+              class="flex flex-wrap items-center gap-2"
+            >
+              <h2
+                class="text-sm font-semibold text-gray-100"
+              >
+                Azure DevOps
+              </h2>
+              <span
+                class="badge bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-circle-check w-3 h-3"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                  />
+                  <path
+                    d="m9 12 2 2 4-4"
+                  />
+                </svg>
+                Connected as alice@example.com
+              </span>
+            </div>
+            <p
+              class="text-xs text-gray-500"
+            >
+              Git, pull requests and work items with your own account.
+            </p>
+          </div>
+          <div
+            class="flex items-center gap-2 shrink-0"
+          >
+            <button
+              class="btn-ghost"
+              type="button"
+            >
+              Disconnect
+            </button>
+            <button
+              class="btn-primary"
+              type="button"
+            >
+              Connect again
+            </button>
+          </div>
+        </div>
+      </section>
+      <section
+        aria-label="Atlassian"
+        class="card p-4"
+      >
+        <div
+          class="flex flex-col sm:flex-row sm:items-start justify-between gap-3"
+        >
+          <div
+            class="min-w-0 space-y-1.5"
+          >
+            <div
+              class="flex flex-wrap items-center gap-2"
+            >
+              <h2
+                class="text-sm font-semibold text-gray-100"
+              >
+                Atlassian
+              </h2>
+              <span
+                class="badge bg-accent/15 text-accent border-accent/20"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-loader-circle w-3 h-3 animate-spin"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M21 12a9 9 0 1 1-6.219-8.56"
+                  />
+                </svg>
+                Signing in…
+              </span>
+            </div>
+            <p
+              class="text-xs text-gray-500"
+            >
+              Jira and Confluence through the Atlassian MCP server.
+            </p>
+            <p
+              class="text-xs text-gray-500"
+            >
+              not signed in
+            </p>
+          </div>
+          <div
+            class="flex items-center gap-2 shrink-0"
+          >
+            <button
+              class="btn-ghost"
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+        <div
+          class="mt-4 rounded-lg border border-border bg-surface-2 p-4 space-y-4"
+        >
+          <ol
+            class="space-y-4 text-sm text-gray-300"
+          >
+            <li
+              class="space-y-2"
+            >
+              <p>
+                Open the sign-in page in your browser and approve the request.
+              </p>
+              <a
+                class="btn-primary"
+                href="https://auth.example.com/authorize?state=xyz"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-external-link w-4 h-4"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15 3h6v6"
+                  />
+                  <path
+                    d="M10 14 21 3"
+                  />
+                  <path
+                    d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                  />
+                </svg>
+                Open the sign-in page
+              </a>
+            </li>
+            <li
+              class="space-y-2"
+            >
+              <form
+                class="space-y-2"
+              >
+                <label
+                  class="block"
+                  for="paste-atlassian"
+                >
+                  Paste the address of the page you were sent to:
+                </label>
+                <div
+                  class="flex flex-col sm:flex-row gap-2"
+                >
+                  <input
+                    autocomplete="off"
+                    class="input flex-1 font-mono text-xs"
+                    id="paste-atlassian"
+                    placeholder="http://localhost:…/callback?code=…"
+                    spellcheck="false"
+                    value=""
+                  />
+                  <button
+                    class="btn-primary disabled:opacity-50"
+                    disabled=""
+                    type="submit"
+                  >
+                    Submit
+                  </button>
+                </div>
+                <p
+                  class="text-xs text-gray-500"
+                >
+                  After you approve, your browser may land on a page that fails to load. That is expected: copy the full address from the address bar and paste it here.
+                </p>
+              </form>
+            </li>
+            <li
+              class="flex items-center gap-2 text-xs text-gray-500"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-loader-circle w-3.5 h-3.5 animate-spin"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 12a9 9 0 1 1-6.219-8.56"
+                />
+              </svg>
+              Waiting for you to finish signing in…
+            </li>
+          </ol>
+          <details>
+            <summary
+              class="text-xs text-gray-500 cursor-pointer select-none"
+            >
+              Show the command output
+            </summary>
+            <pre
+              class="mt-2 max-h-56 overflow-auto rounded-lg bg-surface-1 border border-border p-3 text-[11px] leading-relaxed text-gray-400 whitespace-pre-wrap break-all"
+            >
+              Visit this URL to authorize:
+https://auth.example.com/authorize?state=xyz
+            </pre>
+          </details>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`screen snapshots > Dashboard 1`] = `
 <div>
   <div

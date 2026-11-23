@@ -1,0 +1,50 @@
+{
+  "title": "Account connections",
+  "subtitle": "Sign in with your own accounts, so agents work with your permissions.",
+  "refresh": "Refresh",
+  "loadFailed": "Could not load the connections",
+  "retry": "Retry",
+  "disabledTitle": "No connections are set up",
+  "disabledBody": "An operator turns this page on by pointing DASHBOARD_CONNECTIONS_FILE at a file that lists the sign-in commands to offer.",
+  "configErrorTitle": "The connections file could not be loaded",
+  "emptyTitle": "The connections file lists no connections",
+  "status": {
+    "connected": "Connected",
+    "connectedAs": "Connected as {{account}}",
+    "notConnected": "Not connected",
+    "unknown": "Status unknown",
+    "signingIn": "Signing in…"
+  },
+  "actions": {
+    "connect": "Connect",
+    "reconnect": "Connect again",
+    "disconnect": "Disconnect",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "copy": "Copy",
+    "copied": "Copied",
+    "openSignIn": "Open the sign-in page",
+    "showOutput": "Show the command output"
+  },
+  "steps": {
+    "open": "Open the sign-in page in your browser and approve the request.",
+    "code": "Enter this code when the page asks for it:",
+    "paste": "Paste the address of the page you were sent to:",
+    "pasteHint": "After you approve, your browser may land on a page that fails to load. That is expected: copy the full address from the address bar and paste it here.",
+    "otherLinks": "Other links the sign-in command printed",
+    "waiting": "Waiting for you to finish signing in…",
+    "starting": "Starting the sign-in…"
+  },
+  "result": {
+    "succeeded": "Signed in.",
+    "failed": "The sign-in did not complete.",
+    "cancelled": "Sign-in cancelled.",
+    "timeout": "The sign-in timed out. Start it again."
+  },
+  "errors": {
+    "startFailed": "Could not start the sign-in: {{message}}",
+    "inputFailed": "Could not send the address: {{message}}",
+    "cancelFailed": "Could not cancel the sign-in: {{message}}",
+    "disconnectFailed": "Could not disconnect: {{message}}"
+  }
+}

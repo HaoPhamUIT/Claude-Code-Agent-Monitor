@@ -196,6 +196,8 @@ export function DocumentTitle() {
     title = t("ccConfig");
   } else if (path.startsWith("/run")) {
     title = t("run");
+  } else if (path.startsWith("/connections")) {
+    title = t("accounts");
   } else if (path.startsWith("/settings")) {
     title = t("settings");
   } else if (path !== "/") {

@@ -1,0 +1,50 @@
+{
+  "title": "账户连接",
+  "subtitle": "使用您自己的账户登录，让 agent 以您的权限工作。",
+  "refresh": "刷新",
+  "loadFailed": "无法加载连接列表",
+  "retry": "重试",
+  "disabledTitle": "尚未设置任何连接",
+  "disabledBody": "运维人员将 DASHBOARD_CONNECTIONS_FILE 指向一个列出可用登录命令的文件，即可启用此页面。",
+  "configErrorTitle": "无法加载连接文件",
+  "emptyTitle": "连接文件中没有列出任何连接",
+  "status": {
+    "connected": "已连接",
+    "connectedAs": "已连接：{{account}}",
+    "notConnected": "未连接",
+    "unknown": "状态未知",
+    "signingIn": "正在登录…"
+  },
+  "actions": {
+    "connect": "连接",
+    "reconnect": "重新连接",
+    "disconnect": "断开连接",
+    "cancel": "取消",
+    "submit": "提交",
+    "copy": "复制",
+    "copied": "已复制",
+    "openSignIn": "打开登录页面",
+    "showOutput": "显示命令输出"
+  },
+  "steps": {
+    "open": "在浏览器中打开登录页面并批准请求。",
+    "code": "页面要求时输入此代码：",
+    "paste": "粘贴您被跳转到的页面的地址：",
+    "pasteHint": "批准后，浏览器可能会跳转到一个无法加载的页面。这是正常现象：请复制地址栏中的完整地址并粘贴到此处。",
+    "otherLinks": "登录命令输出的其他链接",
+    "waiting": "正在等待您完成登录…",
+    "starting": "正在启动登录…"
+  },
+  "result": {
+    "succeeded": "已登录。",
+    "failed": "登录未完成。",
+    "cancelled": "已取消登录。",
+    "timeout": "登录已超时，请重新开始。"
+  },
+  "errors": {
+    "startFailed": "无法启动登录：{{message}}",
+    "inputFailed": "无法发送地址：{{message}}",
+    "cancelFailed": "无法取消登录：{{message}}",
+    "disconnectFailed": "无法断开连接：{{message}}"
+  }
+}
