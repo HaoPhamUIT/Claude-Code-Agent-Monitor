@@ -47,3 +47,12 @@
  * Surfaced in Settings and the update notifier without a runtime fetch.
  */
 declare const __APP_VERSION__: string;
+
+interface ImportMetaEnv {
+  /**
+   * When `"1"` or `"true"` at build time, the first-run onboarding splash is
+   * skipped and the dashboard opens straight away (see `SplashScreen.tsx`).
+   * Unset in standalone builds, which keep the welcome/data-source step.
+   */
+  readonly VITE_DISABLE_ONBOARDING?: string;
+}

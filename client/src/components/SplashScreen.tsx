@@ -223,6 +223,21 @@ import { setProviderScope, type ProviderScope } from "../lib/dataScope";
  */
 const ONBOARDING_KEY = "provider-onboarding-shown-v2";
 
+/**
+ * When the client is built with `VITE_DISABLE_ONBOARDING=1` (or `"true"`), the
+ * first-run splash never renders: the dashboard opens straight away. Used by
+ * deployments where the data source is fixed and the welcome/data-source step is
+ * unwanted (e.g. the pmc-agent portal, Claude Code only). Standalone builds leave
+ * the flag unset and keep the onboarding screen. {@link DISABLED_DEFAULT_SCOPE}
+ * is applied once so scoped views still have a provider to show.
+ */
+const ONBOARDING_DISABLED =
+  import.meta.env.VITE_DISABLE_ONBOARDING === "1" ||
+  import.meta.env.VITE_DISABLE_ONBOARDING === "true";
+
+/** Provider scope assumed on first load when onboarding is disabled. */
+const DISABLED_DEFAULT_SCOPE: ProviderScope = "claude";
+
 /** A provider whose hooks the setup checks: Claude Code or Codex. */
 type HookProvider = Exclude<ProviderScope, "both">;
 
@@ -298,12 +313,28 @@ export function SplashScreen() {
   // A storage failure (private mode, blocked site data) falls back to showing
   // it: onboarding twice is a nuisance, never onboarding is a broken install.
   const [mounted, setMounted] = useState(() => {
+    if (ONBOARDING_DISABLED) return false;
     try {
       return !localStorage.getItem(ONBOARDING_KEY);
     } catch {
       return true;
     }
   });
+
+  // Onboarding disabled by build flag: open straight to the dashboard and, on the
+  // first load only, pin the default provider scope so scoped views have a source.
+  // Guarded by the key so a viewer's later scope change is not overwritten.
+  useEffect(() => {
+    if (!ONBOARDING_DISABLED) return;
+    try {
+      if (!localStorage.getItem(ONBOARDING_KEY)) {
+        setProviderScope(DISABLED_DEFAULT_SCOPE);
+        localStorage.setItem(ONBOARDING_KEY, "1");
+      }
+    } catch {
+      setProviderScope(DISABLED_DEFAULT_SCOPE);
+    }
+  }, []);
   const [provider, setProvider] = useState<ProviderScope>("claude");
   const [hookGateOpen, setHookGateOpen] = useState(false);
   const [checkingHooks, setCheckingHooks] = useState(false);

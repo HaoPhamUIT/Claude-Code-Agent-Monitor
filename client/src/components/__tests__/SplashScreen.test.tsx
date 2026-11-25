@@ -190,7 +190,7 @@
  * ============================================================================= */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SplashScreen } from "../SplashScreen";
 import { api } from "../../lib/api";
@@ -384,5 +384,25 @@ describe("SplashScreen", () => {
     const { container } = render(<SplashScreen />);
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("never renders, and pins the default scope, when the build disables onboarding", async () => {
+    // VITE_DISABLE_ONBOARDING is read at module load, so re-import after stubbing.
+    vi.resetModules();
+    vi.stubEnv("VITE_DISABLE_ONBOARDING", "1");
+    try {
+      const scope = await import("../../lib/dataScope");
+      const { SplashScreen: Fresh } = await import("../SplashScreen");
+
+      const { container } = render(<Fresh />);
+
+      expect(container).toBeEmptyDOMElement();
+      await waitFor(() => expect(scope.getScope().provider).toBe("claude"));
+      expect(localStorage.getItem("provider-onboarding-shown-v2")).toBe("1");
+      expect(info).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
   });
 });

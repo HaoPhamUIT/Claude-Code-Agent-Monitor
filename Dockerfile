@@ -31,6 +31,11 @@ COPY client/ ./
 # up from the client dir). Provide it here so the built client shows the real
 # release version; the config falls back gracefully if it is ever absent.
 COPY package.json /app/package.json
+# Optional: build with VITE_DISABLE_ONBOARDING=1 to skip the first-run splash and
+# open straight to the dashboard (used by fixed-source deployments such as the
+# pmc-agent portal). Unset by default, so standalone images keep onboarding.
+ARG VITE_DISABLE_ONBOARDING=""
+ENV VITE_DISABLE_ONBOARDING=${VITE_DISABLE_ONBOARDING}
 RUN npm run build
 
 # ── Stage 3: Production runtime ───────────────────────────────────────
