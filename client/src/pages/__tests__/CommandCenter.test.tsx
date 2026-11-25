@@ -255,17 +255,27 @@ describe("CommandCenter", () => {
     expect(window.sessionStorage.getItem("pmca.command.laterConnections")).toBe('["atlassian"]');
   });
 
-  it("asks before giving full access", async () => {
+  it("starts at full access and asks only when switching back to it", async () => {
     setAccounts(true, true);
     await renderPage();
+    const pressed = (name: string) =>
+      screen.getByRole("button", { name }).getAttribute("aria-pressed");
+    expect(pressed("Full access")).toBe("true");
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit files" }));
+    expect(screen.queryByText("Give the agent full access?")).not.toBeInTheDocument();
+    expect(pressed("Edit files")).toBe("true");
+    expect(window.localStorage.getItem("pmca.command.trust")).toBe("edit");
+
     fireEvent.click(screen.getByRole("button", { name: "Full access" }));
     expect(screen.getByText("Give the agent full access?")).toBeInTheDocument();
-    // The modal's close icon carries the cancel label too; either one keeps the level.
     fireEvent.click(screen.getAllByRole("button", { name: "Keep the current level" })[0]!);
-    expect(screen.getByRole("button", { name: "Edit files" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
+    expect(pressed("Edit files")).toBe("true");
+
+    fireEvent.click(screen.getByRole("button", { name: "Full access" }));
+    fireEvent.click(screen.getByRole("button", { name: "Give full access" }));
+    expect(pressed("Full access")).toBe("true");
+    expect(window.localStorage.getItem("pmca.command.trust")).toBe("full");
   });
 
   it("opens a waiting conversation and sends the reply to it", async () => {
@@ -352,6 +362,7 @@ describe("CommandCenter", () => {
         cwd: "/home/me/workspace/b2b-web",
         resumeSessionId: "old-1",
         mode: "conversation",
+        permissionMode: "bypassPermissions",
       })
     );
     expect(sessionMocks.transcript).toHaveBeenCalledWith("old-1", { limit: 200 });

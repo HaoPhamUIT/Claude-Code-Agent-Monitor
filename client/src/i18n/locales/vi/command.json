@@ -41,7 +41,7 @@
     "editHint": "Sửa file không cần hỏi, hỏi trước khi chạy lệnh (acceptEdits)",
     "fullHint": "Chạy mọi thứ không cần hỏi (bypassPermissions)",
     "confirmTitle": "Cho agent toàn quyền?",
-    "confirmBody": "Agent sẽ chạy mọi lệnh và sửa mọi file mà không hỏi lại. Chỉ dùng trong thư mục mà bạn chấp nhận được thay đổi ngoài ý muốn. Tải lại trang thì mức này quay về Sửa file.",
+    "confirmBody": "Agent sẽ chạy mọi lệnh và sửa mọi file mà không hỏi lại. Chỉ dùng trong thư mục mà bạn chấp nhận được thay đổi ngoài ý muốn.",
     "confirm": "Cho toàn quyền",
     "cancel": "Giữ mức hiện tại"
   },

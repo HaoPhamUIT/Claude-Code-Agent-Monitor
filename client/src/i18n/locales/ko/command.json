@@ -41,7 +41,7 @@
     "editHint": "묻지 않고 파일을 편집하고, 명령 실행 전에는 물어봄(acceptEdits)",
     "fullHint": "묻지 않고 무엇이든 실행(bypassPermissions)",
     "confirmTitle": "Agent에게 전체 권한을 줄까요?",
-    "confirmBody": "Agent가 묻지 않고 모든 명령을 실행하고 모든 파일을 편집합니다. 원치 않는 변경을 감수할 수 있는 폴더에서만 사용하세요. 페이지를 새로 고치면 파일 편집으로 돌아갑니다.",
+    "confirmBody": "Agent가 묻지 않고 모든 명령을 실행하고 모든 파일을 편집합니다. 원치 않는 변경을 감수할 수 있는 폴더에서만 사용하세요.",
     "confirm": "전체 권한 주기",
     "cancel": "현재 수준 유지"
   },

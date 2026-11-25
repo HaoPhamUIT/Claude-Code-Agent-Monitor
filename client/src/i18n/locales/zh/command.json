@@ -41,7 +41,7 @@
     "editHint": "无需询问即可编辑文件，运行命令前会询问（acceptEdits）",
     "fullHint": "无需询问即可运行任何操作（bypassPermissions）",
     "confirmTitle": "给予 Agent 完全访问权限？",
-    "confirmBody": "Agent 将不经询问运行任何命令并编辑任何文件。仅在你能接受意外修改的文件夹中使用。重新加载页面后会恢复为编辑文件。",
+    "confirmBody": "Agent 将不经询问运行任何命令并编辑任何文件。仅在你能接受意外修改的文件夹中使用。",
     "confirm": "给予完全访问",
     "cancel": "保持当前级别"
   },

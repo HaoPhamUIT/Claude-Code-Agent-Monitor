@@ -5025,8 +5025,8 @@ exports[`screen snapshots > Command center 1`] = `
               Read only
             </button>
             <button
-              aria-pressed="true"
-              class="inline-flex items-center gap-1.5 px-3 text-[13px] transition-colors border-l border-border bg-accent/10 font-bold text-accent"
+              aria-pressed="false"
+              class="inline-flex items-center gap-1.5 px-3 text-[13px] transition-colors border-l border-border font-medium text-gray-400 hover:bg-surface-4 hover:text-gray-200"
               title="Edits files without asking, asks before commands (acceptEdits)"
               type="button"
             >
@@ -5056,8 +5056,8 @@ exports[`screen snapshots > Command center 1`] = `
               Edit files
             </button>
             <button
-              aria-pressed="false"
-              class="inline-flex items-center gap-1.5 px-3 text-[13px] transition-colors border-l border-border font-medium text-gray-400 hover:bg-surface-4 hover:text-gray-200"
+              aria-pressed="true"
+              class="inline-flex items-center gap-1.5 px-3 text-[13px] transition-colors border-l border-border bg-amber-500/15 font-bold text-amber-400"
               title="Runs anything without asking (bypassPermissions)"
               type="button"
             >

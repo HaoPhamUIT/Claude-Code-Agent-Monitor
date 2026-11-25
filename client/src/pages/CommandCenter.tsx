@@ -11,8 +11,8 @@
  * a project catalog (`DASHBOARD_CONNECTIONS_FILE`) only fetched project folders
  * may be chosen, and a catalog that needs an account still signed out blocks
  * Run and points to the Accounts page; without one any folder may be chosen.
- * Choices (folder, trust level, model) are remembered per browser; full access
- * is never remembered and always asks first.
+ * Choices (folder, trust level, model) are remembered per browser. The trust
+ * level starts at full access; switching back to it from a lower level asks first.
  *
  * Data: `GET /api/run` + `/api/run/history` (polled every 5 s and refreshed on
  * `run_status`), `run_stream` envelopes for the open run, `GET /api/projects`
@@ -70,7 +70,6 @@ import { RunConversation } from "../components/command/RunConversation";
 import { MonitorStrip } from "../components/command/MonitorStrip";
 import { ConfirmModal } from "../components/ConfirmModal";
 
-/** Browser-local remembered choices. Full access is deliberately never stored. */
 const WORKSPACE_KEY = "pmca.command.workspace";
 const TRUST_KEY = "pmca.command.trust";
 const MODEL_KEY = "pmca.command.model";
@@ -149,9 +148,10 @@ export function CommandCenter() {
 
   // ── Composer choices ───────────────────────────────────────────────────
   const [prompt, setPrompt] = useState("");
-  const [trust, setTrust] = useState<TrustLevel>(() =>
-    readLocal(TRUST_KEY) === "read" ? "read" : "edit"
-  );
+  const [trust, setTrust] = useState<TrustLevel>(() => {
+    const saved = readLocal(TRUST_KEY);
+    return saved === "read" || saved === "edit" ? saved : "full";
+  });
   const [confirmFull, setConfirmFull] = useState(false);
   const [model, setModel] = useState(() => readLocal(MODEL_KEY) ?? "");
   const [models, setModels] = useState<ModelChoice[]>([]);
@@ -336,6 +336,7 @@ export function CommandCenter() {
   };
 
   const chooseTrust = (level: TrustLevel) => {
+    if (level === trust) return;
     if (level === "full") {
       setConfirmFull(true);
       return;
@@ -630,6 +631,7 @@ export function CommandCenter() {
         destructive
         onConfirm={() => {
           setTrust("full");
+          writeLocal(TRUST_KEY, "full");
           setConfirmFull(false);
         }}
         onCancel={() => setConfirmFull(false)}

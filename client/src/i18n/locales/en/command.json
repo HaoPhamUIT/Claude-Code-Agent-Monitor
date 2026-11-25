@@ -41,7 +41,7 @@
     "editHint": "Edits files without asking, asks before commands (acceptEdits)",
     "fullHint": "Runs anything without asking (bypassPermissions)",
     "confirmTitle": "Give the agent full access?",
-    "confirmBody": "The agent will run any command and edit any file without asking. Use it only in a folder where you can afford unwanted changes. It goes back to Edit files when you reload the page.",
+    "confirmBody": "The agent will run any command and edit any file without asking. Use it only in a folder where you can afford unwanted changes.",
     "confirm": "Give full access",
     "cancel": "Keep the current level"
   },

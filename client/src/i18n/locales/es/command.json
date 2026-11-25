@@ -41,7 +41,7 @@
     "editHint": "Edita archivos sin preguntar y pregunta antes de ejecutar comandos (acceptEdits)",
     "fullHint": "Ejecuta cualquier cosa sin preguntar (bypassPermissions)",
     "confirmTitle": "¿Dar acceso total al agente?",
-    "confirmBody": "El agente ejecutará cualquier comando y editará cualquier archivo sin preguntar. Úsalo solo en una carpeta donde puedas asumir cambios no deseados. Vuelve a Editar archivos al recargar la página.",
+    "confirmBody": "El agente ejecutará cualquier comando y editará cualquier archivo sin preguntar. Úsalo solo en una carpeta donde puedas asumir cambios no deseados.",
     "confirm": "Dar acceso total",
     "cancel": "Mantener el nivel actual"
   },
