@@ -2003,6 +2003,48 @@ describe("Hook Event Processing", () => {
     });
   });
 
+  it("should not create a session for a SessionEnd of a session that never existed", async () => {
+    // `claude mcp get` and similar CLI subcommands fire SessionEnd under a fresh
+    // id with a transcript path that was never written. Polling one must not
+    // add an empty "completed" session per call.
+    const missing = path.join(os.tmpdir(), `never-written-${Date.now()}.jsonl`);
+    const res = await post("/api/hooks/event", {
+      hook_type: "SessionEnd",
+      data: { session_id: "phantom-sess-end", transcript_path: missing, reason: "other" },
+    });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.ok, true);
+    const sessRes = await fetch("/api/sessions/phantom-sess-end");
+    assert.equal(sessRes.status, 404, "no session row for a phantom SessionEnd");
+
+    // A session the dashboard missed but whose transcript exists is still recorded.
+    const real = path.join(os.tmpdir(), `missed-sess-${Date.now()}.jsonl`);
+    fs.writeFileSync(real, "");
+    try {
+      await post("/api/hooks/event", {
+        hook_type: "SessionEnd",
+        data: { session_id: "missed-sess-end", transcript_path: real, reason: "other" },
+      });
+      const missedRes = await fetch("/api/sessions/missed-sess-end");
+      assert.equal(missedRes.status, 200);
+      assert.equal(missedRes.body.session.status, "completed");
+    } finally {
+      fs.rmSync(real, { force: true });
+    }
+
+    // An existing session still closes even if its transcript is gone.
+    await post("/api/hooks/event", {
+      hook_type: "PreToolUse",
+      data: { session_id: "known-sess-end", tool_name: "Read" },
+    });
+    await post("/api/hooks/event", {
+      hook_type: "SessionEnd",
+      data: { session_id: "known-sess-end", transcript_path: missing },
+    });
+    const knownRes = await fetch("/api/sessions/known-sess-end");
+    assert.equal(knownRes.body.session.status, "completed");
+  });
+
   it("should extract token usage from transcript_path on Stop", async () => {
     // Create a temporary JSONL transcript file
     const transcriptPath = path.join(os.tmpdir(), `transcript-test-${Date.now()}.jsonl`);

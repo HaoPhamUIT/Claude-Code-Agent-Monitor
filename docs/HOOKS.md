@@ -583,6 +583,8 @@ Triggered when a Claude Code session ends.
 - Mark all agents and the session as `completed` — **unless the session is in `error` AND that error is still unrecovered at the transcript tail** (`isErrorAtTail`: the latest API error has no successful turn after it), in which case `error` is preserved. A transient error the CLI retried past (successful assistant turns after the last error) finalizes as `completed` instead of freezing in a stale `error`
 - Evict the session's transcript from the shared transcript cache
 
+> **Phantom `SessionEnd`.** Claude Code subcommands that start no conversation (`claude mcp get`, `claude mcp list`) still fire `SessionEnd` under a fresh session id, with a `transcript_path` that was never written. A local `SessionEnd` for a session the dashboard has never seen, whose `transcript_path` does not exist on disk, is acknowledged (`200 { ok: true }`) and dropped, so a script that polls such a command (a workspace status check, for example) no longer adds an empty "completed, ran 0s" session per call. A missed real session (transcript on disk), a payload without `transcript_path`, and a hook pushed with `REMOTE_PUSH_TOKEN` are recorded as before.
+
 > **Stale-error self-heal.** Separately from `SessionEnd`, the 15 s watchdog now scans `error` sessions (not just `active`) and clears a session back to `active` when its transcript has progressed past the last API error (`isErrorAtTail` is false). Claude auto-retries transient API errors (e.g. "Connection closed mid-response") and keeps working, so an error followed by real turn activity has recovered — recovery previously required a live `UserPromptSubmit`/`PreToolUse` hook, leaving imported or sweep-monitored sessions pinned in `error` indefinitely.
 
 ---

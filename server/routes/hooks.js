@@ -525,6 +525,33 @@ function syncCardPromptPreview(sessionId, result) {
 }
 
 /**
+ * True for a SessionEnd that closes a session which never existed. Claude Code
+ * CLI subcommands that start no conversation (`claude mcp get`, `claude mcp
+ * list`) still fire SessionEnd under a fresh session id, with a transcript path
+ * that was never written. Recording one would add an empty "completed, ran 0s"
+ * session per call, so a script that polls such a command (a workspace status
+ * check, say) floods the dashboard. A real session that the dashboard missed
+ * has its transcript on disk and is still recorded. A remotely pushed hook is
+ * left alone: its transcript lives on the other machine.
+ *
+ * @param {string} hookType Canonical hook event type.
+ * @param {string} sessionId Session id from the payload.
+ * @param {Record<string, unknown>} data Hook payload.
+ * @param {{ remotePush?: boolean }|null} origin Hook origin.
+ * @returns {boolean}
+ */
+function isPhantomSessionEnd(hookType, sessionId, data, origin) {
+  if (hookType !== "SessionEnd" || (origin && origin.remotePush)) return false;
+  if (typeof data.transcript_path !== "string" || !data.transcript_path) return false;
+  if (stmts.getSession.get(sessionId)) return false;
+  try {
+    return !fs.existsSync(data.transcript_path);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Processes and durably records one hook event in a SQLite transaction.
  * Collector-provided repository identity is normalized before any writer sees
  * the payload, including the full envelope retained in `events.data`.
@@ -552,6 +579,18 @@ const processEvent = db.transaction((hookType, data, origin = null) => {
     if (sessionId !== suppliedSessionId) {
       data = { ...data, session_id: sessionId, cursor_alias_session_id: suppliedSessionId };
     }
+  }
+
+  if (isPhantomSessionEnd(hookType, sessionId, data, origin)) {
+    return {
+      session_id: sessionId,
+      agent_id: null,
+      event_type: hookType,
+      tool_name: null,
+      summary: null,
+      created_at: new Date().toISOString(),
+      suppressed: true,
+    };
   }
 
   let session = ensureSession(sessionId, data, origin);
