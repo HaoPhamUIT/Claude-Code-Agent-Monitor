@@ -43,7 +43,7 @@ const LIST = script(
   `const fs = require("fs"); const path = require("path");
 const marks = ${JSON.stringify(MARKS)};
 const ids = ["alpha", "beta", "fail", "hang1", "hang2", "hang3", "hang4", "hang5"];
-const out = ids.map((id) => ({ id, name: id.toUpperCase(), description: "Project " + id, cloned: fs.existsSync(path.join(marks, id)) }));
+const out = ids.map((id) => ({ id, name: id.toUpperCase(), description: "Project " + id, cloned: fs.existsSync(path.join(marks, id)), path: fs.existsSync(path.join(marks, id)) ? path.join(marks, id) : undefined }));
 out.push({ id: "gamma" });                 // no name: falls back to the id
 out.push({ id: "alpha", name: "dup" });   // duplicate: dropped
 out.push({ id: "--upload-pack=x" });      // option-shaped: dropped
@@ -64,7 +64,7 @@ if (id.startsWith("hang")) { console.log("waiting " + id); setInterval(() => {},
 else if (id === "fail") { console.error("permission denied for " + id); process.exit(2); }
 else {
   console.log("cloning " + id);
-  setTimeout(() => { fs.writeFileSync(path.join(${JSON.stringify(MARKS)}, id), "1"); console.log("done " + id); }, 100);
+  setTimeout(() => { fs.mkdirSync(path.join(${JSON.stringify(MARKS)}, id)); console.log("done " + id); }, 100);
 }`
 );
 const STATUS = script(
@@ -157,7 +157,9 @@ describe("/api/projects", () => {
 
   beforeEach(() => {
     fs.rmSync(STATE, { force: true });
-    for (const f of fs.readdirSync(MARKS)) fs.rmSync(path.join(MARKS, f), { force: true });
+    for (const f of fs.readdirSync(MARKS)) {
+      fs.rmSync(path.join(MARKS, f), { recursive: true, force: true });
+    }
     process.env.DASHBOARD_CONNECTIONS_FILE = CONFIG;
     writeConfig({ connections: [CONNECTION], projects: CATALOG });
   });
@@ -212,6 +214,7 @@ describe("/api/projects", () => {
       description: "Project alpha",
       cloned: false,
       partial: false,
+      path: null,
       job: null,
     });
     assert.equal(body.items.find((i) => i.id === "gamma").name, "gamma");
@@ -239,6 +242,7 @@ describe("/api/projects", () => {
     const { body } = await fetchJson("/api/projects");
     const alpha = body.items.find((i) => i.id === "alpha");
     assert.equal(alpha.cloned, true);
+    assert.equal(alpha.path, path.join(MARKS, "alpha"));
     assert.equal(alpha.job.state, "succeeded");
   });
 
@@ -324,9 +328,33 @@ describe("/api/projects", () => {
       null,
     ]);
     assert.deepEqual(items, [
-      { id: "ok", name: "Ok", description: "", cloned: true, partial: false },
-      { id: "half", name: "half", description: "", cloned: false, partial: true },
+      { id: "ok", name: "Ok", description: "", cloned: true, partial: false, path: null },
+      { id: "half", name: "half", description: "", cloned: false, partial: true, path: null },
     ]);
     assert.throws(() => projects.normalizeItems({}), /JSON array/);
+  });
+
+  it("passes on a project folder only when it is an existing absolute directory", () => {
+    const file = path.join(TMP, "not-a-dir.txt");
+    fs.writeFileSync(file, "x");
+    const items = projects.normalizeItems([
+      { id: "dir", cloned: true, path: TMP },
+      { id: "missing", cloned: true, path: path.join(TMP, "nope") },
+      { id: "relative", cloned: true, path: "workspace/x" },
+      { id: "file", cloned: true, path: file },
+      { id: "nul", cloned: true, path: `${TMP}\0x` },
+      { id: "number", cloned: true, path: 42 },
+    ]);
+    assert.deepEqual(
+      items.map((i) => [i.id, i.path]),
+      [
+        ["dir", path.resolve(TMP)],
+        ["missing", null],
+        ["relative", null],
+        ["file", null],
+        ["nul", null],
+        ["number", null],
+      ]
+    );
   });
 });

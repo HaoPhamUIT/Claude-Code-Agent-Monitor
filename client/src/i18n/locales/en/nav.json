@@ -1,6 +1,9 @@
 {
-  "brand": "Agent Dashboard",
-  "brandSub": "Claude Code Monitor",
+  "brand": "Pharmacity Agent",
+  "brandSub": "PMCA",
+  "command": "Give tasks",
+  "sectionMonitor": "Monitoring",
+  "sectionSetup": "Setup",
   "dashboard": "Dashboard",
   "agentBoard": "Kanban Board",
   "sessions": "Sessions",

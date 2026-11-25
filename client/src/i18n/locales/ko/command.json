@@ -1,0 +1,130 @@
+{
+  "title": "Agent에게 무엇을 맡길까요?",
+  "subtitle": "작업을 입력하고 Enter를 누르세요. 프로젝트, 신뢰 수준, 모델은 마지막 선택을 유지합니다.",
+  "composer": {
+    "placeholder": "예: 저장소 규칙에 따라 PB2B-503 작업: 테스트를 먼저 작성하고 PR을 여세요.",
+    "run": "실행",
+    "starting": "시작하는 중…",
+    "enterHint": "Enter로 실행 · Shift+Enter로 줄바꿈",
+    "chooseProjectFirst": "실행하기 전에 프로젝트를 선택하세요",
+    "hintSlash": "skill과 workflow",
+    "hintAt": "프로젝트의 파일",
+    "hintHash": "이전 세션 이어가기",
+    "templates": "빠른 명령",
+    "advanced": "고급 실행",
+    "ticket": "Jira 티켓",
+    "binaryMissing": "서버 PATH에서 `claude` CLI를 찾을 수 없어 Agent를 시작할 수 없습니다."
+  },
+  "workspace": {
+    "label": "프로젝트",
+    "loading": "프로젝트를 불러오는 중…",
+    "projectsTitle": "가져온 프로젝트",
+    "projectsHint": "작업 공간에 가져온 프로젝트만 표시됩니다. Agent는 선택한 프로젝트의 폴더에서 실행됩니다.",
+    "fetchMore": "프로젝트 더 가져오기",
+    "fetchMoreHint": "계정 페이지에서 선택하세요",
+    "freeTitle": "폴더",
+    "freeHint": "Agent는 선택한 폴더에서 실행됩니다.",
+    "otherFolder": "다른 폴더",
+    "otherFolderPlaceholder": "/절대/경로",
+    "use": "사용",
+    "none": "선택한 폴더 없음",
+    "connectToChoose": "프로젝트를 선택하려면 {{name}}에 연결하세요",
+    "fetchToChoose": "선택하려면 먼저 프로젝트를 가져오세요",
+    "catalogError": "프로젝트 목록을 읽을 수 없어({{error}}) 지금은 아무 폴더나 선택할 수 있습니다."
+  },
+  "trust": {
+    "label": "신뢰 수준",
+    "read": "읽기 전용",
+    "edit": "파일 편집",
+    "full": "전체 권한",
+    "readHint": "읽고 계획만 하며 아무것도 바꾸지 않음(plan mode)",
+    "editHint": "묻지 않고 파일을 편집하고, 명령 실행 전에는 물어봄(acceptEdits)",
+    "fullHint": "묻지 않고 무엇이든 실행(bypassPermissions)",
+    "confirmTitle": "Agent에게 전체 권한을 줄까요?",
+    "confirmBody": "Agent가 묻지 않고 모든 명령을 실행하고 모든 파일을 편집합니다. 원치 않는 변경을 감수할 수 있는 폴더에서만 사용하세요. 페이지를 새로 고치면 파일 편집으로 돌아갑니다.",
+    "confirm": "전체 권한 주기",
+    "cancel": "현재 수준 유지"
+  },
+  "model": {
+    "label": "모델",
+    "default": "기본값"
+  },
+  "connections": {
+    "connected": "{{name}} 연결됨",
+    "disconnected": "{{name}} 연결 안 됨",
+    "checking": "{{name}} 확인 중…",
+    "gateTitle": "{{name}}이(가) 연결되지 않았습니다.",
+    "gateBody": "프로젝트는 {{name}}에서 가져옵니다. 연결하면 프로젝트를 가져와 여기서 선택할 수 있습니다.",
+    "gateAction": "{{name}} 연결",
+    "noProjectsTitle": "아직 가져온 프로젝트가 없습니다.",
+    "noProjectsBody": "Agent가 작업할 폴더가 있도록 프로젝트를 작업 공간에 가져오세요.",
+    "noProjectsAction": "프로젝트 가져오기",
+    "warnTitle": "{{name}}이(가) 연결되지 않았습니다.",
+    "warnBody": "로그인하기 전까지는 이 계정이 필요한 도구가 동작하지 않습니다. 실행은 계속할 수 있습니다.",
+    "warnAction": "{{name}} 연결",
+    "later": "나중에"
+  },
+  "resume": {
+    "popupHint": "이어갈 이전 세션",
+    "chip": "세션 이어가기",
+    "clear": "대신 새 세션 시작",
+    "folder": "세션 폴더",
+    "placeholder": "이 세션에서 Agent가 다음에 할 일은?"
+  },
+  "inbox": {
+    "title": "내 Agent",
+    "needsYou": "응답 필요",
+    "working": "작업 중",
+    "finished": "완료됨",
+    "empty": "아직 Agent가 없습니다. 위에 작업을 입력해 시작하세요.",
+    "untitled": "재개된 대화",
+    "step": "{{done}}/{{total}} 단계",
+    "waitingReply": "답변을 기다리는 중",
+    "thinking": "생각 중…",
+    "status": {
+      "spawning": "시작 중",
+      "running": "실행 중",
+      "completed": "완료",
+      "error": "실패",
+      "killed": "중지됨",
+      "abandoned": "중단됨"
+    }
+  },
+  "conversation": {
+    "emptyTitle": "Agent를 선택하세요",
+    "emptyBody": "왼쪽에서 하나를 고르거나 위에서 새 작업을 맡기세요.",
+    "loading": "대화를 불러오는 중…",
+    "needsYou": "답변 필요",
+    "working": "작업 중",
+    "started": "{{ago}} 시작",
+    "stop": "중지",
+    "stopping": "중지하는 중…",
+    "copyResume": "터미널 명령 복사",
+    "copied": "복사됨: {{command}}",
+    "viewSession": "세션 보기",
+    "toolsUsed": "사용한 도구: {{count}}",
+    "progress": "{{total}}단계 중 {{done}}단계",
+    "noMessages": "아직 메시지가 없습니다.",
+    "replyPlaceholder": "Agent에게 답하거나 / 를 입력해 skill 호출",
+    "followUpPlaceholder": "지시를 추가하세요. Agent는 현재 단계 후에 읽습니다",
+    "resumePlaceholder": "이 대화 이어가기",
+    "cannotContinue": "이 실행에는 이어갈 세션이 없습니다.",
+    "send": "보내기"
+  },
+  "monitor": {
+    "title": "모니터링",
+    "sessions": "세션",
+    "activeSessions": "활성 세션",
+    "activeAgents": "실행 중인 Agent",
+    "eventsToday": "오늘 이벤트",
+    "totalCost": "총비용",
+    "open": "모니터링 대시보드 열기"
+  },
+  "errors": {
+    "startFailed": "Agent를 시작할 수 없습니다: {{message}}",
+    "sendFailed": "보낼 수 없습니다: {{message}}",
+    "stopFailed": "Agent를 중지할 수 없습니다: {{message}}",
+    "loadFailed": "대화를 불러올 수 없습니다: {{message}}",
+    "dismiss": "닫기"
+  }
+}

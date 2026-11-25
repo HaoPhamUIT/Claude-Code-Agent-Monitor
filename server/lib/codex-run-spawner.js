@@ -274,6 +274,10 @@ function publicHandle(handle, { includeEnvelopes = false } = {}) {
     sessionId: handle.sessionId,
     threadName: handle.threadName,
     activeTurnId: handle.activeTurnId,
+    // Same summary fields as Claude runs; Codex exposes only whether a turn is open.
+    turnState: handle.activeTurnId ? "working" : "waiting",
+    lastActivity: null,
+    progress: null,
     status: handle.status,
     startedAt: handle.startedAt,
     endedAt: handle.endedAt,

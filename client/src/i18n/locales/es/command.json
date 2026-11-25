@@ -1,0 +1,130 @@
+{
+  "title": "¿Qué debe hacer el agente?",
+  "subtitle": "Escribe la tarea y pulsa Enter. El proyecto, el nivel de confianza y el modelo se mantienen como los elegiste la última vez.",
+  "composer": {
+    "placeholder": "p. ej.: Trabaja en PB2B-503 siguiendo las convenciones del repo: escribe primero las pruebas y luego abre un PR.",
+    "run": "Ejecutar",
+    "starting": "Iniciando…",
+    "enterHint": "Enter para ejecutar · Shift+Enter para una nueva línea",
+    "chooseProjectFirst": "Elige un proyecto antes de ejecutar",
+    "hintSlash": "skills y workflows",
+    "hintAt": "archivos del proyecto",
+    "hintHash": "retomar una sesión anterior",
+    "templates": "Comandos rápidos",
+    "advanced": "Ejecución avanzada",
+    "ticket": "Ticket de Jira",
+    "binaryMissing": "La CLI `claude` no está en el PATH del servidor, así que los agentes no pueden iniciarse."
+  },
+  "workspace": {
+    "label": "Proyecto",
+    "loading": "Cargando proyectos…",
+    "projectsTitle": "Proyectos descargados",
+    "projectsHint": "Solo se muestran los proyectos descargados en tu espacio de trabajo. El agente se ejecuta en la carpeta del proyecto que elijas.",
+    "fetchMore": "Descargar más proyectos",
+    "fetchMoreHint": "Elígelos en la página de Cuentas",
+    "freeTitle": "Carpetas",
+    "freeHint": "El agente se ejecuta en la carpeta que elijas.",
+    "otherFolder": "Otra carpeta",
+    "otherFolderPlaceholder": "/ruta/absoluta/a/la/carpeta",
+    "use": "Usar",
+    "none": "Ninguna carpeta elegida",
+    "connectToChoose": "Conecta {{name}} para elegir un proyecto",
+    "fetchToChoose": "Descarga un proyecto para elegirlo",
+    "catalogError": "No se pudo leer la lista de proyectos ({{error}}), así que por ahora se puede elegir cualquier carpeta."
+  },
+  "trust": {
+    "label": "Nivel de confianza",
+    "read": "Solo lectura",
+    "edit": "Editar archivos",
+    "full": "Acceso total",
+    "readHint": "Lee y planifica, no cambia nada (plan mode)",
+    "editHint": "Edita archivos sin preguntar y pregunta antes de ejecutar comandos (acceptEdits)",
+    "fullHint": "Ejecuta cualquier cosa sin preguntar (bypassPermissions)",
+    "confirmTitle": "¿Dar acceso total al agente?",
+    "confirmBody": "El agente ejecutará cualquier comando y editará cualquier archivo sin preguntar. Úsalo solo en una carpeta donde puedas asumir cambios no deseados. Vuelve a Editar archivos al recargar la página.",
+    "confirm": "Dar acceso total",
+    "cancel": "Mantener el nivel actual"
+  },
+  "model": {
+    "label": "Modelo",
+    "default": "Predeterminado"
+  },
+  "connections": {
+    "connected": "{{name}} conectado",
+    "disconnected": "{{name}} sin conectar",
+    "checking": "Comprobando {{name}}…",
+    "gateTitle": "{{name}} no está conectado.",
+    "gateBody": "Los proyectos vienen de {{name}}. Conéctalo para descargar un proyecto y elegirlo aquí.",
+    "gateAction": "Conectar {{name}}",
+    "noProjectsTitle": "Todavía no hay proyectos descargados.",
+    "noProjectsBody": "Descarga un proyecto en tu espacio de trabajo para que el agente tenga una carpeta donde trabajar.",
+    "noProjectsAction": "Descargar proyectos",
+    "warnTitle": "{{name}} no está conectado.",
+    "warnBody": "Las herramientas que lo necesitan no funcionarán hasta que inicies sesión. Aun así puedes ejecutar.",
+    "warnAction": "Conectar {{name}}",
+    "later": "Más tarde"
+  },
+  "resume": {
+    "popupHint": "Sesiones anteriores para continuar",
+    "chip": "Continuando",
+    "clear": "Empezar una sesión nueva",
+    "folder": "Carpeta de la sesión",
+    "placeholder": "¿Qué debe hacer el agente a continuación en esta sesión?"
+  },
+  "inbox": {
+    "title": "Tus agentes",
+    "needsYou": "Te necesitan",
+    "working": "Trabajando",
+    "finished": "Terminados",
+    "empty": "Aún no hay agentes. Escribe una tarea arriba para empezar.",
+    "untitled": "Conversación reanudada",
+    "step": "paso {{done}}/{{total}}",
+    "waitingReply": "Esperando tu respuesta",
+    "thinking": "Pensando…",
+    "status": {
+      "spawning": "Iniciando",
+      "running": "En ejecución",
+      "completed": "Hecho",
+      "error": "Falló",
+      "killed": "Detenido",
+      "abandoned": "Abandonado"
+    }
+  },
+  "conversation": {
+    "emptyTitle": "Elige un agente",
+    "emptyBody": "Elige uno a la izquierda o asigna una nueva tarea arriba.",
+    "loading": "Cargando la conversación…",
+    "needsYou": "Necesita tu respuesta",
+    "working": "Trabajando",
+    "started": "iniciado {{ago}}",
+    "stop": "Detener",
+    "stopping": "Deteniendo…",
+    "copyResume": "Copiar comando de terminal",
+    "copied": "Copiado: {{command}}",
+    "viewSession": "Ver sesión",
+    "toolsUsed": "Herramientas usadas: {{count}}",
+    "progress": "Paso {{done}} de {{total}}",
+    "noMessages": "Aún no hay mensajes.",
+    "replyPlaceholder": "Responde al agente o escribe / para un skill",
+    "followUpPlaceholder": "Añade una instrucción; el agente la lee después del paso actual",
+    "resumePlaceholder": "Continuar esta conversación",
+    "cannotContinue": "Esta ejecución no tiene una sesión que continuar.",
+    "send": "Enviar"
+  },
+  "monitor": {
+    "title": "Monitorización",
+    "sessions": "Sesiones",
+    "activeSessions": "Sesiones activas",
+    "activeAgents": "Agentes en ejecución",
+    "eventsToday": "Eventos de hoy",
+    "totalCost": "Coste total",
+    "open": "Abrir el panel de monitorización"
+  },
+  "errors": {
+    "startFailed": "No se pudo iniciar el agente: {{message}}",
+    "sendFailed": "No se pudo enviar: {{message}}",
+    "stopFailed": "No se pudo detener el agente: {{message}}",
+    "loadFailed": "No se pudo cargar la conversación: {{message}}",
+    "dismiss": "Cerrar"
+  }
+}

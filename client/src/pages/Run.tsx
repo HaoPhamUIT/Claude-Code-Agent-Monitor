@@ -447,7 +447,7 @@ import { Select } from "../components/Select";
  * renders are modelled: plain text, extended-thinking text, a tool invocation, and the tool result
  * that answers it (which arrives inside a `user` message).
  */
-type ContentBlock =
+export type ContentBlock =
   | { type: "text"; text: string }
   | { type: "thinking"; thinking?: string }
   | { type: "tool_use"; id: string; name: string; input: unknown }
@@ -458,7 +458,7 @@ type ContentBlock =
  * message. Its `usage` block feeds the token meter, and `message.content` may be a plain string or
  * an array of {@link ContentBlock}s.
  */
-interface AssistantMessage {
+export interface AssistantMessage {
   /** Envelope discriminator. */
   type: "assistant";
   /**
@@ -479,7 +479,7 @@ interface AssistantMessage {
  * A `user` envelope. Besides prompts the user typed, the CLI emits one of these for every tool
  * result, with `tool_result` blocks in `message.content`.
  */
-interface UserMessage {
+export interface UserMessage {
   /** Envelope discriminator. */
   type: "user";
   /**
@@ -544,7 +544,7 @@ interface ResultEnvelope {
  * Any envelope the Run page may hold in its log. The last member is a catch-all so unknown envelope
  * types survive merging and can be shown as raw JSON by {@link UnknownTurn}.
  */
-type Envelope =
+export type Envelope =
   | AssistantMessage
   | UserMessage
   | SystemInit
@@ -576,7 +576,7 @@ interface CodexEventEnvelope {
  * the first assistant model (when known) so the context meter is sized correctly before any live
  * envelope arrives.
  */
-function transcriptToEnvelopes(messages: TranscriptMessage[]): Envelope[] {
+export function transcriptToEnvelopes(messages: TranscriptMessage[]): Envelope[] {
   /**
    * Map one transcript content block to its stream-json equivalent, renaming the fields that
    * differ. Unknown block kinds are dropped.
@@ -792,7 +792,7 @@ function mutateAssistantAt(
  * @param envelope - The envelope from a `run_stream` message.
  * @returns The next envelope log.
  */
-function mergeEnvelope(prev: Envelope[], envelope: Envelope): Envelope[] {
+export function mergeEnvelope(prev: Envelope[], envelope: Envelope): Envelope[] {
   if (!envelope || typeof envelope !== "object") return prev;
   const env = envelope as { type?: string };
 
@@ -1012,7 +1012,7 @@ function mergeEnvelope(prev: Envelope[], envelope: Envelope): Envelope[] {
  * @param envelopes - Envelope log as received.
  * @returns The log with streaming text and thinking clamped to what has been revealed so far.
  */
-function useTypewriterEnvelopes(envelopes: Envelope[]): Envelope[] {
+export function useTypewriterEnvelopes(envelopes: Envelope[]): Envelope[] {
   const lengthsRef = useRef<Map<string, number>>(new Map());
   const envRef = useRef<Envelope[]>(envelopes);
   envRef.current = envelopes;
@@ -1183,7 +1183,6 @@ export function Run() {
     provider: RunProvider;
   } | null>(null);
   const [cwdSuggestions, setCwdSuggestions] = useState<CwdSuggestion[]>([]);
-  const [slashCommands, setSlashCommands] = useState<SlashCommand[]>(BUILTIN_SLASH_COMMANDS);
 
   // Pre-flight: active runs + cwd suggestions on mount. The binary and live
   // model catalog are fetched only after the user chooses a provider.
@@ -1217,54 +1216,7 @@ export function Run() {
       .catch(() => undefined);
   }, []);
 
-  // Discover user / project slash commands, skills and saved workflows for the
-  // chosen working directory, re-read (debounced) whenever it changes. The
-  // CLI's built-ins are appended client-side. Plugin commands and skills are
-  // not enumerated: the user can still type them and they pass through verbatim.
-  useEffect(() => {
-    const dir = cwd.trim() || undefined;
-    let stale = false;
-    const tid = setTimeout(() => {
-      Promise.all([
-        api.ccConfig.commands(undefined, dir),
-        api.ccConfig.skills(undefined, dir),
-        api.ccConfig.workflows(dir),
-      ])
-        .then(([cmdsResp, skillsResp, wfResp]) => {
-          if (stale) return;
-          const userProject = cmdsResp.items.map<SlashCommand>((c) => ({
-            name: c.name,
-            description:
-              (c.frontmatter?.description as string | undefined) || c.preview.slice(0, 80),
-            source: c.scope === "project" ? "project" : "user",
-            filePath: c.file,
-          }));
-          // No filePath: the CLI resolves `/<skill>` and `/<workflow>` itself,
-          // so the prompt is sent verbatim instead of being template-expanded.
-          const skills = skillsResp.items.map<SlashCommand>((s) => ({
-            name: s.name,
-            description: (s.frontmatter?.description as string | undefined) || "",
-            source: s.scope,
-          }));
-          const workflows = wfResp.items.map<SlashCommand>((w) => ({
-            name: w.name,
-            description: w.description,
-            source: w.scope,
-          }));
-          // A skill and a workflow may share a name; list it once.
-          const seen = new Set<string>();
-          const discovered = [...userProject, ...skills, ...workflows].filter(
-            (c) => !seen.has(c.name) && !!seen.add(c.name)
-          );
-          setSlashCommands([...discovered, ...BUILTIN_SLASH_COMMANDS]);
-        })
-        .catch(() => undefined);
-    }, 300);
-    return () => {
-      stale = true;
-      clearTimeout(tid);
-    };
-  }, [cwd]);
+  const slashCommands = useSlashCommands(cwd);
 
   useEffect(() => {
     if (!provider) return;
@@ -2333,7 +2285,7 @@ function TokenMeter({ stats }: { stats: TokenStats }) {
 // ── Slash commands (built-in list + user/project/plugin from API) ─────
 
 /** One slash command offered by the prompt editor's `/` autocomplete. */
-interface SlashCommand {
+export interface SlashCommand {
   /** Command name without the leading slash. */
   name: string;
   /** One-line description shown next to the name. */
@@ -2355,7 +2307,7 @@ interface SlashCommand {
  * Built-in commands the interactive CLI handles itself. They appear in autocomplete with a "CLI
  * only" tag so users know they will not actually execute when sent over stream-json stdin.
  */
-const BUILTIN_SLASH_COMMANDS: SlashCommand[] = [
+export const BUILTIN_SLASH_COMMANDS: SlashCommand[] = [
   { name: "help", description: "List available commands", source: "builtin" },
   { name: "clear", description: "Clear the conversation", source: "builtin" },
   { name: "config", description: "Open the interactive config menu", source: "builtin" },
@@ -2422,7 +2374,10 @@ function commandSourceTone(s: SlashCommand["source"]): string {
  * @param commands - Known slash commands.
  * @returns The expanded prompt, or the original text.
  */
-async function maybeExpandSlashCommand(text: string, commands: SlashCommand[]): Promise<string> {
+export async function maybeExpandSlashCommand(
+  text: string,
+  commands: SlashCommand[]
+): Promise<string> {
   const trimmed = text.trimStart();
   if (!trimmed.startsWith("/")) return text;
   const m = trimmed.match(/^\/([\w:-]+)(?:\s+([\s\S]*))?$/);
@@ -2444,6 +2399,64 @@ async function maybeExpandSlashCommand(text: string, commands: SlashCommand[]): 
   }
 }
 
+/**
+ * Slash commands for a working directory: user and project commands, skills and saved workflows,
+ * re-read (debounced 300 ms) whenever `cwd` changes, followed by the CLI's built-ins. Plugin
+ * commands and skills are not enumerated: the user can still type them and they pass through
+ * verbatim. Failed reads keep the previous list.
+ *
+ * @param cwd - Working directory to discover project commands for; blank means user scope only.
+ * @returns The commands offered by `/` autocomplete.
+ */
+export function useSlashCommands(cwd: string): SlashCommand[] {
+  const [commands, setCommands] = useState<SlashCommand[]>(BUILTIN_SLASH_COMMANDS);
+  useEffect(() => {
+    const dir = cwd.trim() || undefined;
+    let stale = false;
+    const tid = setTimeout(() => {
+      Promise.all([
+        api.ccConfig.commands(undefined, dir),
+        api.ccConfig.skills(undefined, dir),
+        api.ccConfig.workflows(dir),
+      ])
+        .then(([cmdsResp, skillsResp, wfResp]) => {
+          if (stale) return;
+          const userProject = cmdsResp.items.map<SlashCommand>((c) => ({
+            name: c.name,
+            description:
+              (c.frontmatter?.description as string | undefined) || c.preview.slice(0, 80),
+            source: c.scope === "project" ? "project" : "user",
+            filePath: c.file,
+          }));
+          // No filePath: the CLI resolves `/<skill>` and `/<workflow>` itself,
+          // so the prompt is sent verbatim instead of being template-expanded.
+          const skills = skillsResp.items.map<SlashCommand>((s) => ({
+            name: s.name,
+            description: (s.frontmatter?.description as string | undefined) || "",
+            source: s.scope,
+          }));
+          const workflows = wfResp.items.map<SlashCommand>((w) => ({
+            name: w.name,
+            description: w.description,
+            source: w.scope,
+          }));
+          // A skill and a workflow may share a name; list it once.
+          const seen = new Set<string>();
+          const discovered = [...userProject, ...skills, ...workflows].filter(
+            (c) => !seen.has(c.name) && !!seen.add(c.name)
+          );
+          setCommands([...discovered, ...BUILTIN_SLASH_COMMANDS]);
+        })
+        .catch(() => undefined);
+    }, 300);
+    return () => {
+      stale = true;
+      clearTimeout(tid);
+    };
+  }, [cwd]);
+  return commands;
+}
+
 // ── Autocomplete dropdown for slash + @-files ─────────────────────────
 
 /**
@@ -2455,7 +2468,7 @@ interface AutocompleteState {
    * `slash` completes `/command` names; `file` completes `@path` file references in the run's
    * working directory.
    */
-  kind: "slash" | "file";
+  kind: "slash" | "file" | "hash";
   /** Text typed after the trigger character, used to filter suggestions. */
   query: string;
   /**
@@ -2527,7 +2540,11 @@ function subsequenceMatch(s: string, q: string): boolean {
  * @param cursor - Caret offset.
  * @returns The popup state, or null when the token is not a trigger.
  */
-function detectAutocomplete(value: string, cursor: number): AutocompleteState | null {
+function detectAutocomplete(
+  value: string,
+  cursor: number,
+  allowHash = false
+): AutocompleteState | null {
   // Look back from the cursor to find the active "token". A token starts at
   // the beginning of the line / after whitespace and continues until cursor.
   let start = cursor;
@@ -2545,11 +2562,26 @@ function detectAutocomplete(value: string, cursor: number): AutocompleteState | 
   if (tok.startsWith("@") && tok.length >= 1) {
     return { kind: "file", query: tok.slice(1), triggerStart: start, cursor };
   }
+  if (allowHash && tok.startsWith("#") && !/^#\d/.test(tok)) {
+    return { kind: "hash", query: tok.slice(1), triggerStart: start, cursor };
+  }
   return null;
 }
 
+export interface HashSuggestion {
+  id: string;
+  label: string;
+  detail: string;
+}
+
+export interface HashCompletion {
+  hint: string;
+  search: (query: string) => Promise<HashSuggestion[]>;
+  onPick: (item: HashSuggestion) => void;
+}
+
 /** Props for {@link PromptEditor}. */
-interface PromptEditorProps {
+export interface PromptEditorProps {
   /** Current prompt text (controlled). */
   value: string;
   /** Called with the new text on every edit, including accepted autocomplete suggestions. */
@@ -2566,6 +2598,16 @@ interface PromptEditorProps {
   fileCwd: string;
   /** Focus the textarea on mount. */
   autoFocus?: boolean;
+  /**
+   * Submit on a plain Enter (Shift+Enter adds a line) instead of only on Cmd/Ctrl+Enter. Enter
+   * that ends an IME composition (e.g. Vietnamese Telex) never submits.
+   */
+  submitOnEnter?: boolean;
+  /** Element id for the textarea, so a page `<label>` can name it. */
+  id?: string;
+  /** Replaces the textarea's default classes, for pages with their own look. */
+  textareaClassName?: string;
+  hashCompletion?: HashCompletion;
 }
 
 /**
@@ -2575,7 +2617,7 @@ interface PromptEditorProps {
  * PromptEditorProps.fileCwd} from `/api/run/files`, fetched with a 120 ms debounce. Arrow keys move
  * the selection, Enter or Tab accepts, Escape closes the popup, and Cmd/Ctrl+Enter submits.
  */
-function PromptEditor({
+export function PromptEditor({
   value,
   onChange,
   onSubmit,
@@ -2584,6 +2626,10 @@ function PromptEditor({
   slashCommands,
   fileCwd,
   autoFocus,
+  submitOnEnter = false,
+  id,
+  textareaClassName,
+  hashCompletion,
 }: PromptEditorProps) {
   const { t } = useTranslation("run");
   const taRef = useRef<HTMLTextAreaElement | null>(null);
@@ -2591,6 +2637,8 @@ function PromptEditor({
   const [active, setActive] = useState(0);
   const [fileSuggestions, setFileSuggestions] = useState<string[]>([]);
   const fileFetchRef = useRef<{ q: string; t: number } | null>(null);
+  const [hashSuggestions, setHashSuggestions] = useState<HashSuggestion[]>([]);
+  const allowHash = hashCompletion !== undefined;
 
   // Slash filter - tiered scoring so prefix matches outrank arbitrary
   // substring hits, name matches outrank description matches, and shorter
@@ -2636,7 +2684,32 @@ function PromptEditor({
     return () => clearTimeout(tid);
   }, [state, fileCwd]);
 
-  const items = state?.kind === "file" ? fileSuggestions : slashItems;
+  const hashQuery = state?.kind === "hash" ? state.query : null;
+  useEffect(() => {
+    if (hashQuery === null || !hashCompletion) return;
+    let stale = false;
+    const tid = setTimeout(() => {
+      hashCompletion
+        .search(hashQuery)
+        .then((found) => {
+          if (!stale) setHashSuggestions(found);
+        })
+        .catch(() => {
+          if (!stale) setHashSuggestions([]);
+        });
+    }, 150);
+    return () => {
+      stale = true;
+      clearTimeout(tid);
+    };
+  }, [hashQuery, hashCompletion]);
+
+  const items: (SlashCommand | string | HashSuggestion)[] =
+    state?.kind === "file"
+      ? fileSuggestions
+      : state?.kind === "hash"
+        ? hashSuggestions
+        : slashItems;
 
   useEffect(() => {
     if (active >= items.length) setActive(Math.max(0, items.length - 1));
@@ -2648,11 +2721,23 @@ function PromptEditor({
    *
    * @param choice - Chosen slash command, or a file path for `@` completion.
    */
-  const insertChoice = (choice: SlashCommand | string) => {
+  const insertChoice = (choice: SlashCommand | string | HashSuggestion) => {
     if (!state || !taRef.current) return;
     const ta = taRef.current;
     const before = value.slice(0, state.triggerStart);
     const after = value.slice(state.cursor);
+    if (state.kind === "hash") {
+      const rest = before.endsWith(" ") ? after.replace(/^ +/, "") : after;
+      onChange(before + rest);
+      setState(null);
+      setActive(0);
+      hashCompletion?.onPick(choice as HashSuggestion);
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.setSelectionRange(before.length, before.length);
+      });
+      return;
+    }
     let inserted: string;
     if (state.kind === "slash") {
       const c = choice as SlashCommand;
@@ -2709,6 +2794,11 @@ function PromptEditor({
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       onSubmit?.();
+      return;
+    }
+    if (submitOnEnter && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      onSubmit?.();
     }
   };
 
@@ -2716,7 +2806,7 @@ function PromptEditor({
   const onTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value);
     const ta = e.target;
-    const next = detectAutocomplete(ta.value, ta.selectionStart || 0);
+    const next = detectAutocomplete(ta.value, ta.selectionStart || 0, allowHash);
     setState(next);
     if (!next) setActive(0);
   };
@@ -2724,7 +2814,7 @@ function PromptEditor({
   /** Re-detect the autocomplete trigger when the caret moves without typing. */
   const onSelect = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
     const ta = e.currentTarget;
-    const next = detectAutocomplete(ta.value, ta.selectionStart || 0);
+    const next = detectAutocomplete(ta.value, ta.selectionStart || 0, allowHash);
     setState(next);
   };
 
@@ -2732,6 +2822,7 @@ function PromptEditor({
     <div className="relative">
       <textarea
         ref={taRef}
+        id={id}
         autoFocus={autoFocus}
         value={value}
         onChange={onTextareaInput}
@@ -2740,7 +2831,10 @@ function PromptEditor({
         placeholder={placeholder}
         rows={rows}
         spellCheck={false}
-        className="w-full bg-surface-2 border border-border rounded-md px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-accent/50 resize-y font-sans leading-relaxed"
+        className={
+          textareaClassName ??
+          "w-full bg-surface-2 border border-border rounded-md px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-accent/50 resize-y font-sans leading-relaxed"
+        }
       />
       {state && (
         <div className="absolute z-30 left-0 right-0 bottom-full mb-1 rounded-md border border-border bg-surface-1 shadow-lg shadow-black/40 max-h-72 overflow-auto py-1">
@@ -2749,6 +2843,11 @@ function PromptEditor({
               <>
                 <SlashIcon className="w-3 h-3" />
                 {t("autocomplete.slashHint")}
+              </>
+            ) : state.kind === "hash" ? (
+              <>
+                <Hash className="w-3 h-3" />
+                {hashCompletion?.hint}
               </>
             ) : (
               <>
@@ -2781,6 +2880,24 @@ function PromptEditor({
                 </div>
                 {c.description && (
                   <div className="text-[10.5px] text-gray-500 truncate mt-0.5">{c.description}</div>
+                )}
+              </button>
+            ))
+          ) : state.kind === "hash" ? (
+            (items as HashSuggestion[]).map((h, idx) => (
+              <button
+                key={h.id}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => insertChoice(h)}
+                onMouseEnter={() => setActive(idx)}
+                className={`w-full text-left px-3 py-1.5 transition-colors ${
+                  idx === active ? "bg-accent/15" : "hover:bg-surface-3"
+                }`}
+              >
+                <div className="text-[12px] font-semibold text-gray-100 truncate">{h.label}</div>
+                {h.detail && (
+                  <div className="text-[10.5px] text-gray-500 truncate mt-0.5">{h.detail}</div>
                 )}
               </button>
             ))
@@ -4700,7 +4817,7 @@ function ModeBadge({ mode }: { mode: RunMode }) {
  * because their data is shown in the toolbar, footer, and meter instead; unknown types render as
  * collapsible raw JSON.
  */
-function EnvelopeRow({ envelope }: { envelope: Envelope }) {
+export function EnvelopeRow({ envelope }: { envelope: Envelope }) {
   if (!envelope || typeof envelope !== "object") return null;
   switch (envelope.type) {
     case "user":

@@ -1,0 +1,130 @@
+{
+  "title": "Bạn muốn agent làm gì?",
+  "subtitle": "Gõ việc cần làm rồi nhấn Enter. Dự án, mức tin cậy và model giữ theo lần chọn trước.",
+  "composer": {
+    "placeholder": "Ví dụ: Làm PB2B-503 theo convention của repo: viết test trước, xong thì mở PR.",
+    "run": "Chạy",
+    "starting": "Đang khởi chạy…",
+    "enterHint": "Enter để chạy · Shift+Enter để xuống dòng",
+    "chooseProjectFirst": "Chọn dự án trước khi chạy",
+    "hintSlash": "skill và workflow",
+    "hintAt": "file trong dự án",
+    "hintHash": "tiếp tục phiên cũ",
+    "templates": "Lệnh nhanh",
+    "advanced": "Chạy nâng cao",
+    "ticket": "Ticket Jira",
+    "binaryMissing": "Máy chủ không tìm thấy `claude` CLI trong PATH nên chưa chạy được agent."
+  },
+  "workspace": {
+    "label": "Dự án",
+    "loading": "Đang tải dự án…",
+    "projectsTitle": "Dự án đã tải về",
+    "projectsHint": "Chỉ hiện dự án đã tải về workspace của bạn. Agent chạy trong đúng thư mục của dự án bạn chọn.",
+    "fetchMore": "Tải thêm dự án",
+    "fetchMoreHint": "Chọn trong trang Tài khoản",
+    "freeTitle": "Thư mục",
+    "freeHint": "Agent chạy trong thư mục bạn chọn.",
+    "otherFolder": "Thư mục khác",
+    "otherFolderPlaceholder": "/đường/dẫn/tuyệt/đối",
+    "use": "Dùng",
+    "none": "Chưa chọn thư mục",
+    "connectToChoose": "Kết nối {{name}} để chọn dự án",
+    "fetchToChoose": "Tải một dự án về để chọn",
+    "catalogError": "Không đọc được danh sách dự án ({{error}}), nên tạm thời chọn thư mục nào cũng được."
+  },
+  "trust": {
+    "label": "Mức tin cậy",
+    "read": "Chỉ xem",
+    "edit": "Sửa file",
+    "full": "Toàn quyền",
+    "readHint": "Chỉ đọc và lập kế hoạch, không thay đổi gì (plan mode)",
+    "editHint": "Sửa file không cần hỏi, hỏi trước khi chạy lệnh (acceptEdits)",
+    "fullHint": "Chạy mọi thứ không cần hỏi (bypassPermissions)",
+    "confirmTitle": "Cho agent toàn quyền?",
+    "confirmBody": "Agent sẽ chạy mọi lệnh và sửa mọi file mà không hỏi lại. Chỉ dùng trong thư mục mà bạn chấp nhận được thay đổi ngoài ý muốn. Tải lại trang thì mức này quay về Sửa file.",
+    "confirm": "Cho toàn quyền",
+    "cancel": "Giữ mức hiện tại"
+  },
+  "model": {
+    "label": "Model",
+    "default": "Mặc định"
+  },
+  "connections": {
+    "connected": "{{name}} đã kết nối",
+    "disconnected": "{{name}} chưa kết nối",
+    "checking": "Đang kiểm tra {{name}}…",
+    "gateTitle": "Chưa kết nối {{name}}.",
+    "gateBody": "Dự án lấy từ {{name}}. Kết nối để tải dự án về và chọn ở đây.",
+    "gateAction": "Kết nối {{name}}",
+    "noProjectsTitle": "Chưa có dự án nào được tải về.",
+    "noProjectsBody": "Tải một dự án về workspace để agent có thư mục làm việc.",
+    "noProjectsAction": "Tải dự án",
+    "warnTitle": "Chưa kết nối {{name}}.",
+    "warnBody": "Các công cụ cần tài khoản này sẽ chưa dùng được cho tới khi bạn đăng nhập. Bạn vẫn chạy được.",
+    "warnAction": "Kết nối {{name}}",
+    "later": "Để sau"
+  },
+  "resume": {
+    "popupHint": "Phiên cũ để tiếp tục",
+    "chip": "Tiếp tục phiên",
+    "clear": "Bỏ, bắt đầu phiên mới",
+    "folder": "Thư mục của phiên",
+    "placeholder": "Agent cần làm gì tiếp trong phiên này?"
+  },
+  "inbox": {
+    "title": "Agent của bạn",
+    "needsYou": "Cần bạn",
+    "working": "Đang làm",
+    "finished": "Đã xong",
+    "empty": "Chưa có agent nào. Gõ việc ở trên để bắt đầu.",
+    "untitled": "Cuộc trò chuyện được tiếp tục",
+    "step": "bước {{done}}/{{total}}",
+    "waitingReply": "Đang chờ bạn trả lời",
+    "thinking": "Đang suy nghĩ…",
+    "status": {
+      "spawning": "Đang khởi chạy",
+      "running": "Đang chạy",
+      "completed": "Xong",
+      "error": "Lỗi",
+      "killed": "Đã dừng",
+      "abandoned": "Bỏ dở"
+    }
+  },
+  "conversation": {
+    "emptyTitle": "Chọn một agent",
+    "emptyBody": "Chọn agent bên trái, hoặc giao việc mới ở trên.",
+    "loading": "Đang tải cuộc trò chuyện…",
+    "needsYou": "Cần bạn trả lời",
+    "working": "Đang làm",
+    "started": "bắt đầu {{ago}}",
+    "stop": "Dừng",
+    "stopping": "Đang dừng…",
+    "copyResume": "Chép lệnh mở ở terminal",
+    "copied": "Đã chép: {{command}}",
+    "viewSession": "Xem phiên",
+    "toolsUsed": "Đã dùng {{count}} công cụ",
+    "progress": "Bước {{done}}/{{total}}",
+    "noMessages": "Chưa có tin nhắn.",
+    "replyPlaceholder": "Trả lời agent, hoặc gõ / để gọi skill",
+    "followUpPlaceholder": "Thêm chỉ dẫn; agent đọc sau bước hiện tại",
+    "resumePlaceholder": "Tiếp tục cuộc trò chuyện này",
+    "cannotContinue": "Lượt chạy này không có phiên để tiếp tục.",
+    "send": "Gửi"
+  },
+  "monitor": {
+    "title": "Giám sát",
+    "sessions": "Phiên",
+    "activeSessions": "Phiên đang chạy",
+    "activeAgents": "Agent đang chạy",
+    "eventsToday": "Sự kiện hôm nay",
+    "totalCost": "Tổng chi phí",
+    "open": "Mở bảng giám sát"
+  },
+  "errors": {
+    "startFailed": "Không khởi chạy được agent: {{message}}",
+    "sendFailed": "Không gửi được: {{message}}",
+    "stopFailed": "Không dừng được agent: {{message}}",
+    "loadFailed": "Không tải được cuộc trò chuyện: {{message}}",
+    "dismiss": "Đóng"
+  }
+}

@@ -15,8 +15,9 @@
  *
  * ## Routing
  * All feature pages nest under {@link Layout}, which owns the sidebar and
- * passes `wsConnected` for the connection badge. Unknown paths fall through to
- * {@link NotFound}.
+ * passes `wsConnected` for the connection badge. The index route is the
+ * {@link CommandCenter} (give agents work first); the monitoring dashboard
+ * lives at `/monitor`. Unknown paths fall through to {@link NotFound}.
  *
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
@@ -232,6 +233,7 @@ import { Layout } from "./components/Layout";
 import { DocumentTitle } from "./components/DocumentTitle";
 import { SplashScreen } from "./components/SplashScreen";
 import { Dashboard } from "./pages/Dashboard";
+import { CommandCenter } from "./pages/CommandCenter";
 import { KanbanBoard } from "./pages/KanbanBoard";
 import { Sessions } from "./pages/Sessions";
 import { SessionDetail } from "./pages/SessionDetail";
@@ -287,7 +289,8 @@ export default function App() {
       <DocumentTitle />
       <Routes>
         <Route element={<Layout wsConnected={connected} />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<CommandCenter />} />
+          <Route path="monitor" element={<Dashboard />} />
           <Route path="kanban" element={<KanbanBoard />} />
           <Route path="sessions" element={<Sessions />} />
           <Route path="sessions/:id" element={<SessionDetail />} />

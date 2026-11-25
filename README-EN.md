@@ -301,7 +301,7 @@ The responsive dark interface covers the full workflow. Every preview uses a mob
   <em>⌘ <strong>Command Palette</strong> · one keyboard launcher for pages, sessions, projects, filters, and actions</em>
 </p>
 
-The sidebar links Dashboard, Kanban Board, Sessions, Activity Feed, Analytics, Workflows, Agent Config, Run Agent, and Settings, plus Accounts when an operator has configured account connections. The sections below describe the complete behavior behind these views.
+The sidebar opens with **Give tasks**, the command centre at `/`, then groups Dashboard (now at `/monitor`), Kanban Board, Sessions, Activity Feed, Analytics, and Workflows under **Monitoring**, and Agent Config, Run Agent, Accounts (when an operator has configured account connections), and Settings under **Setup**. The sections below describe the complete behavior behind these views.
 
 ---
 
@@ -312,6 +312,7 @@ The dashboard covers the complete local agent lifecycle. Detailed operational co
 | Feature | Summary |
 | --- | --- |
 | **Task Progress** | Owner-aware progress from Claude task tools, legacy `TodoWrite`, and Codex `update_plan`. Compact previews appear on cards and rows; Session Detail adds status segments, active work, owners, and 10-row paging. New top-level work clears stale unfinished state, while completed history remains. |
+| **Command Centre** | The home page (`/`) puts giving agents work ahead of watching them. A large task box offers `/` skill and `@` file completion, Jira ticket-key chips, the project or folder to run in, a three-step trust dial (Read only, Edit files, Full access, which asks every time), and the model; runs start in conversation mode. Typing `#` lists earlier Claude sessions inside the projects on offer, and picking one resumes it in its own folder. With a project catalog in `DASHBOARD_CONNECTIONS_FILE`, only fetched projects that report a folder are offered, and Run stays disabled with a link to Accounts until the catalog's required account is signed in and a project is fetched; other signed-out accounts get a dismissible warning. Below it, an agent inbox groups dashboard runs into Needs you, Working, and Finished beside the picked run's conversation and reply box, and a one-line monitoring summary links to the full dashboard at `/monitor`. |
 | **Dashboard** | Persistent **Monitor** and **Health** tabs combine fleet totals, active hierarchies, recent activity, weighted success/cache/error/heap health, storage, tools, models, subagent effectiveness, and compaction metrics. Health refreshes every 5 seconds from `/api/settings/info` and `/api/workflows`. |
 | **Kanban Board** | Agent columns cover Working, Waiting, Completed, and Error; session columns add Active and Abandoned. Cards page 10 at a time, subscribe only to the active WebSocket view, preserve full titles, and explain waiting reasons such as permission input, turn completion, prompt idle, or interruption. |
 | **Sessions** | Searchable, filterable, server-paginated history with visible-page cost calculation and a temporary in-memory Codex startup row. Its provider selector narrows to Claude Code, Cursor, or Codex while respecting the product scope chosen in onboarding or Settings. Search covers `id`, `name`, and `cwd` with a 300 ms debounce. Names resolve from explicit title, AI title, then the first meaningful user prompt. Cursor replaces a temporary first-prompt fallback with the native generated title only when ingestion metadata proves CCAM owns the current name; manual and ambiguous legacy names remain unchanged. |
@@ -1264,7 +1265,7 @@ HTTP surface for spawning and supervising `claude` subprocesses from the dashboa
 
 | Method   | Path                              | Description |
 | -------- | --------------------------------- | ----------- |
-| `GET`    | `/api/run`                        | List all in-memory run handles (live + recently finished); also returns `maxConcurrent` and `activeCount` |
+| `GET`    | `/api/run`                        | List all in-memory run handles (live + recently finished); also returns `maxConcurrent` and `activeCount`. Each handle carries `turnState` (`working`, or `waiting` once a `result` envelope ends the turn), `lastActivity` (latest tool call, e.g. `Edit src/app.ts`) and `progress` (`{ done, total }` from the latest TodoWrite), which the command centre's agent inbox reads |
 | `GET`    | `/api/run/binary`                 | Probe whether `claude` is on `PATH` and where it lives — used by the UI to surface a clear error before spawning |
 | `GET`    | `/api/run/cwds`                   | Suggested working directories: dashboard server cwd, `$HOME`, and recent cwds from the sessions table |
 | `GET`    | `/api/run/files?cwd=…&q=…`        | Fuzzy file search inside `cwd` for the Run page's `@`-file autocomplete. Skips `node_modules`, `.git`, `dist`, `build`, `.next`, `.cache`, `coverage`, etc. Cwd is required and must exist; results are capped and ranked by basename match |

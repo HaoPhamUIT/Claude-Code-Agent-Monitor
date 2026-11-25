@@ -375,8 +375,11 @@ import splash_en from "./locales/en/splash.json";
 import splash_zh from "./locales/zh/splash.json";
 import splash_vi from "./locales/vi/splash.json";
 import connections_en from "./locales/en/connections.json";
+import command_en from "./locales/en/command.json";
 import connections_zh from "./locales/zh/connections.json";
+import command_zh from "./locales/zh/command.json";
 import connections_vi from "./locales/vi/connections.json";
+import command_vi from "./locales/vi/command.json";
 
 import common_ko from "./locales/ko/common.json";
 import nav_ko from "./locales/ko/nav.json";
@@ -394,6 +397,7 @@ import run_ko from "./locales/ko/run.json";
 import alerts_ko from "./locales/ko/alerts.json";
 import splash_ko from "./locales/ko/splash.json";
 import connections_ko from "./locales/ko/connections.json";
+import command_ko from "./locales/ko/command.json";
 
 import common_es from "./locales/es/common.json";
 import nav_es from "./locales/es/nav.json";
@@ -411,6 +415,7 @@ import run_es from "./locales/es/run.json";
 import alerts_es from "./locales/es/alerts.json";
 import splash_es from "./locales/es/splash.json";
 import connections_es from "./locales/es/connections.json";
+import command_es from "./locales/es/command.json";
 
 i18n
   .use(LanguageDetector)
@@ -434,6 +439,7 @@ i18n
         alerts: alerts_en,
         splash: splash_en,
         connections: connections_en,
+        command: command_en,
       },
       zh: {
         common: common_zh,
@@ -452,6 +458,7 @@ i18n
         alerts: alerts_zh,
         splash: splash_zh,
         connections: connections_zh,
+        command: command_zh,
       },
       vi: {
         common: common_vi,
@@ -470,6 +477,7 @@ i18n
         alerts: alerts_vi,
         splash: splash_vi,
         connections: connections_vi,
+        command: command_vi,
       },
       ko: {
         common: common_ko,
@@ -488,6 +496,7 @@ i18n
         alerts: alerts_ko,
         splash: splash_ko,
         connections: connections_ko,
+        command: command_ko,
       },
       es: {
         common: common_es,
@@ -506,6 +515,7 @@ i18n
         alerts: alerts_es,
         splash: splash_es,
         connections: connections_es,
+        command: command_es,
       },
     },
     supportedLngs: ["en", "zh", "vi", "ko", "es"],
@@ -528,6 +538,7 @@ i18n
       "alerts",
       "splash",
       "connections",
+      "command",
     ],
     defaultNS: "common",
     interpolation: { escapeValue: false },

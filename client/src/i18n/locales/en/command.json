@@ -1,0 +1,130 @@
+{
+  "title": "What should the agent do?",
+  "subtitle": "Type the task and press Enter. Project, trust level and model stay as you last chose them.",
+  "composer": {
+    "placeholder": "e.g. Work on PB2B-503 following the repo conventions: write tests first, then open a PR.",
+    "run": "Run",
+    "starting": "Starting…",
+    "enterHint": "Enter to run · Shift+Enter for a new line",
+    "chooseProjectFirst": "Choose a project before running",
+    "hintSlash": "skills and workflows",
+    "hintAt": "files in the project",
+    "hintHash": "resume an earlier session",
+    "templates": "Quick commands",
+    "advanced": "Advanced run",
+    "ticket": "Jira ticket",
+    "binaryMissing": "The `claude` CLI isn't on the server's PATH, so agents cannot start."
+  },
+  "workspace": {
+    "label": "Project",
+    "loading": "Loading projects…",
+    "projectsTitle": "Fetched projects",
+    "projectsHint": "Only projects fetched into your workspace are listed. The agent runs in the folder of the project you pick.",
+    "fetchMore": "Fetch more projects",
+    "fetchMoreHint": "Choose them on the Accounts page",
+    "freeTitle": "Folders",
+    "freeHint": "The agent runs in the folder you pick.",
+    "otherFolder": "Another folder",
+    "otherFolderPlaceholder": "/absolute/path/to/folder",
+    "use": "Use",
+    "none": "No folder chosen",
+    "connectToChoose": "Connect {{name}} to choose a project",
+    "fetchToChoose": "Fetch a project to choose it",
+    "catalogError": "Could not read the project list ({{error}}), so any folder can be chosen for now."
+  },
+  "trust": {
+    "label": "Trust level",
+    "read": "Read only",
+    "edit": "Edit files",
+    "full": "Full access",
+    "readHint": "Reads and plans, changes nothing (plan mode)",
+    "editHint": "Edits files without asking, asks before commands (acceptEdits)",
+    "fullHint": "Runs anything without asking (bypassPermissions)",
+    "confirmTitle": "Give the agent full access?",
+    "confirmBody": "The agent will run any command and edit any file without asking. Use it only in a folder where you can afford unwanted changes. It goes back to Edit files when you reload the page.",
+    "confirm": "Give full access",
+    "cancel": "Keep the current level"
+  },
+  "model": {
+    "label": "Model",
+    "default": "Default"
+  },
+  "connections": {
+    "connected": "{{name}} connected",
+    "disconnected": "{{name}} not connected",
+    "checking": "Checking {{name}}…",
+    "gateTitle": "{{name}} is not connected.",
+    "gateBody": "Projects come from {{name}}. Connect it to fetch a project and choose it here.",
+    "gateAction": "Connect {{name}}",
+    "noProjectsTitle": "No project fetched yet.",
+    "noProjectsBody": "Fetch a project into your workspace so the agent has a folder to work in.",
+    "noProjectsAction": "Fetch projects",
+    "warnTitle": "{{name}} is not connected.",
+    "warnBody": "Tools that need it will not work until you sign in. You can still run.",
+    "warnAction": "Connect {{name}}",
+    "later": "Later"
+  },
+  "resume": {
+    "popupHint": "Earlier sessions to continue",
+    "chip": "Continuing",
+    "clear": "Start a new session instead",
+    "folder": "Session folder",
+    "placeholder": "What should the agent do next in this session?"
+  },
+  "inbox": {
+    "title": "Your agents",
+    "needsYou": "Needs you",
+    "working": "Working",
+    "finished": "Finished",
+    "empty": "No agents yet. Type a task above to start one.",
+    "untitled": "Resumed conversation",
+    "step": "step {{done}}/{{total}}",
+    "waitingReply": "Waiting for your reply",
+    "thinking": "Thinking…",
+    "status": {
+      "spawning": "Starting",
+      "running": "Running",
+      "completed": "Done",
+      "error": "Failed",
+      "killed": "Stopped",
+      "abandoned": "Abandoned"
+    }
+  },
+  "conversation": {
+    "emptyTitle": "Pick an agent",
+    "emptyBody": "Choose one on the left, or give a new task above.",
+    "loading": "Loading the conversation…",
+    "needsYou": "Needs your reply",
+    "working": "Working",
+    "started": "started {{ago}}",
+    "stop": "Stop",
+    "stopping": "Stopping…",
+    "copyResume": "Copy terminal command",
+    "copied": "Copied: {{command}}",
+    "viewSession": "View session",
+    "toolsUsed": "Tools used: {{count}}",
+    "progress": "Step {{done}} of {{total}}",
+    "noMessages": "No messages yet.",
+    "replyPlaceholder": "Reply to the agent, or type / for a skill",
+    "followUpPlaceholder": "Add an instruction; the agent reads it after the current step",
+    "resumePlaceholder": "Continue this conversation",
+    "cannotContinue": "This run has no session to continue.",
+    "send": "Send"
+  },
+  "monitor": {
+    "title": "Monitoring",
+    "sessions": "Sessions",
+    "activeSessions": "Active sessions",
+    "activeAgents": "Agents running",
+    "eventsToday": "Events today",
+    "totalCost": "Total cost",
+    "open": "Open the monitoring dashboard"
+  },
+  "errors": {
+    "startFailed": "Could not start the agent: {{message}}",
+    "sendFailed": "Could not send: {{message}}",
+    "stopFailed": "Could not stop the agent: {{message}}",
+    "loadFailed": "Could not load the conversation: {{message}}",
+    "dismiss": "Dismiss"
+  }
+}

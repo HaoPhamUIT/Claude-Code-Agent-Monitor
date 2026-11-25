@@ -1,6 +1,9 @@
 {
-  "brand": "Bảng điều khiển Agent",
-  "brandSub": "Giám sát Claude Code",
+  "brand": "Pharmacity Agent",
+  "brandSub": "PMCA",
+  "command": "Ra lệnh",
+  "sectionMonitor": "Giám sát",
+  "sectionSetup": "Thiết lập",
   "dashboard": "Tổng quan",
   "agentBoard": "Bảng Kanban",
   "sessions": "Phiên",

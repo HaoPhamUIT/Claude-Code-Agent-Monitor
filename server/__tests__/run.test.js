@@ -386,6 +386,66 @@ describe("run-spawner unit", () => {
     assert.match(live.stderrTail, /parse-error/);
   });
 
+  it("summarises the turn: last tool, TodoWrite progress, and waiting after a result", async () => {
+    const fake = makeFakeChild();
+    const handle = runs.__injectChildForTest({ child: fake, mode: "conversation" });
+    assert.equal(runs.getRun(handle.id).turnState, "working");
+    fake.stdout.write(
+      `${JSON.stringify({
+        type: "assistant",
+        message: {
+          content: [
+            { type: "text", text: "Planning" },
+            {
+              type: "tool_use",
+              name: "TodoWrite",
+              input: {
+                todos: [
+                  { content: "read", status: "completed" },
+                  { content: "edit", status: "in_progress" },
+                  { content: "test", status: "pending" },
+                ],
+              },
+            },
+            { type: "tool_use", name: "Edit", input: { file_path: "src/app.ts" } },
+          ],
+        },
+      })}\n`
+    );
+    await new Promise((r) => setImmediate(r));
+    let live = runs.getRun(handle.id);
+    assert.equal(live.lastActivity, "Edit src/app.ts");
+    assert.deepEqual(live.progress, { done: 1, total: 3 });
+    assert.equal(live.turnState, "working");
+
+    fake.stdout.write(`{"type":"result","subtype":"success","is_error":false}\n`);
+    await new Promise((r) => setImmediate(r));
+    assert.equal(runs.getRun(handle.id).turnState, "waiting");
+
+    runs.sendInput(handle.id, "next");
+    live = runs.getRun(handle.id);
+    assert.equal(live.turnState, "working");
+    assert.equal(live.lastActivity, "Edit src/app.ts");
+  });
+
+  it("keeps the activity line to one short line", async () => {
+    const fake = makeFakeChild();
+    const handle = runs.__injectChildForTest({ child: fake, mode: "conversation" });
+    const command = `echo ${"x".repeat(400)}\necho second line`;
+    fake.stdout.write(
+      `${JSON.stringify({
+        type: "assistant",
+        message: { content: [{ type: "tool_use", name: "Bash", input: { command } }] },
+      })}\n`
+    );
+    await new Promise((r) => setImmediate(r));
+    const line = runs.getRun(handle.id).lastActivity;
+    assert.ok(line.startsWith("Bash echo xxx"));
+    assert.ok(!line.includes("second line"));
+    assert.equal(line.length, 160);
+    assert.ok(line.endsWith("…"));
+  });
+
   it("listRuns returns handles sorted newest first", async () => {
     const a = runs.__injectChildForTest({ child: makeFakeChild() });
     await new Promise((r) => setTimeout(r, 5));

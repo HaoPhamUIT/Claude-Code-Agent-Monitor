@@ -69,6 +69,12 @@ Cursor cards use the native session title plus `Cursor · <project>`, subagent-c
 
 Chart legends use the shared `PaginatedLegend.tsx` component. Lists at or below the configured page size render exactly as before with no controls. Longer Analytics donut legends and data-driven Workflows legends render one bounded page at a time with localized Previous / Next buttons and an accessible visible-range announcement, so labels stay reachable without expanding the chart card indefinitely.
 
+### Command Centre (home page)
+
+`/` (`pages/CommandCenter.tsx`, rules in `lib/commandCenter.ts`, parts in `components/command/`) puts giving agents work ahead of watching them. A large task box offers `/` skill and `@` file completion (the Run page's `PromptEditor`, submitting on Enter; an Enter that ends an IME composition never submits), Jira ticket-key chips, the project or folder to run in, a three-step trust dial (Read only = `plan`, Edit files = `acceptEdits`, Full access = `bypassPermissions`, which asks every time and is never remembered) and the model. Runs start in conversation mode so you can keep talking to them. Typing `#` lists earlier Claude sessions (`GET /api/sessions?provider=claude&q=…`) whose folder lies inside the projects on offer (any folder without a catalog); picking one locks the run to that folder and starts it with `resumeSessionId`, seeding the chat with the session transcript. `#` followed by a digit, as in `PR #1482`, stays plain text. When `DASHBOARD_CONNECTIONS_FILE` has a project catalog, only fully fetched projects that report a folder are offered and the agent starts in that folder; while the catalog's required connection is signed out, or nothing is fetched yet, Run is disabled and the box links to `/connections`. Other signed-out connections get a warning that **Later** hides for the browser session. Without a catalog, the picker offers home, recent folders and any absolute path. Folder, trust level and model are remembered in `localStorage`.
+
+Below the box, the agent inbox lists dashboard runs as **Needs you** (a conversation whose turn ended), **Working** (with the last tool call and TodoWrite step) and **Finished**; the picked run opens beside it with its progress bar, the chat with consecutive tool calls folded into one expandable line, and a reply box that sends a follow-up to a live run or resumes a finished session. Buttons stop the run, copy `claude --resume <id>` and open the session. A one-line monitoring summary at the foot links to the full dashboard, which now lives at `/monitor`.
+
 ### Run Agent and Agent Config
 
 `/run` deliberately opens on a provider choice, then keeps an accessible Claude Code / Codex toggle beside the live-status chip. Claude preserves the established headless and stream-json conversation experience. Codex uses the native local `codex app-server` protocol for a real interactive thread: it supports a model selected from the signed-in live catalog, its own approval policy and sandbox selection, stop, resume, follow-ups, and re-attach. WebSocket `run_stream` frames are normalized in `Run.tsx`, so both providers render messages, reasoning, command/tool activity, file changes, and status changes in the same resilient live view.
@@ -513,7 +519,8 @@ useEffect(() => {
 ```mermaid
 graph TB
     Root["/"]
-    Dashboard["/ (Dashboard)"]
+    Command["/ (CommandCenter)"]
+    Dashboard["/monitor (Dashboard)"]
     Kanban["/kanban"]
     Sessions["/sessions"]
     Detail["/sessions/:id"]
@@ -525,8 +532,9 @@ graph TB
     Settings["/settings"]
     NF["/* (NotFound)"]
 
-    Root --> Dashboard & Kanban & Sessions & Detail & Feed & Analytics & Workflows & CcConfig & Run & Settings & NF
+    Root --> Command & Dashboard & Kanban & Sessions & Detail & Feed & Analytics & Workflows & CcConfig & Run & Settings & NF
 
+    style Command fill:#0072BC
     style Dashboard fill:#3B82F6
     style Detail fill:#3B82F6
     style Feed fill:#8B5CF6
@@ -543,7 +551,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<CommandCenter />} />
+          <Route path="monitor" element={<Dashboard />} />
           <Route path="kanban" element={<KanbanBoard />} />
           <Route path="sessions" element={<Sessions />} />
           <Route path="sessions/:id" element={<SessionDetail />} />

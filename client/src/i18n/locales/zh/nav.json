@@ -1,6 +1,9 @@
 {
-  "brand": "Agent 仪表盘",
-  "brandSub": "Claude Code 监控",
+  "brand": "Pharmacity Agent",
+  "brandSub": "PMCA",
+  "command": "下达任务",
+  "sectionMonitor": "监控",
+  "sectionSetup": "配置",
   "dashboard": "仪表盘",
   "agentBoard": "Kanban 看板",
   "sessions": "会话",

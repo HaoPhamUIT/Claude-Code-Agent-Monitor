@@ -228,16 +228,18 @@ describe("Sidebar", () => {
 
   it("should render the brand name", () => {
     renderSidebar(true);
-    expect(screen.getByText("Agent Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Pharmacity Agent")).toBeInTheDocument();
   });
 
   it("should render the subtitle", () => {
     renderSidebar(true);
-    expect(screen.getByText("Claude Code Monitor")).toBeInTheDocument();
+    expect(screen.getByText("PMCA")).toBeInTheDocument();
   });
 
   it("should render all navigation links", () => {
     renderSidebar(true);
+    expect(screen.getByText("Give tasks")).toBeInTheDocument();
+    expect(screen.getByText("Monitoring")).toBeInTheDocument();
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Kanban Board")).toBeInTheDocument();
     expect(screen.getByText("Sessions")).toBeInTheDocument();
@@ -267,6 +269,7 @@ describe("Sidebar", () => {
     const links = screen.getAllByRole("link");
     const hrefs = links.map((link) => link.getAttribute("href"));
     expect(hrefs).toContain("/");
+    expect(hrefs).toContain("/monitor");
     expect(hrefs).toContain("/kanban");
     expect(hrefs).toContain("/sessions");
     expect(hrefs).toContain("/activity");

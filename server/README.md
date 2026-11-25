@@ -797,7 +797,7 @@ Provider-aware HTTP surface for spawning and supervising Claude Code processes a
 
 | Method   | Path                          | Description |
 | -------- | ----------------------------- | ----------- |
-| `GET`    | `/api/run`                    | List handles + `maxConcurrent` + `activeCount` |
+| `GET`    | `/api/run`                    | List handles + `maxConcurrent` + `activeCount`. Each handle carries `turnState` (`working`, or `waiting` once a `result` envelope ends the turn), `lastActivity` (latest tool call, e.g. `Edit src/app.ts`) and `progress` (`{ done, total }` from the latest TodoWrite) for the command centre's agent inbox |
 | `GET`    | `/api/run/binary?provider=…`  | Probe whether `claude` or `codex` is on `PATH` |
 | `GET`    | `/api/run/models?provider=…`  | Signed-in dynamic Codex model catalog; Claude aliases plus locally observed models |
 | `GET`    | `/api/run/cwds`               | Suggested cwds (dashboard, home, recent from sessions) |
@@ -829,7 +829,7 @@ The projects a person can fetch into their workspace from the dashboard, from th
 
 | Method   | Path                          | Description |
 | -------- | ----------------------------- | ----------- |
-| `GET`    | `/api/projects`               | `{ enabled, error, requires, items }`; runs `list` (15 s limit). Each item: `id`, `name`, `description`, `cloned`, `partial`, `job`. `requires` is the connection a fetch needs and whether it is signed in |
+| `GET`    | `/api/projects`               | `{ enabled, error, requires, items }`; runs `list` (15 s limit). Each item: `id`, `name`, `description`, `cloned`, `partial`, `path` (the project folder, only when it is an existing absolute directory, else `null`), `job`. `requires` is the connection a fetch needs and whether it is signed in |
 | `POST`   | `/api/projects/:id/add`       | Start the fetch (202) or return the one already running (200); `409 EREQUIRES` until the required connection is signed in, `429 ETOOMANY` past four running fetches |
 | `GET`    | `/api/projects/:id/job`       | Job progress: `state`, `output` (last 64 KiB), `progress` (latest line), `exitCode` |
 | `DELETE` | `/api/projects/:id/job`       | Cancel (SIGTERM → SIGKILL after 3 s); repositories already fetched stay |

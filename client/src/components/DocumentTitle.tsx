@@ -176,7 +176,7 @@ export function DocumentTitle() {
   const { t } = useTranslation("nav");
   const location = useLocation();
 
-  let title = t("dashboard");
+  let title = t("command");
   const path = location.pathname;
   const sessionId = path.match(/^\/sessions\/([^/]+)/)?.[1];
 
@@ -184,6 +184,8 @@ export function DocumentTitle() {
     title = `${t("sessions")} · ${sessionId.slice(0, 8)}`;
   } else if (path.startsWith("/sessions")) {
     title = t("sessions");
+  } else if (path.startsWith("/monitor")) {
+    title = t("dashboard");
   } else if (path.startsWith("/kanban")) {
     title = t("agentBoard");
   } else if (path.startsWith("/activity")) {

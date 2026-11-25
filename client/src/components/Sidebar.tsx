@@ -254,6 +254,7 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
+  SquareTerminal,
   Columns3,
   FolderOpen,
   Activity,
@@ -297,21 +298,35 @@ function isUpdatePayload(x: unknown): x is UpdateStatusPayload {
   return typeof x === "object" && x !== null && "git_repo" in x && "update_available" in x;
 }
 
-/** Primary navigation entries in sidebar order: route, icon, and translation key. */
-const NAV_KEYS = [
-  { to: "/", icon: LayoutDashboard, key: "nav:dashboard" },
+/** One sidebar link; `section` starts a titled group above it. */
+interface NavEntry {
+  to: string;
+  icon: LucideIcon;
+  /** Translation key of the label. */
+  key: string;
+  /** Translation key of the group title shown above this entry. */
+  section?: string;
+}
+
+/**
+ * Primary navigation entries in sidebar order. Giving agents work comes first; the monitoring
+ * pages and the setup pages follow under their own titles.
+ */
+const NAV_KEYS: readonly NavEntry[] = [
+  { to: "/", icon: SquareTerminal, key: "nav:command" },
+  { to: "/monitor", icon: LayoutDashboard, key: "nav:dashboard", section: "nav:sectionMonitor" },
   { to: "/kanban", icon: Columns3, key: "nav:agentBoard" },
   { to: "/sessions", icon: FolderOpen, key: "nav:sessions" },
   { to: "/activity", icon: Activity, key: "nav:activityFeed" },
   { to: "/analytics", icon: BarChart3, key: "nav:analytics" },
   { to: "/workflows", icon: Workflow, key: "nav:workflows" },
-  { to: "/cc-config", icon: Boxes, key: "nav:ccConfig" },
+  { to: "/cc-config", icon: Boxes, key: "nav:ccConfig", section: "nav:sectionSetup" },
   { to: "/run", icon: Play, key: "nav:run" },
   { to: "/settings", icon: Settings, key: "nav:settings" },
-] as const;
+];
 
 /** Nav entry for account connections; shown only when the operator configured them. */
-const ACCOUNTS_NAV = { to: "/connections", icon: KeyRound, key: "nav:accounts" } as const;
+const ACCOUNTS_NAV: NavEntry = { to: "/connections", icon: KeyRound, key: "nav:accounts" };
 
 /** localStorage key for the color theme; read before first paint by index.html. */
 const THEME_KEY = "ccam-theme";
@@ -923,27 +938,36 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
           user knows there's more to reach without inspecting the scrollbar. */}
       <div className="flex-1 min-h-0 relative flex">
         <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-1">
-          {navItems.map(({ to, icon: Icon, key }) => {
+          {navItems.map(({ to, icon: Icon, key, section }) => {
             const label = t(key);
             return (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === "/"}
-                title={collapsed ? label : undefined}
-                className={({ isActive }) =>
-                  `relative flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150 ${
-                    collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2.5"
-                  } ${
-                    isActive
-                      ? "bg-accent/10 text-accent border border-accent/20"
-                      : "text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-transparent"
-                  }`
-                }
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {!collapsed && <span>{label}</span>}
-              </NavLink>
+              <div key={to}>
+                {section &&
+                  (collapsed ? (
+                    <div className="mx-2 my-2 border-t border-border" aria-hidden />
+                  ) : (
+                    <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                      {t(section)}
+                    </p>
+                  ))}
+                <NavLink
+                  to={to}
+                  end={to === "/"}
+                  title={collapsed ? label : undefined}
+                  className={({ isActive }) =>
+                    `relative flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150 ${
+                      collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2.5"
+                    } ${
+                      isActive
+                        ? "bg-accent/10 text-accent border border-accent/20"
+                        : "text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-transparent"
+                    }`
+                  }
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {!collapsed && <span>{label}</span>}
+                </NavLink>
+              </div>
             );
           })}
         </nav>

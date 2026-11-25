@@ -1,6 +1,9 @@
 {
-  "brand": "Agent Dashboard",
-  "brandSub": "Claude Code Monitor",
+  "brand": "Pharmacity Agent",
+  "brandSub": "PMCA",
+  "command": "작업 맡기기",
+  "sectionMonitor": "모니터링",
+  "sectionSetup": "구성",
   "dashboard": "대시보드",
   "agentBoard": "칸반 보드",
   "sessions": "세션",

@@ -300,7 +300,7 @@ flowchart LR
   <em>⌘ <strong>Command Palette</strong> · 페이지, 세션, 프로젝트, 필터, 작업을 위한 단일 키보드 실행기</em>
 </p>
 
-사이드바는 Dashboard, Kanban Board, Sessions, Activity Feed, Analytics, Workflows, Agent Config, Run Agent, Settings로 이동하며, 운영자가 계정 연결을 구성한 경우 계정도 표시됩니다. 아래 섹션에서 이 보기의 전체 동작을 설명합니다.
+사이드바는 `/`의 명령 센터인 **작업 맡기기**로 시작하고, Dashboard(이제 `/monitor`), Kanban Board, Sessions, Activity Feed, Analytics, Workflows를 **모니터링** 아래에, Agent Config, Run Agent, 계정(운영자가 계정 연결을 구성한 경우), Settings를 **구성** 아래에 묶습니다. 아래 섹션에서 이 보기의 전체 동작을 설명합니다.
 
 ---
 
@@ -311,6 +311,7 @@ flowchart LR
 | 기능 | 요약 |
 | --- | --- |
 | **작업 진행률** | Claude 작업 도구, 레거시 `TodoWrite`, Codex `update_plan`에서 소유자를 인식하는 진행률을 생성합니다. 카드와 행에는 간단한 미리보기가 표시되고, Session Detail에는 상태 구간, 활성 작업, 소유자, 10개 행 단위 페이지가 추가됩니다. 새 최상위 작업은 이전의 미완료 상태를 지우고, 완료 기록은 유지합니다. |
+| **명령 센터** | 홈 페이지(`/`)는 Agent를 지켜보기보다 일을 맡기는 것을 먼저 둡니다. 큰 작업 상자는 `/` skill과 `@` 파일 자동 완성, Jira 티켓 키 칩, 실행할 프로젝트나 폴더, 3단계 신뢰 수준(읽기 전용, 파일 편집, 전체 권한이며 마지막은 매번 확인), 모델을 제공하고, 실행은 대화 모드로 시작합니다. `#`을 입력하면 제공되는 프로젝트 안의 이전 Claude 세션이 나열되며, 하나를 고르면 그 세션의 폴더에서 이어갑니다. `DASHBOARD_CONNECTIONS_FILE`에 프로젝트 카탈로그가 있으면 폴더를 보고하는 가져온 프로젝트만 제공되며, 카탈로그에 필요한 계정에 로그인하고 프로젝트를 가져올 때까지 실행 버튼은 비활성화되고 계정 페이지로 연결됩니다. 로그인하지 않은 다른 계정에는 미룰 수 있는 경고가 표시됩니다. 아래의 Agent 받은편지함은 대시보드 실행을 응답 필요, 작업 중, 완료됨으로 나누어 선택한 실행의 대화와 답장 상자 옆에 보여 주고, 한 줄 모니터링 요약은 `/monitor`의 전체 대시보드로 연결됩니다. |
 | **Dashboard** | 저장되는 **Monitor**와 **Health** 탭이 전체 합계, 활성 계층, 최근 활동, 가중 성공률/캐시/오류/힙 상태, 스토리지, 도구, 모델, Subagent 효과, 컴팩션 지표를 결합합니다. Health는 `/api/settings/info`와 `/api/workflows`에서 5초마다 새로 고칩니다. |
 | **Kanban Board** | Agent 열은 Working, Waiting, Completed, Error를, 세션 열은 Active와 Abandoned를 추가로 다룹니다. 카드는 10개씩 표시하고 활성 WebSocket 보기만 구독하며, 전체 제목을 보존하고 권한 입력, 턴 완료, 프롬프트 대기, 중단 같은 대기 사유를 설명합니다. |
 | **Sessions** | 보이는 페이지만 비용을 계산하는 검색, 필터, 서버 페이지네이션 히스토리와 메모리 내 임시 Codex 시작 행을 제공합니다. Provider 선택기는 온보딩 또는 Settings에서 선택한 제품 범위를 유지하면서 Claude Code, Cursor, Codex로 좁힐 수 있습니다. 검색은 300 ms 디바운스로 `id`, `name`, `cwd`를 대상으로 합니다. 이름은 명시적 제목, AI 제목, 첫 의미 있는 사용자 프롬프트 순으로 결정됩니다. Cursor의 네이티브 생성 제목은 수집 메타데이터가 현재 이름을 CCAM이 소유함을 입증할 때만 임시 첫 프롬프트 대체 이름을 갱신하며, 수동 이름과 소유권이 불분명한 레거시 이름은 그대로 유지됩니다. |
@@ -1258,7 +1259,7 @@ npm run monitoring:verify
 
 | 메서드   | 경로                              | 설명 |
 | -------- | --------------------------------- | ----------- |
-| `GET`    | `/api/run`                        | 메모리에 있는 모든 실행 핸들 목록 조회(실행 중 + 최근 완료); `maxConcurrent`와 `activeCount`도 함께 반환합니다 |
+| `GET`    | `/api/run`                        | 메모리에 있는 모든 실행 핸들 목록 조회(실행 중 + 최근 완료); `maxConcurrent`와 `activeCount`도 함께 반환합니다. 각 핸들에는 `turnState`(`working`, 또는 `result` 엔벌로프로 턴이 끝나면 `waiting`), `lastActivity`(최근 도구 호출, 예: `Edit src/app.ts`), `progress`(최근 TodoWrite의 `{ done, total }`)가 있으며 명령 센터의 Agent 받은편지함이 이를 읽습니다 |
 | `GET`    | `/api/run/binary`                 | `claude`가 `PATH`에 있는지와 그 위치를 탐지합니다 — UI가 실행 생성 전에 명확한 오류를 표시하는 데 사용됩니다 |
 | `GET`    | `/api/run/cwds`                   | 추천 작업 디렉터리: 대시보드 서버 cwd, `$HOME`, 그리고 sessions 테이블의 최근 cwd |
 | `GET`    | `/api/run/files?cwd=…&q=…`        | Run 페이지의 `@` 파일 자동완성을 위한 `cwd` 내부 퍼지 파일 검색. `node_modules`, `.git`, `dist`, `build`, `.next`, `.cache`, `coverage` 등은 건너뜁니다. cwd는 필수이며 존재해야 합니다. 결과는 개수가 제한되고 basename 일치도로 순위가 매겨집니다 |

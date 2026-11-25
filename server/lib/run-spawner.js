@@ -23,6 +23,12 @@
  * Concurrency is capped (RUN_MAX_CONCURRENT, default 10) — over the cap we
  * throw ECONCURRENCY with the running set so the route can return 429.
  *
+ * Each handle also keeps a short summary of where its conversation stands:
+ * `turnState` ("working" while a turn runs, "waiting" once a `result`
+ * envelope ends it and the child idles on stdin), the last tool it called
+ * (`lastActivity`) and its latest TodoWrite tally (`progress`). The command
+ * centre's agent inbox reads these without replaying every stream.
+ *
  * Each handle keeps a bounded in-memory envelope log (cap 500) so a client
  * that attaches late can replay what it missed. Completed handles are reaped
  * after 5 min — but the underlying transcripts persist via the normal hook
@@ -93,6 +99,80 @@ function tail(s, n) {
   if (typeof s !== "string") return "";
   if (s.length <= n) return s;
   return s.slice(s.length - n);
+}
+
+/** Longest `lastActivity` line kept on a handle. */
+const ACTIVITY_MAX_CHARS = 160;
+/** Tool input fields that best say what a call is about, most telling first. */
+const ACTIVITY_FIELDS = [
+  "file_path",
+  "notebook_path",
+  "path",
+  "command",
+  "pattern",
+  "url",
+  "query",
+  "skill",
+  "description",
+];
+
+/**
+ * One line naming a tool call and what it touches, e.g. `Edit src/app.ts`.
+ * @param {string} name - Tool name from the `tool_use` block.
+ * @param {unknown} input - The block's input object.
+ * @returns {string}
+ */
+function describeToolUse(name, input) {
+  let detail = "";
+  if (input && typeof input === "object") {
+    for (const key of ACTIVITY_FIELDS) {
+      const value = input[key];
+      if (typeof value === "string" && value.trim()) {
+        detail = value.trim().split("\n")[0];
+        break;
+      }
+    }
+  }
+  const line = detail ? `${name} ${detail}` : name;
+  return line.length > ACTIVITY_MAX_CHARS ? `${line.slice(0, ACTIVITY_MAX_CHARS - 1)}…` : line;
+}
+
+/**
+ * Completed and total items of a TodoWrite call, or null when it lists none.
+ * @param {unknown} input - The TodoWrite input object.
+ * @returns {{ done: number, total: number } | null}
+ */
+function todoProgress(input) {
+  const todos = input && typeof input === "object" && Array.isArray(input.todos) ? input.todos : [];
+  if (todos.length === 0) return null;
+  const done = todos.filter((t) => t && typeof t === "object" && t.status === "completed").length;
+  return { done, total: todos.length };
+}
+
+/**
+ * Update a handle's conversation summary from one stream-json envelope: a
+ * `result` ends the turn, and each `tool_use` becomes the latest activity
+ * (a TodoWrite also refreshes the progress tally).
+ * @param {object} handle - The run handle to update in place.
+ * @param {unknown} envelope - One parsed stream-json envelope.
+ */
+function trackTurn(handle, envelope) {
+  if (!envelope || typeof envelope !== "object") return;
+  if (envelope.type === "result") {
+    handle.turnState = "waiting";
+    return;
+  }
+  if (envelope.type !== "assistant") return;
+  const content = envelope.message && envelope.message.content;
+  if (!Array.isArray(content)) return;
+  for (const block of content) {
+    if (!block || block.type !== "tool_use" || typeof block.name !== "string") continue;
+    handle.lastActivity = describeToolUse(block.name, block.input);
+    if (block.name === "TodoWrite") {
+      const progress = todoProgress(block.input);
+      if (progress) handle.progress = progress;
+    }
+  }
 }
 
 /**
@@ -185,6 +265,7 @@ function attachStreamHandlers(handle) {
         handle.sessionId = envelope.session_id;
         if (wasNull) patchRun({ id: handle.id, sessionId: envelope.session_id });
       }
+      trackTurn(handle, envelope);
       handle.envelopeCount += 1;
       handle.envelopes.push(envelope);
       // Keep only the most recent N — older entries are still in the disk
@@ -336,6 +417,10 @@ function spawnRun(args) {
     signal: null,
     error: null,
     sessionId: resumeSessionId || null, // optimistic; will be confirmed by system/init envelope
+    // A resumed conversation with no prompt idles until the user types.
+    turnState: mode === "headless" || (prompt && prompt.trim()) ? "working" : "waiting",
+    lastActivity: null,
+    progress: null,
     envelopeCount: 0,
     envelopes: [],
     stdoutBuffer: "",
@@ -394,6 +479,7 @@ function sendInput(id, text) {
   }
   const messageId = randomUUID();
   handle.child.stdin.write(userEnvelope(text, messageId));
+  handle.turnState = "working";
   broadcast("run_input_ack", { id, messageId, at: Date.now() });
   return { messageId };
 }
@@ -450,6 +536,9 @@ function publicHandle(handle, opts = {}) {
     signal: handle.signal,
     error: handle.error,
     sessionId: handle.sessionId,
+    turnState: handle.turnState || null,
+    lastActivity: handle.lastActivity || null,
+    progress: handle.progress || null,
     envelopeCount: handle.envelopeCount,
     stdoutTail: handle.stdoutBuffer,
     stderrTail: handle.stderrBuffer,
@@ -499,6 +588,9 @@ function __injectChildForTest({ child, mode = "conversation", prompt = "test" })
     signal: null,
     error: null,
     sessionId: null,
+    turnState: "working",
+    lastActivity: null,
+    progress: null,
     envelopeCount: 0,
     envelopes: [],
     stdoutBuffer: "",

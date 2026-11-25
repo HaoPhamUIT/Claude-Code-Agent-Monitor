@@ -8002,3 +8002,40 @@ Object.assign(window.__WIKI_CONTENT_I18N.es, {
   "JSON file that lists account connections (sign-in commands) for the Accounts page and, under an optional <code>projects</code> key, the project catalog people fetch into their workspace. Unset turns the feature off.":
     "Archivo JSON que enumera las conexiones de cuentas (comandos de inicio de sesión) para la página Cuentas y, en una clave opcional <code>projects</code>, el catálogo de proyectos que se traen al espacio de trabajo. Sin definir, la función queda desactivada.",
 });
+
+// ─── Command Centre (home page) ───
+Object.assign(window.__WIKI_CONTENT_I18N.zh, {
+  "The home page puts giving agents work ahead of watching them. One task box takes the prompt with <code>/</code> skill and <code>@</code> file completion, the project folder, a three-step trust dial, and the model; every run starts as a conversation. With a project catalog, only fetched projects are offered, and Run waits until the required account is signed in. An inbox sorts dashboard runs into Needs you, Working, and Finished beside the open conversation, while the full dashboard moves to <code>/monitor</code>.":
+    "首页把给 Agent 派活放在监控之前。一个任务框即可填写提示词，支持 <code>/</code> skill 与 <code>@</code> 文件补全，并选择项目文件夹、三档信任级别和模型；每次运行都以对话方式启动。配置了项目目录时，只提供已拉取的项目，并在所需账户登录前暂不允许运行。收件箱把 Dashboard 发起的运行分为“需要你”“进行中”和“已结束”，旁边就是打开的对话；完整的 Dashboard 移到 <code>/monitor</code>。",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.vi, {
+  "The home page puts giving agents work ahead of watching them. One task box takes the prompt with <code>/</code> skill and <code>@</code> file completion, the project folder, a three-step trust dial, and the model; every run starts as a conversation. With a project catalog, only fetched projects are offered, and Run waits until the required account is signed in. An inbox sorts dashboard runs into Needs you, Working, and Finished beside the open conversation, while the full dashboard moves to <code>/monitor</code>.":
+    "Trang chủ đặt việc giao việc cho agent lên trước việc theo dõi. Một ô nhập việc nhận prompt với gợi ý skill qua <code>/</code> và file qua <code>@</code>, thư mục dự án, mức tin cậy ba nấc và model; mỗi lượt chạy đều bắt đầu dưới dạng hội thoại. Khi có danh mục dự án, chỉ dự án đã tải về mới được chọn, và nút Chạy chờ tới khi tài khoản bắt buộc đã đăng nhập. Hộp thư xếp các lượt chạy từ dashboard thành Cần bạn, Đang làm và Đã xong bên cạnh cuộc trò chuyện đang mở, còn dashboard đầy đủ chuyển sang <code>/monitor</code>.",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.ko, {
+  "The home page puts giving agents work ahead of watching them. One task box takes the prompt with <code>/</code> skill and <code>@</code> file completion, the project folder, a three-step trust dial, and the model; every run starts as a conversation. With a project catalog, only fetched projects are offered, and Run waits until the required account is signed in. An inbox sorts dashboard runs into Needs you, Working, and Finished beside the open conversation, while the full dashboard moves to <code>/monitor</code>.":
+    "홈 페이지는 Agent를 지켜보기보다 일을 맡기는 것을 먼저 둡니다. 하나의 작업 상자에서 <code>/</code> skill과 <code>@</code> 파일 자동 완성으로 프롬프트를 입력하고, 프로젝트 폴더, 3단계 신뢰 수준, 모델을 고릅니다. 모든 실행은 대화로 시작합니다. 프로젝트 카탈로그가 있으면 가져온 프로젝트만 제공되며, 필요한 계정에 로그인할 때까지 실행은 기다립니다. 받은편지함은 대시보드 실행을 응답 필요, 작업 중, 완료됨으로 나눠 열린 대화 옆에 보여 주고, 전체 대시보드는 <code>/monitor</code>로 옮겨집니다.",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.es, {
+  "The home page puts giving agents work ahead of watching them. One task box takes the prompt with <code>/</code> skill and <code>@</code> file completion, the project folder, a three-step trust dial, and the model; every run starts as a conversation. With a project catalog, only fetched projects are offered, and Run waits until the required account is signed in. An inbox sorts dashboard runs into Needs you, Working, and Finished beside the open conversation, while the full dashboard moves to <code>/monitor</code>.":
+    "La página de inicio antepone asignar trabajo a los agentes a vigilarlos. Un solo cuadro de tareas recibe la instrucción con autocompletado de skills con <code>/</code> y de archivos con <code>@</code>, la carpeta del proyecto, un nivel de confianza de tres pasos y el modelo; cada ejecución empieza como conversación. Con un catálogo de proyectos solo se ofrecen los proyectos descargados, y Ejecutar espera hasta que la cuenta requerida haya iniciado sesión. Una bandeja ordena las ejecuciones del panel en Te necesitan, Trabajando y Terminados junto a la conversación abierta, y el panel completo pasa a <code>/monitor</code>.",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.plain.zh, {
+  "Command Centre": "指挥中心",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.plain.vi, {
+  "Command Centre": "Trung tâm ra lệnh",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.plain.ko, {
+  "Command Centre": "명령 센터",
+});
+
+Object.assign(window.__WIKI_CONTENT_I18N.plain.es, {
+  "Command Centre": "Centro de mando",
+});

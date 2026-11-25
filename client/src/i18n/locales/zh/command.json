@@ -1,0 +1,130 @@
+{
+  "title": "要让 Agent 做什么？",
+  "subtitle": "输入任务后按 Enter。项目、信任级别和模型沿用你上次的选择。",
+  "composer": {
+    "placeholder": "例如：按仓库规范处理 PB2B-503：先写测试，完成后提交 PR。",
+    "run": "运行",
+    "starting": "正在启动…",
+    "enterHint": "Enter 运行 · Shift+Enter 换行",
+    "chooseProjectFirst": "请先选择项目再运行",
+    "hintSlash": "skill 和 workflow",
+    "hintAt": "项目中的文件",
+    "hintHash": "继续之前的会话",
+    "templates": "快捷命令",
+    "advanced": "高级运行",
+    "ticket": "Jira 工单",
+    "binaryMissing": "服务器的 PATH 中找不到 `claude` CLI，因此无法启动 Agent。"
+  },
+  "workspace": {
+    "label": "项目",
+    "loading": "正在加载项目…",
+    "projectsTitle": "已拉取的项目",
+    "projectsHint": "只列出已拉取到你工作区的项目。Agent 会在你所选项目的文件夹中运行。",
+    "fetchMore": "拉取更多项目",
+    "fetchMoreHint": "在账户页面中选择",
+    "freeTitle": "文件夹",
+    "freeHint": "Agent 会在你选择的文件夹中运行。",
+    "otherFolder": "其他文件夹",
+    "otherFolderPlaceholder": "/绝对/路径",
+    "use": "使用",
+    "none": "未选择文件夹",
+    "connectToChoose": "连接 {{name}} 以选择项目",
+    "fetchToChoose": "先拉取一个项目才能选择",
+    "catalogError": "无法读取项目列表（{{error}}），因此暂时可以选择任意文件夹。"
+  },
+  "trust": {
+    "label": "信任级别",
+    "read": "只读",
+    "edit": "编辑文件",
+    "full": "完全访问",
+    "readHint": "只读取和规划，不做任何修改（plan mode）",
+    "editHint": "无需询问即可编辑文件，运行命令前会询问（acceptEdits）",
+    "fullHint": "无需询问即可运行任何操作（bypassPermissions）",
+    "confirmTitle": "给予 Agent 完全访问权限？",
+    "confirmBody": "Agent 将不经询问运行任何命令并编辑任何文件。仅在你能接受意外修改的文件夹中使用。重新加载页面后会恢复为编辑文件。",
+    "confirm": "给予完全访问",
+    "cancel": "保持当前级别"
+  },
+  "model": {
+    "label": "模型",
+    "default": "默认"
+  },
+  "connections": {
+    "connected": "{{name}} 已连接",
+    "disconnected": "{{name}} 未连接",
+    "checking": "正在检查 {{name}}…",
+    "gateTitle": "{{name}} 尚未连接。",
+    "gateBody": "项目来自 {{name}}。连接后即可拉取项目并在此选择。",
+    "gateAction": "连接 {{name}}",
+    "noProjectsTitle": "尚未拉取任何项目。",
+    "noProjectsBody": "将项目拉取到工作区，Agent 才有可工作的文件夹。",
+    "noProjectsAction": "拉取项目",
+    "warnTitle": "{{name}} 尚未连接。",
+    "warnBody": "在你登录之前，需要此账户的工具将无法使用。你仍然可以运行。",
+    "warnAction": "连接 {{name}}",
+    "later": "稍后"
+  },
+  "resume": {
+    "popupHint": "可继续的过往会话",
+    "chip": "继续会话",
+    "clear": "改为开始新会话",
+    "folder": "会话文件夹",
+    "placeholder": "在此会话中接下来让 Agent 做什么？"
+  },
+  "inbox": {
+    "title": "你的 Agent",
+    "needsYou": "需要你",
+    "working": "进行中",
+    "finished": "已结束",
+    "empty": "还没有 Agent。在上方输入任务即可开始。",
+    "untitled": "已恢复的对话",
+    "step": "第 {{done}}/{{total}} 步",
+    "waitingReply": "等待你的回复",
+    "thinking": "思考中…",
+    "status": {
+      "spawning": "启动中",
+      "running": "运行中",
+      "completed": "完成",
+      "error": "失败",
+      "killed": "已停止",
+      "abandoned": "已放弃"
+    }
+  },
+  "conversation": {
+    "emptyTitle": "选择一个 Agent",
+    "emptyBody": "在左侧选择一个，或在上方下达新任务。",
+    "loading": "正在加载对话…",
+    "needsYou": "需要你回复",
+    "working": "进行中",
+    "started": "开始于{{ago}}",
+    "stop": "停止",
+    "stopping": "正在停止…",
+    "copyResume": "复制终端命令",
+    "copied": "已复制：{{command}}",
+    "viewSession": "查看会话",
+    "toolsUsed": "已使用工具：{{count}}",
+    "progress": "第 {{done}} 步，共 {{total}} 步",
+    "noMessages": "还没有消息。",
+    "replyPlaceholder": "回复 Agent，或输入 / 调用 skill",
+    "followUpPlaceholder": "补充说明；Agent 会在当前步骤后读取",
+    "resumePlaceholder": "继续此对话",
+    "cannotContinue": "此次运行没有可继续的会话。",
+    "send": "发送"
+  },
+  "monitor": {
+    "title": "监控",
+    "sessions": "会话",
+    "activeSessions": "活跃会话",
+    "activeAgents": "运行中的 Agent",
+    "eventsToday": "今日事件",
+    "totalCost": "总费用",
+    "open": "打开监控面板"
+  },
+  "errors": {
+    "startFailed": "无法启动 Agent：{{message}}",
+    "sendFailed": "无法发送：{{message}}",
+    "stopFailed": "无法停止 Agent：{{message}}",
+    "loadFailed": "无法加载对话：{{message}}",
+    "dismiss": "关闭"
+  }
+}

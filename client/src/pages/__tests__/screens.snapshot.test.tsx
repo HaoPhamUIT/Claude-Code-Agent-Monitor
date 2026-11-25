@@ -662,6 +662,7 @@ vi.mock("../../lib/api", async (importOriginal) => {
         history: r({ items: [] }),
         binary: r({ found: true, path: "/usr/bin/claude" }),
         cwds: r({ items: [] }),
+        models: r({ provider: "claude", dynamic: false, source: "curated", items: [] }),
         files: r({ items: [] }),
         start: r({ id: "run-1", status: "running" }),
         get: r({ id: "run-1", status: "running", messages: [], envelopes: [] }),
@@ -736,6 +737,7 @@ vi.mock("../../lib/api", async (importOriginal) => {
               description: "Trading platform",
               cloned: true,
               partial: false,
+              path: "/home/alice/workspace/ipa",
               job: null,
             },
             {
@@ -829,6 +831,7 @@ vi.mock("../../lib/push", () => ({
 
 // Page components (imported after the mocks above; vi.mock is hoisted).
 import { Dashboard } from "../Dashboard";
+import { CommandCenter } from "../CommandCenter";
 import { KanbanBoard } from "../KanbanBoard";
 import { Sessions } from "../Sessions";
 import { SessionDetail } from "../SessionDetail";
@@ -1107,6 +1110,9 @@ describe("screen snapshots", () => {
   });
   it("Run", async () => {
     await snapshot(<Run />, "/run");
+  });
+  it("Command center", async () => {
+    await snapshot(<CommandCenter />, "/");
   });
   it("Connections", async () => {
     await snapshot(<Connections />, "/connections");

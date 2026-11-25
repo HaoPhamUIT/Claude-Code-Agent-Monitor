@@ -135,7 +135,7 @@ API-backed commands need the server. When it isn't running, each prints the same
 | `ccam stop` | Stop the server this CLI targets: the PID registered for its port in the discovery file, `SIGTERM`, escalating to `SIGKILL` after 5 s. Refuses a non-local `--server` target, and refuses to guess when several dashboards are registered but none on that port |
 | `ccam restart [--port N]` | `stop` (if running) then `start` |
 | `ccam logs [-n N] [-f]` | Print the last `N` lines (default 50) of `data/ccam-server.log`; `-f` follows it |
-| `ccam open [page] [--session id] [--print]` | Open the dashboard, a page (`dashboard`, `kanban`, `sessions`, `activity`, `analytics`, `workflows`, `config`, `run`, `settings`), or a session's detail page; `--print` only prints the URL |
+| `ccam open [page] [--session id] [--print]` | Open the dashboard, a page (`home` for the command centre at `/`, `dashboard` for the monitoring dashboard at `/monitor`, `kanban`, `sessions`, `activity`, `analytics`, `workflows`, `config`, `run`, `settings`), or a session's detail page; `--print` only prints the URL |
 | `ccam where` | Which dashboard this CLI targets, repo root, server log, token status |
 | `ccam repl` (aliases `shell`, `i`) | The [interactive shell](#interactive-repl) |
 

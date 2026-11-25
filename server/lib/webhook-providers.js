@@ -85,7 +85,7 @@ function formatDiscord(alert) {
         description: truncate(alert.message, 4000),
         color: ACCENT_INT,
         fields,
-        footer: { text: "Claude Code Agent Monitor" },
+        footer: { text: "Pharmacity Agent" },
         timestamp: alert.triggered_at,
       },
     ],
@@ -152,7 +152,7 @@ function formatMattermost(alert) {
         color: ACCENT_HEX,
         text: truncate(alert.message, 3000),
         fields: attachmentFields(alert),
-        footer: "Claude Code Agent Monitor",
+        footer: "Pharmacity Agent",
       },
     ],
   };

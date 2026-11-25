@@ -11,9 +11,9 @@
     "configure": "Configurar editores",
     "open": "Abrir en editor",
     "openWith": "Abrir en {{editor}}",
-    "remote": "Solo se pueden abrir sesiones de este equipo. Accede a CCAM mediante localhost.",
+    "remote": "Solo se pueden abrir sesiones de este equipo. Accede a PMCA mediante localhost.",
     "missingFolder": "Esta sesión no tiene una ruta absoluta de directorio de trabajo compatible.",
-    "hint": "Se guarda en este navegador. Instala primero el editor y permite que el navegador abra sus enlaces. Solo abre la carpeta, no la conversación del agente. La carpeta debe existir en este equipo; CCAM no puede detectar carpetas ausentes ni editores sin instalar.",
+    "hint": "Se guarda en este navegador. Instala primero el editor y permite que el navegador abra sus enlaces. Solo abre la carpeta, no la conversación del agente. La carpeta debe existir en este equipo; PMCA no puede detectar carpetas ausentes ni editores sin instalar.",
     "saveFailed": "No se pudieron guardar los editores. Activa el almacenamiento del navegador e inténtalo de nuevo."
   },
   "subtitle": "Gestiona precios, notificaciones, datos y ganchos",
@@ -202,7 +202,7 @@
     "sessionComplete": "Se completa una sesión",
     "sessionError": "Errores de sesión",
     "subagentSpawned": "Se inicia un subagente",
-    "testTitle": "Agent Monitor",
+    "testTitle": "Pharmacity Agent",
     "testBody": "¡Las notificaciones funcionan!",
     "sendTest": "Enviar Notificación de Prueba",
     "disabledInfo": "Las notificaciones están deshabilitadas - habilita para recibir alertas de eventos de sesión"

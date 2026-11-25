@@ -152,7 +152,7 @@
 import { useEffect } from "react";
 
 /** Suffix appended to every page title. */
-const APP_SUFFIX = "Claude Code Agent Monitor";
+const APP_SUFFIX = "Pharmacity Agent";
 
 /**
  * Update the browser tab title while this component is mounted.

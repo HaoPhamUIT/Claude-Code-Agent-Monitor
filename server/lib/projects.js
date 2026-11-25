@@ -7,7 +7,7 @@
  * `projects` key:
  *
  *   "projects": {
- *     "list": ["pmc-projects", "--json"],   // prints [{ id, name, description?, cloned, partial? }]
+ *     "list": ["pmc-projects", "--json"],   // prints [{ id, name, description?, cloned, partial?, path? }]
  *     "add": ["pmc-clone", "{id}"],         // fetches one project; {id} is substituted
  *     "requires": "azure-devops",           // optional: a connection that must be signed in first
  *     "timeoutSeconds": 1800                // optional: how long one fetch may run
@@ -19,6 +19,10 @@
  * be one the `list` command returned before it is substituted into `add`. With
  * no file, or no `projects` key in it, the feature is off and nothing is spawned.
  *
+ * `path` is the project's folder, where an agent working on it should run. It
+ * is passed on only when it is an absolute path to an existing directory, and
+ * is null otherwise, so the page never offers a folder that is not there.
+ *
  * Fetching a project is a job, one per project at a time: its output is kept
  * (ANSI stripped) so the page can show what it is doing, and it ends when the
  * command exits, is cancelled, or times out.
@@ -28,6 +32,7 @@
 
 const fs = require("node:fs");
 const os = require("node:os");
+const path = require("node:path");
 const crypto = require("node:crypto");
 const { spawn } = require("node:child_process");
 const connections = require("./connections");
@@ -182,6 +187,25 @@ function lastLine(text) {
 }
 
 /** Keep the well-formed entries of the `list` command's JSON. */
+/** Longest project folder path accepted from the catalog. */
+const MAX_PATH_LENGTH = 1024;
+
+/**
+ * A project's folder as the catalog reports it: an absolute path to an existing
+ * directory, normalized, or null when the entry gives none or one that is not.
+ * @param {unknown} value - The entry's `path` field.
+ * @returns {string|null}
+ */
+function projectPath(value) {
+  if (typeof value !== "string" || !value || value.length > MAX_PATH_LENGTH) return null;
+  if (value.includes("\0") || !path.isAbsolute(value)) return null;
+  try {
+    return fs.statSync(value).isDirectory() ? path.resolve(value) : null;
+  } catch {
+    return null;
+  }
+}
+
 function normalizeItems(value) {
   if (!Array.isArray(value)) throw new Error("expected a JSON array of projects");
   const seen = new Set();
@@ -199,6 +223,7 @@ function normalizeItems(value) {
       description: description.slice(0, 300),
       cloned: raw.cloned === true,
       partial: raw.cloned !== true && raw.partial === true,
+      path: projectPath(raw.path),
     });
     if (items.length >= MAX_PROJECTS) break;
   }

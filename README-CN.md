@@ -303,7 +303,7 @@ flowchart LR
   <em>⌘ <strong>命令面板</strong> · 用一个键盘启动器访问页面、会话、项目、筛选器和操作</em>
 </p>
 
-侧边栏链接 Dashboard、Kanban 看板、会话、活动流、分析、工作流、Agent 配置、Run Agent 和设置，另有在运营者配置了账户连接时显示的账户。以下章节说明这些视图背后的完整行为。
+侧边栏以位于 `/` 的指挥中心 **下达任务** 开头，然后在 **监控** 下归组 Dashboard（现位于 `/monitor`）、Kanban 看板、会话、活动流、分析和工作流，在 **配置** 下归组 Agent 配置、Run Agent、账户（运营者配置了账户连接时显示）和设置。以下章节说明这些视图背后的完整行为。
 ---
 
 ## 功能特性
@@ -313,6 +313,7 @@ Dashboard 覆盖完整的本地 Agent 生命周期。详细运行契约仍见相
 | 功能 | 摘要 |
 | --- | --- |
 | **任务进度** | 汇总 Claude 任务工具、旧版 `TodoWrite` 与 Codex `update_plan` 的按归属进度。卡片和表格行显示紧凑预览；会话详情增加状态分段、当前工作、归属信息和每页 10 行的分页。新的顶层工作会清除陈旧的未完成状态，已完成历史仍保留。 |
+| **指挥中心** | 首页（`/`）把给 Agent 派活放在监控之前。一个大的任务框支持 `/` skill 和 `@` 文件补全、Jira 工单编号标签、选择运行所在的项目或文件夹、三档信任级别（只读、编辑文件、完全访问，后者每次都会确认）以及模型；运行以对话模式启动。输入 `#` 会列出可选项目中之前的 Claude 会话，选中后会在该会话自己的文件夹中继续。当 `DASHBOARD_CONNECTIONS_FILE` 中配置了项目目录时，只提供报告了文件夹的已拉取项目，并且在目录所需账户登录且已拉取项目之前，运行按钮保持禁用并链接到账户页面；其他未登录的账户会显示可暂缓的提醒。下方的 Agent 收件箱把 dashboard 发起的运行分为“需要你”“进行中”和“已结束”，旁边是所选运行的对话和回复框；一行监控摘要链接到位于 `/monitor` 的完整 dashboard。 |
 | **Dashboard** | 持久化的 **Monitor** 和 **Health** 标签页汇总 Agent 总量、活跃层级、最近活动、加权的成功率/缓存/错误/堆内存健康度，以及存储、工具、模型、Subagent 效能和压缩指标。Health 每 5 秒从 `/api/settings/info` 和 `/api/workflows` 刷新。 |
 | **Kanban 看板** | Agent 列覆盖 Working、Waiting、Completed 和 Error，会话列另含 Active 和 Abandoned。卡片每次显示 10 张，仅订阅当前 WebSocket 视图，保留完整标题，并说明权限输入、回合完成、提示符空闲或中断等等待原因。 |
 | **会话** | 可搜索、可筛选、服务端分页的历史记录，费用仅按可见页计算，并包含临时的内存 Codex 启动行。提供方选择器可进一步筛选 Claude Code、Cursor 或 Codex，同时遵循引导页或 Settings 中选择的产品范围。搜索以 300 ms 防抖匹配 `id`、`name` 和 `cwd`。名称依次取显式标题、AI 标题和首条有意义的用户提示。只有导入元数据能够证明当前名称由 CCAM 管理时，Cursor 原生生成标题才会替换临时的首条提示回退名；手动名称和归属不明确的旧名称保持不变。 |
@@ -1264,7 +1265,7 @@ npm run monitoring:verify
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
-| `GET` | `/api/run` | 列出所有内存运行句柄，包括正在运行和最近完成的句柄，并返回 `maxConcurrent` 和 `activeCount` |
+| `GET` | `/api/run` | 列出所有内存运行句柄，包括正在运行和最近完成的句柄，并返回 `maxConcurrent` 和 `activeCount`。每个句柄带有 `turnState`（`working`，或在 `result` 信封结束本轮后为 `waiting`）、`lastActivity`（最近一次工具调用，例如 `Edit src/app.ts`）和 `progress`（来自最近一次 TodoWrite 的 `{ done, total }`），供指挥中心的 Agent 收件箱读取 |
 | `GET` | `/api/run/binary` | 检查 `claude` 是否在 `PATH` 中及其位置，供 UI 在启动前显示明确错误 |
 | `GET` | `/api/run/cwds` | 建议工作目录，包括 Dashboard Server cwd、`$HOME` 和 Sessions 表中的最近 cwd |
 | `GET` | `/api/run/files?cwd=…&q=…` | 在 `cwd` 内模糊搜索 Run 页面 `@` 文件自动补全。跳过 `node_modules`、`.git`、`dist`、`build`、`.next`、`.cache`、`coverage` 等目录；结果有上限并按文件名匹配排序 |

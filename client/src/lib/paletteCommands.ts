@@ -302,6 +302,7 @@ import {
   Keyboard,
   Layers,
   LayoutDashboard,
+  SquareTerminal,
   Link2,
   MonitorPlay,
   MoveDown,
@@ -554,7 +555,8 @@ export const PAGE_COMMANDS: {
   icon: LucideIcon;
   navKey: string;
 }[] = [
-  { to: "/", icon: LayoutDashboard, navKey: "nav:dashboard" },
+  { to: "/", icon: SquareTerminal, navKey: "nav:command" },
+  { to: "/monitor", icon: LayoutDashboard, navKey: "nav:dashboard" },
   { to: "/kanban", icon: Columns3, navKey: "nav:agentBoard" },
   { to: "/sessions", icon: FolderOpen, navKey: "nav:sessions" },
   { to: "/activity", icon: Activity, navKey: "nav:activityFeed" },

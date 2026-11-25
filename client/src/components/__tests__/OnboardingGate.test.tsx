@@ -281,6 +281,7 @@ function project(over: Partial<ProjectItem> = {}): ProjectItem {
     description: "Trading platform",
     cloned: false,
     partial: false,
+    path: null,
     job: null,
     ...over,
   };

@@ -209,6 +209,33 @@ const schemas = {
           "Claude session id, captured from the `system/init` stream envelope (optimistically pre-seeded with resumeSessionId). Used to deep-link to /api/sessions/{id}. Null until the init envelope arrives.",
         example: "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
       },
+      turnState: {
+        type: "string",
+        enum: ["working", "waiting"],
+        nullable: true,
+        description:
+          "Whether the current turn is still running (`working`) or has ended with a `result` envelope and the conversation waits for the user (`waiting`). A follow-up via POST /api/run/{id}/message sets it back to `working`. Codex runs derive it from whether a turn is open.",
+        example: "waiting",
+      },
+      lastActivity: {
+        type: "string",
+        nullable: true,
+        description:
+          "The latest tool call as one line (tool name plus the file, command, pattern or URL it touches, at most 160 characters), e.g. `Edit src/app.ts`. Null before the first tool call and for Codex runs.",
+        example: "Edit src/filters/branch.ts",
+      },
+      progress: {
+        type: "object",
+        nullable: true,
+        required: ["done", "total"],
+        description:
+          "Completed and total items of the run's latest TodoWrite call; null when it made none (and for Codex runs).",
+        properties: {
+          done: { type: "integer", minimum: 0 },
+          total: { type: "integer", minimum: 1 },
+        },
+        example: { done: 1, total: 4 },
+      },
       envelopeCount: {
         type: "integer",
         minimum: 0,

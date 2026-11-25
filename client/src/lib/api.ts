@@ -3614,6 +3614,15 @@ export type CodexSandbox = "read-only" | "workspace-write" | "danger-full-access
 /** Maps 1:1 to the `claude --effort` CLI flag; "" omits the flag (model default). */
 export type EffortLevel = "" | "low" | "medium" | "high" | "xhigh" | "max" | "ultra";
 
+/** Whether a run's current turn is still going or has ended and waits for the user. */
+export type RunTurnState = "working" | "waiting";
+
+/** Completed and total items of a run's latest TodoWrite call. */
+export interface RunProgress {
+  done: number;
+  total: number;
+}
+
 /** Body for POST /api/run - parameters for spawning a new `claude` process. */
 export interface RunStartArgs {
   /** Initial prompt/task text passed to the CLI. */
@@ -3686,6 +3695,15 @@ export interface RunHandle {
   threadName?: string | null;
   /** Id of the Codex turn currently in progress, or null between turns. */
   activeTurnId?: string | null;
+  /**
+   * Whether the current turn is still running (`working`) or has ended and the agent is waiting
+   * for the user (`waiting`). Absent from servers older than the command centre.
+   */
+  turnState?: RunTurnState | null;
+  /** Last tool call, e.g. `Edit src/app.ts`; null before the first one. */
+  lastActivity?: string | null;
+  /** Completed and total items of the latest TodoWrite call; null when none was made. */
+  progress?: RunProgress | null;
   /** Count of stream-json envelopes emitted so far. */
   envelopeCount: number;
   /** Last chunk of captured stdout, for a quick inline preview. */
@@ -3957,6 +3975,11 @@ export interface ProjectItem {
   cloned: boolean;
   /** True when some, but not all, of its repositories are in the workspace. */
   partial: boolean;
+  /**
+   * The project's folder, where an agent working on it runs: an absolute path to an existing
+   * directory, or null when the catalog gives none.
+   */
+  path: string | null;
   /** The running or most recent fetch job; null when there is none. */
   job: ProjectJob | null;
 }

@@ -13,9 +13,9 @@
     "configure": "Configure editors",
     "open": "Open in Editor",
     "openWith": "Open in {{editor}}",
-    "remote": "Only sessions on this computer can be opened. Access CCAM through localhost.",
+    "remote": "Only sessions on this computer can be opened. Access PMCA through localhost.",
     "missingFolder": "This session has no supported absolute working-directory path.",
-    "hint": "Saved in this browser. Install the editor first and allow your browser to open its links. Opens only the folder, not the agent conversation. The folder must exist on this computer; CCAM cannot detect missing folders or uninstalled editors.",
+    "hint": "Saved in this browser. Install the editor first and allow your browser to open its links. Opens only the folder, not the agent conversation. The folder must exist on this computer; PMCA cannot detect missing folders or uninstalled editors.",
     "saveFailed": "Could not save editors. Enable browser storage and try again."
   },
   "acrossSessions": "Within the selected data scope",
@@ -202,7 +202,7 @@
     "sessionComplete": "Session completes",
     "sessionError": "Session errors",
     "subagentSpawned": "Subagent spawned",
-    "testTitle": "Agent Monitor",
+    "testTitle": "Pharmacity Agent",
     "testBody": "Notifications are working!",
     "sendTest": "Send Test Notification",
     "disabledInfo": "Notifications are disabled - enable to get alerts for session events"

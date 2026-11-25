@@ -296,7 +296,8 @@ async function cmdLogs(opts) {
 
 /** Dashboard pages `ccam open <page>` understands (client/src/App.tsx routes). */
 const PAGES = {
-  dashboard: "/",
+  home: "/",
+  dashboard: "/monitor",
   kanban: "/kanban",
   sessions: "/sessions",
   activity: "/activity",
