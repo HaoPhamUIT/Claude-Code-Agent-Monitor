@@ -177,16 +177,17 @@ function memoryStorage(): Storage {
 // Node 26 exposes a process-level localStorage getter that returns undefined
 // without --localstorage-file. Define deterministic jsdom-backed stores so the
 // suite behaves the same on supported Node LTS and newer developer runtimes.
+const jsdomWindow = (globalThis as { jsdom?: { window?: Window } }).jsdom?.window;
 if (!globalThis.localStorage) {
   Object.defineProperty(globalThis, "localStorage", {
     configurable: true,
-    value: memoryStorage(),
+    value: jsdomWindow?.localStorage ?? memoryStorage(),
   });
 }
 if (!globalThis.sessionStorage) {
   Object.defineProperty(globalThis, "sessionStorage", {
     configurable: true,
-    value: memoryStorage(),
+    value: jsdomWindow?.sessionStorage ?? memoryStorage(),
   });
 }
 
