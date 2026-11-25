@@ -88,6 +88,11 @@
       "cancelled": "Fetch cancelled",
       "timeout": "The fetch timed out"
     },
+    "noAccess": {
+      "title": "You don't have access to this project's repositories.",
+      "titleRepos": "You don't have access to: {{repos}}",
+      "body": "Ask DevOps for access to the repository, or wait ten years for someone to add you. Once you have it, press Try again."
+    },
     "errors": {
       "addFailed": "Could not start fetching: {{message}}",
       "cancelFailed": "Could not cancel the fetch: {{message}}"

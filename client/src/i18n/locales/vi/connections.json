@@ -88,6 +88,11 @@
       "cancelled": "Đã huỷ tải",
       "timeout": "Tải dự án quá thời gian"
     },
+    "noAccess": {
+      "title": "Bạn chưa có quyền vào repo của dự án này.",
+      "titleRepos": "Bạn chưa có quyền vào repo: {{repos}}",
+      "body": "Bạn cần request DevOps để xin quyền vào repo, hoặc đợi 10 năm nữa sẽ có người thêm bạn vào. Có quyền rồi thì bấm Thử lại."
+    },
     "errors": {
       "addFailed": "Không bắt đầu tải được: {{message}}",
       "cancelFailed": "Không huỷ tải được: {{message}}"

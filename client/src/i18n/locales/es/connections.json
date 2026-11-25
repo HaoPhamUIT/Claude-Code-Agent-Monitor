@@ -88,6 +88,11 @@
       "cancelled": "Descarga cancelada",
       "timeout": "Se agotó el tiempo de la descarga"
     },
+    "noAccess": {
+      "title": "No tienes acceso a los repositorios de este proyecto.",
+      "titleRepos": "No tienes acceso a: {{repos}}",
+      "body": "Pide acceso al repositorio a DevOps, o espera diez años a que alguien te añada. Cuando lo tengas, pulsa Reintentar."
+    },
     "errors": {
       "addFailed": "No se pudo empezar a traer el proyecto: {{message}}",
       "cancelFailed": "No se pudo cancelar: {{message}}"

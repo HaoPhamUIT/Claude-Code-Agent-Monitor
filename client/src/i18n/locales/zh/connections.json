@@ -88,6 +88,11 @@
       "cancelled": "已取消拉取",
       "timeout": "拉取超时"
     },
+    "noAccess": {
+      "title": "你还没有此项目仓库的访问权限。",
+      "titleRepos": "你还没有以下仓库的访问权限：{{repos}}",
+      "body": "请向 DevOps 申请仓库访问权限，或者再等十年，总会有人把你加进去。获得权限后，点击重试。"
+    },
     "errors": {
       "addFailed": "无法开始拉取：{{message}}",
       "cancelFailed": "无法取消拉取：{{message}}"

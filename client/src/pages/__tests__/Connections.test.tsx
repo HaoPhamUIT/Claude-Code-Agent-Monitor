@@ -571,10 +571,52 @@ describe("Connections page", () => {
       section.getByText("The fetch did not complete — pmc-clone: FAILED pos-backend")
     ).toBeTruthy();
     expect(section.getByText("Show the full log")).toBeTruthy();
+    expect(section.queryByText(/Ask DevOps for access/)).toBeNull();
     await act(async () => {
       fireEvent.click(section.getByRole("button", { name: "Try again" }));
     });
     expect(projectMocks.add).toHaveBeenCalledWith("pos");
+  });
+
+  it("tells the person to ask DevOps when the account may not read a repository", async () => {
+    mocks.list.mockResolvedValue(listing([item("ado")]));
+    projectMocks.list.mockResolvedValue({
+      enabled: true,
+      error: null,
+      requires: null,
+      items: [
+        {
+          id: "pos",
+          name: "Enterprise POS",
+          description: "",
+          cloned: false,
+          partial: true,
+          job: {
+            id: "fetch-2",
+            projectId: "pos",
+            state: "failed",
+            startedAt: "2026-06-10T12:50:00.000Z",
+            endedAt: "2026-06-10T12:51:00.000Z",
+            exitCode: 1,
+            output:
+              "pmc-clone: cloning pos-backend (develop)\n" +
+              "remote: TF401019: The Git repository with name or identifier pos-backend does not exist or you do not have permissions for the operation you are attempting.\n" +
+              "fatal: repository 'https://dev.azure.com/PHARMACITYJSC/Retail/_git/pos-backend/' not found\n" +
+              "pmc-clone: FAILED pos-backend\n",
+            progress: "pmc-clone: FAILED pos-backend",
+          },
+        },
+      ],
+    });
+    projectMocks.job.mockReturnValue(new Promise(() => {}));
+    await renderPage();
+    const section = within(screen.getByRole("region", { name: "Projects" }));
+    const hint = section.getByRole("alert");
+    expect(hint).toHaveTextContent("You don't have access to: pos-backend");
+    expect(hint).toHaveTextContent(
+      "Ask DevOps for access to the repository, or wait ten years for someone to add you."
+    );
+    expect(section.getByRole("button", { name: "Try again" })).toBeTruthy();
   });
 
   it("hides the project section when no catalog is configured", async () => {

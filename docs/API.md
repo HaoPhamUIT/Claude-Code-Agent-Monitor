@@ -1667,6 +1667,8 @@ The `projects` key of the operator's file:
 
 A fetch is a job like a sign-in: its output is kept (ANSI stripped, last 64 KiB), `progress` is its latest line, one job runs per project, at most four run at once (`429 ETOOMANY`), and a finished job stays readable for 10 minutes. Errors use `{ error: { code, message } }` with `EBADID`, `ENOPROJECTS` (feature off), `ENOPROJECT` (not in the catalog), `ELIST` (the list command failed), `EREQUIRES`, `ETOOMANY`, `ENOJOB` and `ESPAWN`.
 
+A fetch that fails because the signed-in account may not read a repository is still a plain `failed` job; the dashboard reads the reason from its `output`. Git and Azure DevOps errors such as `TF401019` or `repository '…' not found` are recognised, and so is a line `pmc-clone: NO ACCESS <repo> …`, which an operator's `add` command can print to name the repository. The picker then tells the person to ask DevOps for access before trying again.
+
 When the catalog lists projects and none of them is set up yet, the first-run dialog asks the person to pick projects after the required connections are signed in, shows the last lines of each fetch while it runs, and closes once a project is in the workspace; the Accounts page keeps the picker so more can be fetched at any time.
 
 The command centre (`/`) reads the same list to decide where an agent may run: only fully fetched projects that report a `path` are offered, and the agent starts in that folder. While the `requires` connection is signed out, or no project is fetched yet, Run is disabled and the task box links to the Accounts page instead. A catalog that fails to list, or that lists fetched projects without any `path`, falls back to a free folder choice.

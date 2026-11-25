@@ -142,10 +142,18 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CircleAlert, CircleCheck, CircleX, FolderGit2, LoaderCircle } from "lucide-react";
+import {
+  CircleAlert,
+  CircleCheck,
+  CircleX,
+  FolderGit2,
+  LoaderCircle,
+  LockKeyhole,
+} from "lucide-react";
 import type { ProjectItem } from "../lib/api";
 import type { ProjectsState } from "../hooks/useProjects";
 import { outputTail } from "../lib/outputTail";
+import { cloneAccessProblem } from "../lib/cloneAccess";
 
 /** Job states that end a fetch without the project being set up. */
 const UNSUCCESSFUL = new Set(["failed", "cancelled", "timeout"]);
@@ -295,6 +303,7 @@ export function ProjectPicker({ state, showHeading = true }: ProjectPickerProps)
             const unsuccessful = job !== null && UNSUCCESSFUL.has(job.state);
             const inputId = `project-${item.id}`;
             const tail = running && job ? outputTail(job.output) : [];
+            const noAccess = unsuccessful && job ? cloneAccessProblem(job.output) : null;
             return (
               <li key={item.id} className="rounded-lg border border-border bg-surface-2 p-3">
                 <div className="flex items-start gap-3">
@@ -328,6 +337,27 @@ export function ProjectPicker({ state, showHeading = true }: ProjectPickerProps)
                         ) : (
                           <p className="text-xs text-gray-500">{t("projects.starting")}</p>
                         )}
+                      </div>
+                    )}
+                    {noAccess && (
+                      <div
+                        role="alert"
+                        className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5"
+                      >
+                        <LockKeyhole
+                          className="mt-0.5 w-3.5 h-3.5 shrink-0 text-amber-400"
+                          aria-hidden
+                        />
+                        <div className="space-y-0.5 text-xs">
+                          <p className="font-semibold text-amber-400">
+                            {noAccess.repos.length > 0
+                              ? t("projects.noAccess.titleRepos", {
+                                  repos: noAccess.repos.join(", "),
+                                })
+                              : t("projects.noAccess.title")}
+                          </p>
+                          <p className="text-gray-300">{t("projects.noAccess.body")}</p>
+                        </div>
                       </div>
                     )}
                     {unsuccessful && job && (
