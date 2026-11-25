@@ -40,6 +40,8 @@
  *   changing assumptions here.
  * - `../CcConfig` — repository-local contract consumed by this module; review its exports before
  *   changing assumptions here.
+ * - `../Connections` — repository-local contract consumed by this module; review its exports before
+ *   changing assumptions here.
  * - `../Dashboard` — repository-local contract consumed by this module; review its exports before
  *   changing assumptions here.
  * - `../KanbanBoard` — repository-local contract consumed by this module; review its exports before
@@ -74,6 +76,8 @@
  *   focused test selection.
  * - `LocationProbe` (function) — top-level declaration that helps orient code review and focused
  *   test selection.
+ * - `nativeToLocaleTimeString` (variable) — top-level declaration that helps orient code review and
+ *   focused test selection.
  * - `nodeProcess` (variable) — top-level declaration that helps orient code review and focused test
  *   selection.
  * - `ObserverStub` (class) — top-level declaration that helps orient code review and focused test
@@ -109,6 +113,8 @@
  * - `Analytics cost info icon explains API scope and missing rates` — executable behavior named by
  *   this suite; preserve the observable contract or update the test with rationale.
  * - `Claude Config` — executable behavior named by this suite; preserve the observable contract or
+ *   update the test with rationale.
+ * - `Connections` — executable behavior named by this suite; preserve the observable contract or
  *   update the test with rationale.
  * - `Dashboard` — executable behavior named by this suite; preserve the observable contract or
  *   update the test with rationale.
@@ -662,6 +668,49 @@ vi.mock("../../lib/api", async (importOriginal) => {
         send: r({ messageId: "m-1" }),
         kill: r({ ok: true }),
       },
+      connections: {
+        list: r({
+          enabled: true,
+          error: null,
+          items: [
+            {
+              id: "azure-devops",
+              name: "Azure DevOps",
+              description: "Git, pull requests and work items with your own account.",
+              canLogout: true,
+              required: false,
+              status: { connected: true, account: "alice@example.com", detail: "" },
+              job: null,
+            },
+            {
+              id: "atlassian",
+              name: "Atlassian",
+              description: "Jira and Confluence through the Atlassian MCP server.",
+              canLogout: false,
+              required: false,
+              status: { connected: false, account: "", detail: "not signed in" },
+              job: {
+                id: "job-1",
+                connectionId: "atlassian",
+                state: "running",
+                startedAt: "2026-06-10T12:59:00.000Z",
+                endedAt: null,
+                exitCode: null,
+                output:
+                  "Visit this URL to authorize:\nhttps://auth.example.com/authorize?state=xyz\n",
+                urls: ["https://auth.example.com/authorize?state=xyz"],
+                code: null,
+                acceptsInput: true,
+                signedIn: false,
+                progress: "https://auth.example.com/authorize?state=xyz",
+                inputLabel: "",
+                inputPlaceholder: "http://localhost:…/callback?code=…",
+              },
+            },
+          ],
+        }),
+        job: vi.fn().mockReturnValue(new Promise(() => {})),
+      },
       alerts: {
         list: r({ alerts: [], total: 0, unacked: 0, limit: 50, offset: 0 }),
         ack: r({ alert: {} }),
@@ -720,6 +769,7 @@ import { Analytics } from "../Analytics";
 import { Workflows } from "../Workflows";
 import { CcConfig } from "../CcConfig";
 import { Run } from "../Run";
+import { Connections } from "../Connections";
 import { Settings } from "../Settings";
 import { NotFound } from "../NotFound";
 import { api } from "../../lib/api";
@@ -989,6 +1039,9 @@ describe("screen snapshots", () => {
   });
   it("Run", async () => {
     await snapshot(<Run />, "/run");
+  });
+  it("Connections", async () => {
+    await snapshot(<Connections />, "/connections");
   });
   it("Settings", async () => {
     await snapshot(<Settings />, "/settings");

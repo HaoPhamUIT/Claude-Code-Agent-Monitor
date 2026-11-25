@@ -1,0 +1,342 @@
+/**
+ * @file OnboardingGate.test.tsx
+ * @description Tests for the first-run gate that asks for required account
+ * connections: when it appears and when it stays away, the device-code steps,
+ * the "finishing" state after sign-in (repositories still cloning), the done
+ * state, and "Later" for the browser session.
+ * @author Son Nguyen <hoangson091104@gmail.com>
+ */
+/*
+ * GENERATED_MAINTAINER_REFERENCE:BEGIN
+ *
+ * AUTO-GENERATED MAINTAINER REFERENCE — DO NOT EDIT THIS BLOCK BY HAND.
+ * It is derived from the current TypeScript AST and repository-area contracts.
+ * Regenerate after structural edits so imports, exports, landmarks, and checks stay current.
+ *
+ * **Module:** client/src/components/__tests__/OnboardingGate.test.tsx
+ * **Area:** client test
+ * **Responsibility:**
+ * Tests for the first-run gate that asks for required account connections: when it appears and when
+ * it stays away, the device-code steps, the "finishing" state after sign-in (repositories still
+ * cloning), the done state, and "Later" for the browser session.
+ *
+ * ## Architectural boundary
+ * - Protects an observable client contract using Vitest and, for UI, Testing Library semantics.
+ * - The test should fail for a meaningful production regression, not for harmless implementation
+ *   rearrangement.
+ * - Mocks isolate unavailable boundaries; they should not replace the behavior that the test claims
+ *   to prove.
+ *
+ * ## Local dependency edges
+ * - `../../lib/api` — repository-local contract consumed by this module; review its exports before
+ *   changing assumptions here.
+ * - `../OnboardingGate` — repository-local contract consumed by this module; review its exports
+ *   before changing assumptions here.
+ *
+ * ## Package dependency edges
+ * - `@testing-library/react` — external package boundary; keep usage within the installed version
+ *   and the repository's existing adapter patterns.
+ * - `i18next` — external package boundary; keep usage within the installed version and the
+ *   repository's existing adapter patterns.
+ * - `vitest` — external package boundary; keep usage within the installed version and the
+ *   repository's existing adapter patterns.
+ *
+ * ## Top-level implementation landmarks
+ * - `item` (function) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `job` (function) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `listing` (variable) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `mocks` (variable) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `renderGate` (function) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `settle` (function) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ *
+ * ## React and framework hooks
+ * - `useFakeTimers` — lifecycle/state dependency detected in this module; preserve dependency
+ *   freshness and cleanup semantics.
+ * - `useRealTimers` — lifecycle/state dependency detected in this module; preserve dependency
+ *   freshness and cleanup semantics.
+ *
+ * ## Named test contracts
+ * - `asks only for the required connections, and starts the sign-in` — executable behavior named by
+ *   this suite; preserve the observable contract or update the test with rationale.
+ * - `can be put off for this browser session` — executable behavior named by this suite; preserve
+ *   the observable contract or update the test with rationale.
+ * - `needsAttention: required and not signed in, still running, or failed` — executable behavior
+ *   named by this suite; preserve the observable contract or update the test with rationale.
+ * - `OnboardingGate` — executable behavior named by this suite; preserve the observable contract or
+ *   update the test with rationale.
+ * - `says when everything is done, then lets the person in` — executable behavior named by this
+ *   suite; preserve the observable contract or update the test with rationale.
+ * - `stays away when connections are off, none is required, or all are done` — executable behavior
+ *   named by this suite; preserve the observable contract or update the test with rationale.
+ * - `stays away when the list cannot be loaded` — executable behavior named by this suite; preserve
+ *   the observable contract or update the test with rationale.
+ * - `stays open while the signed-in job finishes, showing its latest line` — executable behavior
+ *   named by this suite; preserve the observable contract or update the test with rationale.
+ *
+ * ## Area invariants
+ * - Name the user-visible or contract-level behavior in each test title so failures explain the
+ *   regression.
+ * - Query rendered UI by role, accessible name, or meaningful text before reaching for
+ *   implementation selectors.
+ * - Reset mocks, timers, globals, storage, and DOM state so execution order cannot change outcomes.
+ * - Await asynchronous rendering and user interactions instead of relying on arbitrary sleeps.
+ * - Keep fixtures minimal but structurally realistic, including provider and source fields used by
+ *   production branches.
+ * - Assert important negative behavior when duplicate events, stale responses, or absent data are
+ *   the known risk.
+ * - Avoid snapshots for volatile values unless serializers normalize them and review remains
+ *   readable.
+ * - Exercise keyboard and accessibility behavior for controls whose semantics matter beyond visual
+ *   output.
+ * - Do not assert internal hook state when the same contract can be observed through rendered
+ *   output or callbacks.
+ * - When fixing a regression, prove the test fails on the broken implementation before accepting
+ *   the fix.
+ *
+ * ## Change-review checklist
+ * - Read the file header and this generated index before changing code; both describe the intended
+ *   ownership boundary.
+ * - Trace every local import listed here to distinguish data contracts from presentation helpers
+ *   and avoid circular dependencies.
+ * - Search every exported symbol before changing its signature; callers may live in tests, route
+ *   components, desktop code, or MCP wiring.
+ * - Keep observable behavior stable unless the task explicitly requests a behavior change and
+ *   includes regression coverage.
+ * - Prefer the repository's existing helpers and types over parallel abstractions that encode the
+ *   same contract twice.
+ * - Keep failure behavior explicit: recoverable local failures should degrade visibly without
+ *   hiding actionable diagnostics.
+ * - Preserve deterministic ordering for lists, maps, serialized values, snapshots, and generated
+ *   output where this module participates.
+ * - Treat identifiers, API paths, event names, translation keys, and persisted field names as
+ *   compatibility surfaces.
+ * - Update the truthful file overview when the module's responsibility changes; never let the
+ *   header become historical fiction.
+ * - Run the narrowest relevant test first, then the area gate, then the full repository
+ *   verification before merging.
+ *
+ * ## Focused validation
+ * - Run `npm run test:client` and resolve failures before widening the verification scope.
+ * - Run `npm run typecheck:client` and resolve failures before widening the verification scope.
+ * - Run `npm run verify` and resolve failures before widening the verification scope.
+ *
+ * ## Reference maintenance
+ * - Regenerate all tracked references with `node scripts/maintain-typescript-docs.ts --write` .
+ * - Check this module without writing via
+ *   `node scripts/maintain-typescript-docs.ts --check client/src/components/__tests__/OnboardingGate.test.tsx`
+ *   .
+ * - Prove existing-file edits are comments/trivia only with
+ *   `node scripts/verify-typescript-comment-only.ts origin/master` .
+ * - Review the regenerated diff: generated structure is evidence, not a substitute for
+ *   understanding runtime behavior.
+ *
+ * GENERATED_MAINTAINER_REFERENCE:END
+ */
+
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, act, fireEvent, within } from "@testing-library/react";
+import i18n from "i18next";
+import type { ConnectionItem, ConnectionJob, ConnectionsResponse } from "../../lib/api";
+
+const mocks = vi.hoisted(() => ({
+  list: vi.fn(),
+  login: vi.fn(),
+  job: vi.fn(),
+  input: vi.fn(),
+  cancel: vi.fn(),
+  logout: vi.fn(),
+}));
+
+vi.mock("../../lib/api", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return { ...actual, api: { connections: mocks } };
+});
+
+import { OnboardingGate, ONBOARDING_LATER_KEY, needsAttention } from "../OnboardingGate";
+
+function job(over: Partial<ConnectionJob> = {}): ConnectionJob {
+  return {
+    id: "job-1",
+    connectionId: "azure-devops",
+    state: "running",
+    startedAt: "2026-11-23T12:00:00.000Z",
+    endedAt: null,
+    exitCode: null,
+    output: "",
+    urls: [],
+    code: null,
+    acceptsInput: false,
+    signedIn: false,
+    progress: "",
+    inputLabel: "",
+    inputPlaceholder: "",
+    ...over,
+  };
+}
+
+function item(over: Partial<ConnectionItem> = {}): ConnectionItem {
+  return {
+    id: "azure-devops",
+    name: "Azure DevOps",
+    description: "Git and pull requests with your own account.",
+    canLogout: true,
+    required: true,
+    status: { connected: false, account: "", detail: "" },
+    job: null,
+    ...over,
+  };
+}
+
+const listing = (items: ConnectionItem[]): ConnectionsResponse => ({
+  enabled: true,
+  error: null,
+  items,
+});
+
+async function settle() {
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+  });
+}
+
+async function renderGate() {
+  render(<OnboardingGate />);
+  await settle();
+}
+
+beforeEach(() => {
+  i18n.changeLanguage("en");
+  window.sessionStorage.clear();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.resetAllMocks();
+});
+
+describe("OnboardingGate", () => {
+  it("stays away when connections are off, none is required, or all are done", async () => {
+    for (const response of [
+      { enabled: false, error: null, items: [] },
+      listing([item({ required: false })]),
+      listing([item({ status: { connected: true, account: "alice@pharmacity.vn", detail: "" } })]),
+      { enabled: true, error: "could not load", items: [item()] },
+    ]) {
+      mocks.list.mockResolvedValueOnce(response);
+      const { unmount } = render(<OnboardingGate />);
+      await settle();
+      expect(screen.queryByRole("dialog")).toBeNull();
+      unmount();
+    }
+  });
+
+  it("stays away when the list cannot be loaded", async () => {
+    mocks.list.mockRejectedValue(new Error("HTTP 500"));
+    await renderGate();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("asks only for the required connections, and starts the sign-in", async () => {
+    mocks.list.mockResolvedValue(
+      listing([item(), item({ id: "atlassian", name: "Atlassian", required: false })])
+    );
+    mocks.login.mockResolvedValue({
+      job: job({ code: "ABCD1234", urls: ["https://microsoft.com/devicelogin"] }),
+    });
+    mocks.job.mockReturnValue(new Promise(() => {}));
+    await renderGate();
+    const dialog = within(
+      screen.getByRole("dialog", { name: "One last step: connect your accounts" })
+    );
+    expect(dialog.getByRole("region", { name: "Azure DevOps" })).toBeTruthy();
+    expect(dialog.queryByRole("region", { name: "Atlassian" })).toBeNull();
+
+    fireEvent.click(dialog.getByRole("button", { name: "Connect" }));
+    await settle();
+    expect(mocks.login).toHaveBeenCalledWith("azure-devops");
+    expect(dialog.getByText("ABCD1234")).toBeTruthy();
+    expect(dialog.getByRole("link", { name: "Open the sign-in page" }).getAttribute("href")).toBe(
+      "https://microsoft.com/devicelogin"
+    );
+  });
+
+  it("stays open while the signed-in job finishes, showing its latest line", async () => {
+    mocks.list.mockResolvedValue(
+      listing([
+        item({
+          status: { connected: true, account: "alice@pharmacity.vn", detail: "" },
+          job: job({
+            code: "ABCD1234",
+            urls: ["https://microsoft.com/devicelogin"],
+            signedIn: true,
+            progress: "pmc-clone: cloning ipa-backend (develop)",
+          }),
+        }),
+      ])
+    );
+    mocks.job.mockReturnValue(new Promise(() => {}));
+    await renderGate();
+    const dialog = within(screen.getByRole("dialog"));
+    expect(dialog.getByText("Signed in. Finishing setup…")).toBeTruthy();
+    expect(dialog.getByText("pmc-clone: cloning ipa-backend (develop)")).toBeTruthy();
+    expect(dialog.getByText("Finishing…")).toBeTruthy();
+    // The sign-in steps are gone once signed in.
+    expect(dialog.queryByText("ABCD1234")).toBeNull();
+    expect(dialog.queryByRole("link", { name: "Open the sign-in page" })).toBeNull();
+  });
+
+  it("says when everything is done, then lets the person in", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const running = item({ job: job({ signedIn: true, progress: "cloning" }) });
+    const done = item({
+      status: { connected: true, account: "alice@pharmacity.vn", detail: "" },
+      job: job({ state: "succeeded", signedIn: true, endedAt: "2026-11-23T12:03:00.000Z" }),
+    });
+    mocks.list.mockResolvedValueOnce(listing([running])).mockResolvedValue(listing([done]));
+    mocks.job.mockResolvedValue({ job: done.job });
+    await renderGate();
+    expect(
+      screen.getByRole("dialog", { name: "One last step: connect your accounts" })
+    ).toBeTruthy();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
+    await settle();
+    expect(screen.getByRole("dialog", { name: "You're all set" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Open the dashboard" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("can be put off for this browser session", async () => {
+    mocks.list.mockResolvedValue(listing([item()]));
+    await renderGate();
+    fireEvent.click(screen.getByRole("button", { name: "Later" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(window.sessionStorage.getItem(ONBOARDING_LATER_KEY)).toBe("1");
+
+    const { unmount } = render(<OnboardingGate />);
+    await settle();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    unmount();
+  });
+
+  it("needsAttention: required and not signed in, still running, or failed", () => {
+    expect(needsAttention(item())).toBe(true);
+    expect(needsAttention(item({ required: false }))).toBe(false);
+    const connected = { connected: true, account: "a", detail: "" };
+    expect(needsAttention(item({ status: connected }))).toBe(false);
+    expect(needsAttention(item({ status: connected, job: job() }))).toBe(true);
+    expect(needsAttention(item({ status: connected, job: job({ state: "failed" }) }))).toBe(true);
+    expect(needsAttention(item({ status: connected, job: job({ state: "succeeded" }) }))).toBe(
+      false
+    );
+  });
+});

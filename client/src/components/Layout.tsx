@@ -2,7 +2,8 @@
  * @file Layout.tsx
  * @description Application shell that frames every authenticated route: persistent
  * sidebar, main content column, update notifier, the Cmd/Ctrl+K command palette,
- * and the Tabby assistant overlay.
+ * the Tabby assistant overlay, and the onboarding gate for required account
+ * connections.
  * The layout is the single parent route in {@link App} — child pages render inside
  * React Router's `<Outlet />` so navigation never remounts chrome.
  *
@@ -30,15 +31,15 @@
  * **Area:** client component
  * **Responsibility:**
  * Application shell that frames every authenticated route: persistent sidebar, main content column,
- * update notifier, the Cmd/Ctrl+K command palette, and the Tabby assistant overlay. The layout is
- * the single parent route in {@link App} — child pages render inside React Router's `<Outlet />` so
- * navigation never remounts chrome. ## Sidebar persistence Collapsed state is read once from
- * `localStorage` via {@link loadCollapsed} and written back on every toggle. Failures to access
- * storage are swallowed so a private-browsing quota error never breaks the UI. ## Sticky
- * descendants The inner content wrapper uses `overflow-x-clip` (not `hidden` ) so horizontal
- * overflow is clipped without creating a scroll container. That keeps `position: sticky` elements —
- * e.g. the Settings page table-of-contents — pinned to the viewport rather than a nested scroll
- * box.
+ * update notifier, the Cmd/Ctrl+K command palette, the Tabby assistant overlay, and the onboarding
+ * gate for required account connections. The layout is the single parent route in {@link App} —
+ * child pages render inside React Router's `<Outlet />` so navigation never remounts chrome. ##
+ * Sidebar persistence Collapsed state is read once from `localStorage` via {@link loadCollapsed}
+ * and written back on every toggle. Failures to access storage are swallowed so a private-browsing
+ * quota error never breaks the UI. ## Sticky descendants The inner content wrapper uses
+ * `overflow-x-clip` (not `hidden` ) so horizontal overflow is clipped without creating a scroll
+ * container. That keeps `position: sticky` elements — e.g. the Settings page table-of-contents —
+ * pinned to the viewport rather than a nested scroll box.
  *
  * ## Architectural boundary
  * - This component should express one reusable UI responsibility through typed props and observable
@@ -52,6 +53,8 @@
  * - `./ActionToast` — repository-local contract consumed by this module; review its exports before
  *   changing assumptions here.
  * - `./CommandPalette` — repository-local contract consumed by this module; review its exports
+ *   before changing assumptions here.
+ * - `./OnboardingGate` — repository-local contract consumed by this module; review its exports
  *   before changing assumptions here.
  * - `./PaletteActionProvider` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
@@ -217,6 +220,7 @@ import { UpdateNotifier } from "./UpdateNotifier";
 import { CommandPalette } from "./CommandPalette";
 import { Tabby } from "./Tabby/Tabby";
 import { ActionToast } from "./ActionToast";
+import { OnboardingGate } from "./OnboardingGate";
 import { PaletteActionProvider, usePaletteAction } from "./PaletteActionProvider";
 
 /** Props for {@link Layout}. */
@@ -272,6 +276,7 @@ export function Layout({ wsConnected }: LayoutProps) {
         <CommandPalette />
         <ActionToast />
         <Tabby />
+        <OnboardingGate />
         <Sidebar wsConnected={wsConnected} collapsed={collapsed} onToggle={toggle} />
         <main
           id="main-content"

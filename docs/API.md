@@ -1569,6 +1569,67 @@ DELETE /api/run/:id                   Stop (SIGTERM → SIGKILL after 5 s)
 
 Spawned `claude` processes fire the dashboard's hooks like any other CLI session, so they show up in `/api/sessions`, the analytics, the Kanban board, and the Workflows page automatically — the Run page itself just owns the live streaming UX.
 
+### Account Connections
+
+The `/api/connections/*` namespace lets a person sign in to their own accounts from the dashboard: an MCP server's OAuth, or a CLI's device-code login. It is **off by default**. An operator turns it on by setting `DASHBOARD_CONNECTIONS_FILE` to a JSON file that lists the connections; without it the list is empty and nothing is ever spawned. Every route enforces the same loopback-Origin guard as Run Agent.
+
+```http
+GET    /api/connections[?status=0]        { enabled, error, items } — each item has its sign-in status and current job
+POST   /api/connections/:id/login         Start the sign-in command (202), or return the job already running (200)
+GET    /api/connections/:id/job           Progress: { job: { state, output, urls, code, acceptsInput, … } }
+POST   /api/connections/:id/job/input     Hand the running sign-in one pasted line — Body: { text }
+DELETE /api/connections/:id/job           Cancel (SIGTERM → SIGKILL after 3 s)
+POST   /api/connections/:id/logout        Run the sign-out command, then report the status
+```
+
+The operator's file:
+
+```json
+{
+  "connections": [
+    {
+      "id": "azure-devops",
+      "name": "Azure DevOps",
+      "description": "Git, pull requests and work items with your own account.",
+      "status": ["az", "account", "show", "--query", "user.name", "-o", "tsv"],
+      "required": { "when": ["sh", "-c", "test -n \"$PROJECT\""] },
+      "login": {
+        "command": ["connect-and-clone"],
+        "signedInPattern": "^Signed in as ",
+        "timeoutSeconds": 1800
+      },
+      "logout": ["az", "logout"]
+    },
+    {
+      "id": "atlassian",
+      "name": "Atlassian",
+      "login": {
+        "command": ["claude-mcp-login", "atlassian"],
+        "input": { "label": "Paste the address of the page you were sent to" },
+        "timeoutSeconds": 600
+      }
+    }
+  ]
+}
+```
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `id` | yes | Lowercase letters, digits and dashes (1–40 characters); unique in the file |
+| `name` / `description` | `name` | Shown on the page as written (not translated) |
+| `login` | yes | A command (argv array), or `{ command, input?, codePattern?, signedInPattern?, timeoutSeconds? }` |
+| `login.input` | no | `true` or `{ label?, placeholder? }`: the page shows a field, and one pasted line is written to the command's stdin |
+| `login.codePattern` | no | Regular expression with one capture group for the device code. Default: the word after `code` |
+| `login.signedInPattern` | no | Regular expression (multiline) that the output matches once the sign-in itself is done. The job then reports `signedIn: true`, and the page replaces the sign-in steps with the command's latest line (`progress`) while it finishes, for example while it clones repositories |
+| `login.timeoutSeconds` | no | 10–3600, default 600. The command is stopped after this long |
+| `required` | no | `true`, or `{ "when": [command] }` (required when that command exits 0, checked on every full list). A required connection that is not signed in, or whose sign-in job is still running or ended in failure, opens a dialog over every page until it is done; the person can choose **Later** for the rest of the browser session. `?status=0` reports only unconditional requirements |
+| `status` | no | Command that exits 0 when signed in; its first output line is shown as the account |
+| `logout` | no | Sign-out command; without it the page offers no **Disconnect** |
+
+Commands run without a shell, as the dashboard's own user, from that user's home directory. A request can only name a connection `id` and supply the pasted line (one line, at most 8192 characters, no control characters); it can never supply a command. A job's `urls` are the `http(s)` links found in the command's output and `code` is the device code, so the page can show a sign-in button and the code without the person reading terminal output. One job runs per connection at a time, and a finished job stays readable for 10 minutes.
+
+A command that needs a terminal (most OAuth CLIs do) has to be wrapped in one by the operator, because the dashboard gives it pipes. Signed-in state lives wherever the command stores it for the dashboard's user: one dashboard instance holds one set of accounts, so give each person their own instance (their own OS user or container) when accounts must not be shared.
+
 ---
 
 ## WebSocket API

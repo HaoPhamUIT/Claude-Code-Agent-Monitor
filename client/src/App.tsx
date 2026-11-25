@@ -71,6 +71,8 @@
  *   before changing assumptions here.
  * - `./pages/CcConfig` — repository-local contract consumed by this module; review its exports
  *   before changing assumptions here.
+ * - `./pages/Connections` — repository-local contract consumed by this module; review its exports
+ *   before changing assumptions here.
  * - `./pages/Dashboard` — repository-local contract consumed by this module; review its exports
  *   before changing assumptions here.
  * - `./pages/KanbanBoard` — repository-local contract consumed by this module; review its exports
@@ -239,6 +241,7 @@ import { Workflows } from "./pages/Workflows";
 import { Settings } from "./pages/Settings";
 import { CcConfig } from "./pages/CcConfig";
 import { Run } from "./pages/Run";
+import { Connections } from "./pages/Connections";
 import { NotFound } from "./pages/NotFound";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useNotifications } from "./hooks/useNotifications";
@@ -293,6 +296,7 @@ export default function App() {
           <Route path="workflows" element={<Workflows />} />
           <Route path="cc-config" element={<CcConfig />} />
           <Route path="run" element={<Run />} />
+          <Route path="connections" element={<Connections />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>

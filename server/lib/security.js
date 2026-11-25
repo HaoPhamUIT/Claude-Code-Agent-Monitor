@@ -71,6 +71,38 @@ function hostGuard(req, res, next) {
   return res.status(403).json({ error: { code: "EBADHOST", message: "host not allowed" } });
 }
 
+// Origin hostnames a browser on this machine uses for the dashboard.
+const LOCAL_ORIGIN_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
+
+/**
+ * Express middleware for routes that start processes (Run Agent, account
+ * connections): a browser request must come from a loopback origin or a host
+ * the operator allowlisted (DASHBOARD_ALLOWED_HOSTS), so a page on another site
+ * cannot drive them through the person's browser. Requests with no Origin
+ * (curl, the CLI) pass; Referer is the fallback for clients that send no Origin.
+ */
+function sameOriginGuard(req, res, next) {
+  const checkHost = (raw) => {
+    try {
+      const u = new URL(raw);
+      return (
+        LOCAL_ORIGIN_HOSTS.has(u.hostname) || allowedHostnames().includes(u.hostname.toLowerCase())
+      );
+    } catch {
+      return false;
+    }
+  };
+  const refuse = () =>
+    res.status(403).json({
+      error: { code: "EBADORIGIN", message: "cross-origin requests are not allowed" },
+    });
+  const origin = req.headers.origin;
+  if (origin) return checkHost(origin) ? next() : refuse();
+  const referer = req.headers.referer;
+  if (referer && !checkHost(referer)) return refuse();
+  return next();
+}
+
 /**
  * CORS options: allow same-origin / no-Origin (curl, the server's own client)
  * and loopback origins; refuse everything else (so a cross-origin page cannot
@@ -259,6 +291,7 @@ module.exports = {
   hostnameOf,
   isHostAllowed,
   hostGuard,
+  sameOriginGuard,
   corsOptions,
   getDashboardToken,
   getHookToken,

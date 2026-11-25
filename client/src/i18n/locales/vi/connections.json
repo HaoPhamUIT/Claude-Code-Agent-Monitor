@@ -1,0 +1,61 @@
+{
+  "title": "Kết nối tài khoản",
+  "subtitle": "Đăng nhập bằng tài khoản của chính bạn để agent làm việc theo quyền của bạn.",
+  "refresh": "Làm mới",
+  "loadFailed": "Không tải được danh sách kết nối",
+  "retry": "Thử lại",
+  "disabledTitle": "Chưa có kết nối nào được thiết lập",
+  "disabledBody": "Người vận hành bật trang này bằng cách trỏ DASHBOARD_CONNECTIONS_FILE tới một tệp liệt kê các lệnh đăng nhập cần cung cấp.",
+  "configErrorTitle": "Không tải được tệp kết nối",
+  "emptyTitle": "Tệp kết nối không liệt kê kết nối nào",
+  "status": {
+    "connected": "Đã kết nối",
+    "connectedAs": "Đã kết nối: {{account}}",
+    "notConnected": "Chưa kết nối",
+    "unknown": "Chưa rõ trạng thái",
+    "signingIn": "Đang đăng nhập…",
+    "finishing": "Đang hoàn tất…"
+  },
+  "actions": {
+    "connect": "Kết nối",
+    "reconnect": "Kết nối lại",
+    "disconnect": "Ngắt kết nối",
+    "cancel": "Huỷ",
+    "submit": "Gửi",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "openSignIn": "Mở trang đăng nhập",
+    "showOutput": "Xem kết quả của lệnh"
+  },
+  "steps": {
+    "open": "Mở trang đăng nhập trong trình duyệt và chấp thuận yêu cầu.",
+    "code": "Nhập mã này khi trang yêu cầu:",
+    "paste": "Dán địa chỉ của trang mà bạn được chuyển tới:",
+    "pasteHint": "Sau khi chấp thuận, trình duyệt có thể chuyển tới một trang không tải được. Điều đó là bình thường: sao chép toàn bộ địa chỉ trên thanh địa chỉ rồi dán vào đây.",
+    "otherLinks": "Các liên kết khác mà lệnh đăng nhập in ra",
+    "waiting": "Đang chờ bạn hoàn tất đăng nhập…",
+    "starting": "Đang bắt đầu đăng nhập…",
+    "finishing": "Đã đăng nhập. Đang hoàn tất thiết lập…"
+  },
+  "result": {
+    "succeeded": "Đã đăng nhập.",
+    "failed": "Đăng nhập chưa hoàn tất.",
+    "cancelled": "Đã huỷ đăng nhập.",
+    "timeout": "Đăng nhập đã hết thời gian chờ. Hãy bắt đầu lại."
+  },
+  "errors": {
+    "startFailed": "Không bắt đầu đăng nhập được: {{message}}",
+    "inputFailed": "Không gửi được địa chỉ: {{message}}",
+    "cancelFailed": "Không huỷ đăng nhập được: {{message}}",
+    "disconnectFailed": "Không ngắt kết nối được: {{message}}"
+  },
+  "onboarding": {
+    "title": "Bước cuối: kết nối tài khoản",
+    "body": "Workspace của bạn cần các tài khoản này trước khi tải được code của project. Đăng nhập bằng tài khoản của chính bạn; agent sẽ làm việc theo quyền của bạn.",
+    "laterHint": "Bạn có thể kết nối sau ở trang Tài khoản.",
+    "later": "Để sau",
+    "doneTitle": "Đã sẵn sàng",
+    "doneBody": "Tài khoản đã được kết nối và workspace của bạn đã sẵn sàng.",
+    "enter": "Vào dashboard"
+  }
+}

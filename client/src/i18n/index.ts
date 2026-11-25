@@ -56,6 +56,8 @@
  *   exports before changing assumptions here.
  * - `./locales/en/common.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
+ * - `./locales/en/connections.json` — repository-local contract consumed by this module; review its
+ *   exports before changing assumptions here.
  * - `./locales/en/dashboard.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
  * - `./locales/en/errors.json` — repository-local contract consumed by this module; review its
@@ -85,6 +87,8 @@
  * - `./locales/es/ccConfig.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
  * - `./locales/es/common.json` — repository-local contract consumed by this module; review its
+ *   exports before changing assumptions here.
+ * - `./locales/es/connections.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
  * - `./locales/es/dashboard.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
@@ -116,6 +120,8 @@
  *   exports before changing assumptions here.
  * - `./locales/ko/common.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
+ * - `./locales/ko/connections.json` — repository-local contract consumed by this module; review its
+ *   exports before changing assumptions here.
  * - `./locales/ko/dashboard.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
  * - `./locales/ko/errors.json` — repository-local contract consumed by this module; review its
@@ -146,6 +152,8 @@
  *   exports before changing assumptions here.
  * - `./locales/vi/common.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
+ * - `./locales/vi/connections.json` — repository-local contract consumed by this module; review its
+ *   exports before changing assumptions here.
  * - `./locales/vi/dashboard.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
  * - `./locales/vi/errors.json` — repository-local contract consumed by this module; review its
@@ -175,6 +183,8 @@
  * - `./locales/zh/ccConfig.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
  * - `./locales/zh/common.json` — repository-local contract consumed by this module; review its
+ *   exports before changing assumptions here.
+ * - `./locales/zh/connections.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
  * - `./locales/zh/dashboard.json` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
@@ -364,6 +374,9 @@ import alerts_vi from "./locales/vi/alerts.json";
 import splash_en from "./locales/en/splash.json";
 import splash_zh from "./locales/zh/splash.json";
 import splash_vi from "./locales/vi/splash.json";
+import connections_en from "./locales/en/connections.json";
+import connections_zh from "./locales/zh/connections.json";
+import connections_vi from "./locales/vi/connections.json";
 
 import common_ko from "./locales/ko/common.json";
 import nav_ko from "./locales/ko/nav.json";
@@ -380,6 +393,7 @@ import ccConfig_ko from "./locales/ko/ccConfig.json";
 import run_ko from "./locales/ko/run.json";
 import alerts_ko from "./locales/ko/alerts.json";
 import splash_ko from "./locales/ko/splash.json";
+import connections_ko from "./locales/ko/connections.json";
 
 import common_es from "./locales/es/common.json";
 import nav_es from "./locales/es/nav.json";
@@ -396,6 +410,7 @@ import ccConfig_es from "./locales/es/ccConfig.json";
 import run_es from "./locales/es/run.json";
 import alerts_es from "./locales/es/alerts.json";
 import splash_es from "./locales/es/splash.json";
+import connections_es from "./locales/es/connections.json";
 
 i18n
   .use(LanguageDetector)
@@ -418,6 +433,7 @@ i18n
         run: run_en,
         alerts: alerts_en,
         splash: splash_en,
+        connections: connections_en,
       },
       zh: {
         common: common_zh,
@@ -435,6 +451,7 @@ i18n
         run: run_zh,
         alerts: alerts_zh,
         splash: splash_zh,
+        connections: connections_zh,
       },
       vi: {
         common: common_vi,
@@ -452,6 +469,7 @@ i18n
         run: run_vi,
         alerts: alerts_vi,
         splash: splash_vi,
+        connections: connections_vi,
       },
       ko: {
         common: common_ko,
@@ -469,6 +487,7 @@ i18n
         run: run_ko,
         alerts: alerts_ko,
         splash: splash_ko,
+        connections: connections_ko,
       },
       es: {
         common: common_es,
@@ -486,6 +505,7 @@ i18n
         run: run_es,
         alerts: alerts_es,
         splash: splash_es,
+        connections: connections_es,
       },
     },
     supportedLngs: ["en", "zh", "vi", "ko", "es"],
@@ -507,6 +527,7 @@ i18n
       "run",
       "alerts",
       "splash",
+      "connections",
     ],
     defaultNS: "common",
     interpolation: { escapeValue: false },

@@ -61,6 +61,8 @@
  *   before changing its name, shape, or timing.
  *
  * ## Top-level implementation landmarks
+ * - `ACCOUNTS_NAV` (variable) — top-level declaration that helps orient code review and focused
+ *   test selection.
  * - `bucketEventsPerSecond` (function) — top-level declaration that helps orient code review and
  *   focused test selection.
  * - `COLLAPSED_LANGUAGE_MENU_WIDTH` (variable) — top-level declaration that helps orient code
@@ -111,6 +113,8 @@
  *   focused test selection.
  * - `SupportedLanguage` (type) — top-level declaration that helps orient code review and focused
  *   test selection.
+ * - `THEME_KEY` (variable) — top-level declaration that helps orient code review and focused test
+ *   selection.
  * - `TypeBar` (function) — top-level declaration that helps orient code review and focused test
  *   selection.
  * - `VIEWPORT_GUTTER` (variable) — top-level declaration that helps orient code review and focused
@@ -257,6 +261,7 @@ import {
   Workflow,
   Boxes,
   Play,
+  KeyRound,
   Settings,
   Wifi,
   WifiOff,
@@ -304,6 +309,9 @@ const NAV_KEYS = [
   { to: "/run", icon: Play, key: "nav:run" },
   { to: "/settings", icon: Settings, key: "nav:settings" },
 ] as const;
+
+/** Nav entry for account connections; shown only when the operator configured them. */
+const ACCOUNTS_NAV = { to: "/connections", icon: KeyRound, key: "nav:accounts" } as const;
 
 /** localStorage key for the color theme; read before first paint by index.html. */
 const THEME_KEY = "ccam-theme";
@@ -628,6 +636,30 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
   // chevron affordances pointing toward the hidden items. Recomputed on
   // scroll, resize, and any structural change (e.g. collapse toggle).
   const navRef = useRef<HTMLElement | null>(null);
+  // Account connections are off unless the operator configured them, so the
+  // entry appears only after the server says the feature is on.
+  const [accountsEnabled, setAccountsEnabled] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    api.connections
+      .list({ withStatus: false })
+      .then((r) => {
+        if (!cancelled) setAccountsEnabled(r.enabled);
+      })
+      .catch(() => {
+        /* server unreachable or older: keep the entry hidden */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const navItems = useMemo(
+    () =>
+      accountsEnabled
+        ? [...NAV_KEYS.slice(0, -1), ACCOUNTS_NAV, ...NAV_KEYS.slice(-1)]
+        : [...NAV_KEYS],
+    [accountsEnabled]
+  );
   const [navOverflow, setNavOverflow] = useState({ up: false, down: false });
   const [updateStatus, setUpdateStatus] = useState<UpdateStatusPayload | null>(null);
   const [checking, setChecking] = useState(false);
@@ -891,7 +923,7 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
           user knows there's more to reach without inspecting the scrollbar. */}
       <div className="flex-1 min-h-0 relative flex">
         <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-1">
-          {NAV_KEYS.map(({ to, icon: Icon, key }) => {
+          {navItems.map(({ to, icon: Icon, key }) => {
             const label = t(key);
             return (
               <NavLink

@@ -210,6 +210,16 @@
  *   before changing its name, shape, or timing.
  * - `CodexSandbox` (type) — exported contract; search downstream imports and tests before changing
  *   its name, shape, or timing.
+ * - `ConnectionItem` (interface) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
+ * - `ConnectionJob` (interface) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
+ * - `ConnectionJobState` (type) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
+ * - `ConnectionsResponse` (interface) — exported contract; search downstream imports and tests
+ *   before changing its name, shape, or timing.
+ * - `ConnectionStatus` (interface) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
  * - `CwdSuggestion` (interface) — exported contract; search downstream imports and tests before
  *   changing its name, shape, or timing.
  * - `DashboardRunHistoryItem` (interface) — exported contract; search downstream imports and tests
@@ -344,6 +354,16 @@
  *   focused test selection.
  * - `CodexSandbox` (type) — top-level declaration that helps orient code review and focused test
  *   selection.
+ * - `ConnectionItem` (interface) — top-level declaration that helps orient code review and focused
+ *   test selection.
+ * - `ConnectionJob` (interface) — top-level declaration that helps orient code review and focused
+ *   test selection.
+ * - `ConnectionJobState` (type) — top-level declaration that helps orient code review and focused
+ *   test selection.
+ * - `ConnectionsResponse` (interface) — top-level declaration that helps orient code review and
+ *   focused test selection.
+ * - `ConnectionStatus` (interface) — top-level declaration that helps orient code review and
+ *   focused test selection.
  * - `CwdSuggestion` (interface) — top-level declaration that helps orient code review and focused
  *   test selection.
  * - `DashboardRunHistoryItem` (interface) — top-level declaration that helps orient code review and
@@ -2293,6 +2313,80 @@ export const api = {
       request<{ ok: true }>(`/run/${encodeURIComponent(id)}`, { method: "DELETE" }),
   },
 
+  // ─────────────────────────────── Connections API ────────────────────────────
+  /** Account connections: sign-in flows the operator defined in the file named
+   *  by `DASHBOARD_CONNECTIONS_FILE`, which the dashboard runs so a person can
+   *  connect their own accounts. Maps to `server/routes/connections.js`. */
+  connections: {
+    /**
+     * GET /api/connections - every connection with its sign-in status and
+     * current job.
+     *
+     * @param options.withStatus Pass false to skip the status commands
+     *   (`?status=0`): a cheap probe for whether the feature is on.
+     * @returns {@link ConnectionsResponse}; `enabled` is false when the operator
+     *   configured no file.
+     */
+    list: (options?: { withStatus?: boolean }) =>
+      request<ConnectionsResponse>(
+        `/connections${options?.withStatus === false ? "?status=0" : ""}`
+      ),
+    /**
+     * POST /api/connections/:id/login - start the sign-in command, or get the
+     * job that is already running.
+     *
+     * @param id Connection id.
+     * @returns The job.
+     */
+    login: (id: string) =>
+      request<{ job: ConnectionJob }>(`/connections/${encodeURIComponent(id)}/login`, {
+        method: "POST",
+      }),
+    /**
+     * GET /api/connections/:id/job - progress of the sign-in. Rejects when the
+     * connection has no job.
+     *
+     * @param id Connection id.
+     * @returns The job.
+     */
+    job: (id: string) =>
+      request<{ job: ConnectionJob }>(`/connections/${encodeURIComponent(id)}/job`),
+    /**
+     * POST /api/connections/:id/job/input - hand the running sign-in one line
+     * of text (the pasted redirect address).
+     *
+     * @param id Connection id.
+     * @param text One line, without control characters.
+     * @returns The job.
+     */
+    input: (id: string, text: string) =>
+      request<{ job: ConnectionJob }>(`/connections/${encodeURIComponent(id)}/job/input`, {
+        method: "POST",
+        body: JSON.stringify({ text }),
+      }),
+    /**
+     * DELETE /api/connections/:id/job - cancel the sign-in.
+     *
+     * @param id Connection id.
+     * @returns The job, which ends in state `cancelled`.
+     */
+    cancel: (id: string) =>
+      request<{ job: ConnectionJob }>(`/connections/${encodeURIComponent(id)}/job`, {
+        method: "DELETE",
+      }),
+    /**
+     * POST /api/connections/:id/logout - run the sign-out command.
+     *
+     * @param id Connection id.
+     * @returns Whether the command succeeded, and the connection's status after it.
+     */
+    logout: (id: string) =>
+      request<{ ok: boolean; detail: string; status: ConnectionStatus | null }>(
+        `/connections/${encodeURIComponent(id)}/logout`,
+        { method: "POST" }
+      ),
+  },
+
   // ────────────────────────────────── Alerts API ──────────────────────────────
   /** Alert rule CRUD plus the fired-alert feed and acknowledgement. */
   alerts: {
@@ -3674,6 +3768,79 @@ export const RUN_EFFORT_CHOICES: EffortChoice[] = [
   { id: "max", label: "Max", hint: "All-out - slowest, most tokens" },
   { id: "ultra", label: "Ultra", hint: "Maximum reasoning and delegation" },
 ];
+
+/** Whether a connection is signed in, from the operator's status command. */
+export interface ConnectionStatus {
+  /** True when signed in, false when not, null when the connection defines no status command. */
+  connected: boolean | null;
+  /** The signed-in account, as the status command printed it; empty otherwise. */
+  account: string;
+  /** Why the status command failed, when it said; empty otherwise. */
+  detail: string;
+}
+
+/** How a sign-in job ended, or `running` while its command is still alive. */
+export type ConnectionJobState = "running" | "succeeded" | "failed" | "cancelled" | "timeout";
+
+/** One run of a connection's sign-in command. */
+export interface ConnectionJob {
+  /** Job id; a new sign-in gets a new one. */
+  id: string;
+  /** The connection this job belongs to. */
+  connectionId: string;
+  /** Current state. */
+  state: ConnectionJobState;
+  /** ISO time the command started. */
+  startedAt: string;
+  /** ISO time it ended; null while running. */
+  endedAt: string | null;
+  /** The command's exit code; null while running or when it was killed. */
+  exitCode: number | null;
+  /** The command's output so far, with terminal escape sequences removed. */
+  output: string;
+  /** Sign-in links found in the output, in order of appearance. */
+  urls: string[];
+  /** The device code found in the output; null when there is none. */
+  code: string | null;
+  /** True while the command is running and waits for a pasted line. */
+  acceptsInput: boolean;
+  /** True once the operator's signed-in marker appeared: the sign-in is done, the command may still be finishing. */
+  signedIn: boolean;
+  /** The command's latest output line; empty when it printed nothing. */
+  progress: string;
+  /** The operator's label for the paste field; may be empty. */
+  inputLabel: string;
+  /** The operator's placeholder for the paste field; may be empty. */
+  inputPlaceholder: string;
+}
+
+/** One connection the operator defined. */
+export interface ConnectionItem {
+  /** Stable id from the operator's file. */
+  id: string;
+  /** Display name. */
+  name: string;
+  /** What the connection is for; may be empty. */
+  description: string;
+  /** True when the connection defines a sign-out command. */
+  canLogout: boolean;
+  /** True when the dashboard asks for this connection before anything else. */
+  required: boolean;
+  /** Sign-in status; null when the list was requested without status. */
+  status: ConnectionStatus | null;
+  /** The running or most recent sign-in job; null when there is none. */
+  job: ConnectionJob | null;
+}
+
+/** Response of GET /api/connections. */
+export interface ConnectionsResponse {
+  /** False when no connections file is configured: the feature is off. */
+  enabled: boolean;
+  /** Why the configured file could not be loaded; null when it loaded. */
+  error: string | null;
+  /** The connections, in file order. */
+  items: ConnectionItem[];
+}
 
 /** Result of a transcript import run - returned by `api.import.rescan`,
  *  `scanPath`, and `upload`, and mirrored by the final `import.progress`

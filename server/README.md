@@ -179,6 +179,7 @@ server/
 │   ├── cc-config.js       #   /api/cc-config/* paths + schemas
 │   ├── push.js            #   /api/push/* paths + schemas
 │   ├── run.js             #   /api/run/* paths + schemas
+│   ├── connections.js     #   /api/connections/* paths + schemas
 │   └── misc.js            #   remaining route groups
 │
 ├── lib/
@@ -806,6 +807,19 @@ Provider-aware HTTP surface for spawning and supervising Claude Code processes a
 | `DELETE` | `/api/run/:id`                | Stop (SIGTERM → SIGKILL after 5 s) |
 
 WebSocket message types added: `run_stream` (Claude stream-json envelopes or normalized Codex app-server events), `run_status` (status transitions), `run_input_ack` (follow-up accepted), `cc_config_changed`, and `codex_config_changed` (the Codex workspace's filesystem/dashboard refresh signal).
+
+### Account Connections (`/api/connections`)
+
+Sign-in flows an operator defines in the JSON file named by `DASHBOARD_CONNECTIONS_FILE` (`routes/connections.js` + `lib/connections.js`). Off by default: with no file the list is empty and nothing is spawned. Same loopback-Origin guard as Run Agent on every route. Commands come only from the file, as argv arrays run without a shell; a request names a connection `id` and may supply one pasted line. File format and field reference: [docs/API.md](../docs/API.md#account-connections).
+
+| Method   | Path                              | Description |
+| -------- | --------------------------------- | ----------- |
+| `GET`    | `/api/connections`                | `{ enabled, error, items }`; each item carries its sign-in status, whether it is `required` (the operator's `required.when` command is run here), and its current job. `?status=0` skips the status and `required.when` commands |
+| `POST`   | `/api/connections/:id/login`      | Start the sign-in command (202), or return the job already running (200) |
+| `GET`    | `/api/connections/:id/job`        | Job progress: `state`, `output`, the `urls` and device `code` found in the output, `acceptsInput`, `signedIn` (the operator's `login.signedInPattern` matched), `progress` (latest output line) |
+| `POST`   | `/api/connections/:id/job/input`  | Write one pasted line to the command's stdin. Body: `{ text }` |
+| `DELETE` | `/api/connections/:id/job`        | Cancel (SIGTERM → SIGKILL after 3 s) |
+| `POST`   | `/api/connections/:id/logout`     | Run the sign-out command, then report the status |
 
 ### Import History
 
@@ -1666,6 +1680,7 @@ REMOTE_PUSH_TOKEN=                 # Separate token gating POST /api/hooks/inges
 REMOTE_PUSH_TOKEN_FILE=            # File-backed remote-push token
 REMOTE_TRANSCRIPT_MAX_FILE_MB=256  # Per-file MiB cap for ingest-transcript; each request chunk is capped at 4 MiB
 DASHBOARD_ALLOWED_HOSTS=           # Extra Host-header names to allow (comma-separated), e.g. for LAN access
+DASHBOARD_CONNECTIONS_FILE=        # JSON file listing account connections (sign-in commands) for the Accounts page. Unset = feature off
 POD_IP=                            # Kubernetes downward-API pod IP; automatically accepted by the Host guard
 DASHBOARD_ENV_PATH=                # Writable dotenv path for persisted Settings overrides
 CLAUDE_HOME=                       # Optional dashboard override of Claude home

@@ -1,0 +1,61 @@
+{
+  "title": "Conexiones de cuentas",
+  "subtitle": "Inicia sesión con tus propias cuentas para que los agentes trabajen con tus permisos.",
+  "refresh": "Actualizar",
+  "loadFailed": "No se pudieron cargar las conexiones",
+  "retry": "Reintentar",
+  "disabledTitle": "No hay conexiones configuradas",
+  "disabledBody": "Un operador activa esta página apuntando DASHBOARD_CONNECTIONS_FILE a un archivo que enumera los comandos de inicio de sesión que se ofrecen.",
+  "configErrorTitle": "No se pudo cargar el archivo de conexiones",
+  "emptyTitle": "El archivo de conexiones no enumera ninguna conexión",
+  "status": {
+    "connected": "Conectado",
+    "connectedAs": "Conectado como {{account}}",
+    "notConnected": "Sin conectar",
+    "unknown": "Estado desconocido",
+    "signingIn": "Iniciando sesión…",
+    "finishing": "Terminando…"
+  },
+  "actions": {
+    "connect": "Conectar",
+    "reconnect": "Conectar de nuevo",
+    "disconnect": "Desconectar",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "openSignIn": "Abrir la página de inicio de sesión",
+    "showOutput": "Mostrar la salida del comando"
+  },
+  "steps": {
+    "open": "Abre la página de inicio de sesión en tu navegador y aprueba la solicitud.",
+    "code": "Introduce este código cuando la página lo pida:",
+    "paste": "Pega la dirección de la página a la que te enviaron:",
+    "pasteHint": "Después de aprobar, el navegador puede llegar a una página que no carga. Es lo esperado: copia la dirección completa de la barra de direcciones y pégala aquí.",
+    "otherLinks": "Otros enlaces que imprimió el comando de inicio de sesión",
+    "waiting": "Esperando a que termines de iniciar sesión…",
+    "starting": "Iniciando el inicio de sesión…",
+    "finishing": "Sesión iniciada. Terminando la configuración…"
+  },
+  "result": {
+    "succeeded": "Sesión iniciada.",
+    "failed": "El inicio de sesión no se completó.",
+    "cancelled": "Inicio de sesión cancelado.",
+    "timeout": "El inicio de sesión agotó el tiempo de espera. Empieza de nuevo."
+  },
+  "errors": {
+    "startFailed": "No se pudo iniciar el inicio de sesión: {{message}}",
+    "inputFailed": "No se pudo enviar la dirección: {{message}}",
+    "cancelFailed": "No se pudo cancelar el inicio de sesión: {{message}}",
+    "disconnectFailed": "No se pudo desconectar: {{message}}"
+  },
+  "onboarding": {
+    "title": "Último paso: conecta tus cuentas",
+    "body": "Tu espacio de trabajo necesita estas cuentas antes de poder descargar el código del proyecto. Inicia sesión con tu propia cuenta; los agentes trabajarán con tus permisos.",
+    "laterHint": "Puedes conectarlas más tarde desde la página Cuentas.",
+    "later": "Más tarde",
+    "doneTitle": "Todo listo",
+    "doneBody": "Tus cuentas están conectadas y tu espacio de trabajo está listo.",
+    "enter": "Abrir el panel"
+  }
+}
