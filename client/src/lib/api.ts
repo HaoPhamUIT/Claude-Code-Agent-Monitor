@@ -238,6 +238,14 @@
  *   changing its name, shape, or timing.
  * - `PermissionMode` (type) — exported contract; search downstream imports and tests before
  *   changing its name, shape, or timing.
+ * - `ProjectItem` (interface) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
+ * - `ProjectJob` (interface) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
+ * - `ProjectJobState` (type) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
+ * - `ProjectsResponse` (interface) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
  * - `RemoteProvider` (type) — exported contract; search downstream imports and tests before
  *   changing its name, shape, or timing.
  * - `RemoteProviderStatus` (type) — exported contract; search downstream imports and tests before
@@ -382,6 +390,14 @@
  *   test selection.
  * - `PermissionMode` (type) — top-level declaration that helps orient code review and focused test
  *   selection.
+ * - `ProjectItem` (interface) — top-level declaration that helps orient code review and focused
+ *   test selection.
+ * - `ProjectJob` (interface) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `ProjectJobState` (type) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `ProjectsResponse` (interface) — top-level declaration that helps orient code review and
+ *   focused test selection.
  * - `RemoteProvider` (type) — top-level declaration that helps orient code review and focused test
  *   selection.
  * - `RemoteProviderStatus` (type) — top-level declaration that helps orient code review and focused
@@ -2387,6 +2403,47 @@ export const api = {
       ),
   },
 
+  // ───────────────────────────────── Projects API ─────────────────────────────
+  /** Project catalog: the projects a person can set up in their workspace from
+   *  the dashboard (the `projects` key of `DASHBOARD_CONNECTIONS_FILE`). Maps to
+   *  `server/routes/projects.js`. */
+  projects: {
+    /**
+     * GET /api/projects - the catalog with each project's state and fetch job.
+     *
+     * @returns {@link ProjectsResponse}; `enabled` is false when no catalog is configured.
+     */
+    list: () => request<ProjectsResponse>("/projects"),
+    /**
+     * POST /api/projects/:id/add - start fetching a project, or get the fetch
+     * already running for it.
+     *
+     * @param id Project id from the catalog.
+     * @returns The fetch job.
+     */
+    add: (id: string) =>
+      request<{ job: ProjectJob }>(`/projects/${encodeURIComponent(id)}/add`, {
+        method: "POST",
+      }),
+    /**
+     * GET /api/projects/:id/job - progress of a fetch.
+     *
+     * @param id Project id.
+     * @returns The job; rejects when the project has none.
+     */
+    job: (id: string) => request<{ job: ProjectJob }>(`/projects/${encodeURIComponent(id)}/job`),
+    /**
+     * DELETE /api/projects/:id/job - cancel a fetch.
+     *
+     * @param id Project id.
+     * @returns The job, now cancelled.
+     */
+    cancel: (id: string) =>
+      request<{ job: ProjectJob }>(`/projects/${encodeURIComponent(id)}/job`, {
+        method: "DELETE",
+      }),
+  },
+
   // ────────────────────────────────── Alerts API ──────────────────────────────
   /** Alert rule CRUD plus the fired-alert feed and acknowledgement. */
   alerts: {
@@ -3840,6 +3897,57 @@ export interface ConnectionsResponse {
   error: string | null;
   /** The connections, in file order. */
   items: ConnectionItem[];
+}
+
+/** How a project fetch ended, or `running` while its command is still alive. */
+export type ProjectJobState = ConnectionJobState;
+
+/** One run of the operator's fetch (`add`) command for a project. */
+export interface ProjectJob {
+  /** Job id; a new fetch gets a new one. */
+  id: string;
+  /** The project this job fetches. */
+  projectId: string;
+  /** Current state. */
+  state: ProjectJobState;
+  /** ISO time the command started. */
+  startedAt: string;
+  /** ISO time it ended; null while running. */
+  endedAt: string | null;
+  /** The command's exit code; null while running or when it was killed. */
+  exitCode: number | null;
+  /** The command's output so far, with terminal escape sequences removed. */
+  output: string;
+  /** The command's latest output line; empty when it printed nothing. */
+  progress: string;
+}
+
+/** One project in the operator's catalog. */
+export interface ProjectItem {
+  /** Stable id from the catalog. */
+  id: string;
+  /** Display name. */
+  name: string;
+  /** What the project is; may be empty. */
+  description: string;
+  /** True when every repository of the project is in the workspace. */
+  cloned: boolean;
+  /** True when some, but not all, of its repositories are in the workspace. */
+  partial: boolean;
+  /** The running or most recent fetch job; null when there is none. */
+  job: ProjectJob | null;
+}
+
+/** Response of GET /api/projects. */
+export interface ProjectsResponse {
+  /** False when no project catalog is configured: the feature is off. */
+  enabled: boolean;
+  /** Why the catalog could not be read; null when it was. */
+  error: string | null;
+  /** The account connection a fetch needs first, and whether it is signed in; null when none. */
+  requires: { id: string; name: string; connected: boolean } | null;
+  /** The projects, in catalog order. */
+  items: ProjectItem[];
 }
 
 /** Result of a transcript import run - returned by `api.import.rescan`,

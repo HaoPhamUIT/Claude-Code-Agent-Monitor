@@ -8,6 +8,8 @@
  * the server; this page only names a connection and passes one pasted line.
  * State and polling live in `useConnections`, each card in `ConnectionCard`
  * (both shared with the onboarding gate); nothing here depends on the WebSocket.
+ * Below the accounts, the project catalog from the same file (when configured)
+ * lets a person fetch more projects into their workspace (`ProjectPicker`).
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 /*
@@ -26,7 +28,8 @@
  * address the person pastes back, and reports the outcome. The commands run on the server; this
  * page only names a connection and passes one pasted line. State and polling live in
  * `useConnections` , each card in `ConnectionCard` (both shared with the onboarding gate); nothing
- * here depends on the WebSocket.
+ * here depends on the WebSocket. Below the accounts, the project catalog from the same file (when
+ * configured) lets a person fetch more projects into their workspace (`ProjectPicker`).
  *
  * ## Architectural boundary
  * - Route-level orchestration belongs here: load scoped data, subscribe to live updates, and
@@ -41,8 +44,12 @@
  *   exports before changing assumptions here.
  * - `../components/EmptyState` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
+ * - `../components/ProjectPicker` — repository-local contract consumed by this module; review its
+ *   exports before changing assumptions here.
  * - `../hooks/useConnections` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
+ * - `../hooks/useProjects` — repository-local contract consumed by this module; review its exports
+ *   before changing assumptions here.
  *
  * ## Package dependency edges
  * - `lucide-react` — external package boundary; keep usage within the installed version and the
@@ -60,6 +67,8 @@
  *
  * ## React and framework hooks
  * - `useConnections` — lifecycle/state dependency detected in this module; preserve dependency
+ *   freshness and cleanup semantics.
+ * - `useProjects` — lifecycle/state dependency detected in this module; preserve dependency
  *   freshness and cleanup semantics.
  * - `useTranslation` — lifecycle/state dependency detected in this module; preserve dependency
  *   freshness and cleanup semantics.
@@ -133,6 +142,8 @@ import { KeyRound, RefreshCw } from "lucide-react";
 import { EmptyState } from "../components/EmptyState";
 import { ConnectionCard } from "../components/ConnectionCard";
 import { useConnections } from "../hooks/useConnections";
+import { useProjects } from "../hooks/useProjects";
+import { ProjectPicker } from "../components/ProjectPicker";
 
 /**
  * Account connections page.
@@ -142,6 +153,13 @@ export function Connections() {
   const { t } = useTranslation("connections");
   const { data, loadError, actionError, refreshing, load, connect, cancel, disconnect, sendInput } =
     useConnections();
+  // The project catalog lives in the same operator file; re-read it whenever a
+  // connection changes, so fetching unlocks once the connection it needs is in.
+  const projects = useProjects(
+    (data?.items ?? [])
+      .map((i) => `${i.id}:${String(i.status?.connected)}:${i.job?.state ?? ""}`)
+      .join(",")
+  );
 
   const header = (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -231,6 +249,7 @@ export function Connections() {
         </p>
       )}
       {body}
+      {data?.enabled && <ProjectPicker state={projects} />}
     </div>
   );
 }

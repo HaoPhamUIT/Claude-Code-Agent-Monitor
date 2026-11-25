@@ -1630,6 +1630,42 @@ Commands run without a shell, as the dashboard's own user, from that user's home
 
 A command that needs a terminal (most OAuth CLIs do) has to be wrapped in one by the operator, because the dashboard gives it pipes. Signed-in state lives wherever the command stores it for the dashboard's user: one dashboard instance holds one set of accounts, so give each person their own instance (their own OS user or container) when accounts must not be shared.
 
+### Project Catalog
+
+The `/api/projects/*` namespace lets a person pick projects and fetch them into their workspace (clone their repositories) from the dashboard, instead of choosing them before the workspace exists. It is **off by default** and lives in the same operator file as account connections, under a `projects` key; without that key the list is empty and nothing is ever spawned. Every route enforces the same loopback-Origin guard as Run Agent.
+
+```http
+GET    /api/projects                { enabled, error, requires, items } — each item: { id, name, description, cloned, partial, job }
+POST   /api/projects/:id/add        Start fetching the project (202), or return the fetch already running (200)
+GET    /api/projects/:id/job        Progress: { job: { state, output, progress, exitCode, … } }
+DELETE /api/projects/:id/job        Cancel (SIGTERM → SIGKILL after 3 s); repositories already fetched stay
+```
+
+The `projects` key of the operator's file:
+
+```json
+{
+  "connections": [{ "id": "azure-devops", "name": "Azure DevOps", "login": ["connect-azure-devops"] }],
+  "projects": {
+    "list": ["list-projects", "--json"],
+    "add": ["fetch-project", "{id}"],
+    "requires": "azure-devops",
+    "timeoutSeconds": 1800
+  }
+}
+```
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `list` | yes | Command (argv array) that prints the catalog as a JSON array: `[{ "id", "name"?, "description"?, "cloned", "partial"? }]`. Entries with an id that is not 1–64 letters, digits, `.`, `_` or `-` starting with a letter or digit are dropped (an id can never look like an option); a missing `name` falls back to the id. Run on every list and before every fetch (15 s limit) |
+| `add` | yes | Command that fetches one project; every `{id}` in its arguments is replaced by the project id. An id is only substituted after `list` returned it |
+| `requires` | no | Id of an account connection that must be signed in before fetching. The list reports it as `requires: { id, name, connected }`, the picker stays locked until it is connected, and `POST …/add` answers `409 EREQUIRES` |
+| `timeoutSeconds` | no | 10–7200, default 1800. A fetch is stopped after this long |
+
+A fetch is a job like a sign-in: its output is kept (ANSI stripped, last 64 KiB), `progress` is its latest line, one job runs per project, at most four run at once (`429 ETOOMANY`), and a finished job stays readable for 10 minutes. Errors use `{ error: { code, message } }` with `EBADID`, `ENOPROJECTS` (feature off), `ENOPROJECT` (not in the catalog), `ELIST` (the list command failed), `EREQUIRES`, `ETOOMANY`, `ENOJOB` and `ESPAWN`.
+
+When the catalog lists projects and none of them is set up yet, the first-run dialog asks the person to pick projects after the required connections are signed in, shows the last lines of each fetch while it runs, and closes once a project is in the workspace; the Accounts page keeps the picker so more can be fetched at any time.
+
 ---
 
 ## WebSocket API

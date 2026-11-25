@@ -56,6 +56,40 @@
     "later": "Later",
     "doneTitle": "You're all set",
     "doneBody": "Your accounts are connected and your workspace is ready.",
-    "enter": "Open the dashboard"
+    "enter": "Open the dashboard",
+    "projectsTitle": "Choose your projects",
+    "projectsBody": "Pick the projects you work on. Their repositories are fetched into your workspace; you can add more later from the Accounts page."
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Pick the projects you work on to fetch their repositories into your workspace. You can add more at any time.",
+    "requires": "Connect {{name}} first: fetching a project's code needs it.",
+    "empty": "The catalog lists no projects.",
+    "loadFailed": "Could not load the project catalog",
+    "configError": "The project catalog could not be read",
+    "starting": "Starting…",
+    "progressLabel": "Fetching {{name}}",
+    "summary": "{{cloned}} of {{total}} projects set up",
+    "addSelected": "Fetch selected ({{count}})",
+    "status": {
+      "cloned": "Set up",
+      "partial": "Partly fetched",
+      "fetching": "Fetching…",
+      "failed": "Fetch failed"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "retry": "Try again",
+      "showOutput": "Show the full log"
+    },
+    "result": {
+      "failed": "The fetch did not complete",
+      "cancelled": "Fetch cancelled",
+      "timeout": "The fetch timed out"
+    },
+    "errors": {
+      "addFailed": "Could not start fetching: {{message}}",
+      "cancelFailed": "Could not cancel the fetch: {{message}}"
+    }
   }
 }

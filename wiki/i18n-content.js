@@ -7984,21 +7984,21 @@ Object.assign(window.__WIKI_CONTENT_I18N.es, {
 });
 
 Object.assign(window.__WIKI_CONTENT_I18N.zh, {
-  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
-    "列出账户连接（登录命令）的 JSON 文件，供“账户”页面使用。未设置则关闭该功能。",
+  "JSON file that lists account connections (sign-in commands) for the Accounts page and, under an optional <code>projects</code> key, the project catalog people fetch into their workspace. Unset turns the feature off.":
+    "列出账户连接（登录命令）的 JSON 文件，供“账户”页面使用；可选的 <code>projects</code> 键还可列出项目目录，供用户拉取到工作区。未设置则关闭该功能。",
 });
 
 Object.assign(window.__WIKI_CONTENT_I18N.vi, {
-  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
-    "Tệp JSON liệt kê các kết nối tài khoản (lệnh đăng nhập) cho trang Tài khoản. Để trống thì tắt tính năng.",
+  "JSON file that lists account connections (sign-in commands) for the Accounts page and, under an optional <code>projects</code> key, the project catalog people fetch into their workspace. Unset turns the feature off.":
+    "Tệp JSON liệt kê các kết nối tài khoản (lệnh đăng nhập) cho trang Tài khoản và, trong khoá <code>projects</code> không bắt buộc, danh mục dự án để người dùng tải về workspace. Để trống thì tắt tính năng.",
 });
 
 Object.assign(window.__WIKI_CONTENT_I18N.ko, {
-  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
-    "계정 페이지에서 사용할 계정 연결(로그인 명령)을 나열하는 JSON 파일입니다. 설정하지 않으면 기능이 꺼집니다.",
+  "JSON file that lists account connections (sign-in commands) for the Accounts page and, under an optional <code>projects</code> key, the project catalog people fetch into their workspace. Unset turns the feature off.":
+    "계정 페이지에서 사용할 계정 연결(로그인 명령)과, 선택 사항인 <code>projects</code> 키 아래에 사용자가 워크스페이스로 가져올 프로젝트 카탈로그를 나열하는 JSON 파일입니다. 설정하지 않으면 기능이 꺼집니다.",
 });
 
 Object.assign(window.__WIKI_CONTENT_I18N.es, {
-  "JSON file that lists account connections (sign-in commands) for the Accounts page. Unset turns the feature off.":
-    "Archivo JSON que enumera las conexiones de cuentas (comandos de inicio de sesión) para la página Cuentas. Sin definir, la función queda desactivada.",
+  "JSON file that lists account connections (sign-in commands) for the Accounts page and, under an optional <code>projects</code> key, the project catalog people fetch into their workspace. Unset turns the feature off.":
+    "Archivo JSON que enumera las conexiones de cuentas (comandos de inicio de sesión) para la página Cuentas y, en una clave opcional <code>projects</code>, el catálogo de proyectos que se traen al espacio de trabajo. Sin definir, la función queda desactivada.",
 });

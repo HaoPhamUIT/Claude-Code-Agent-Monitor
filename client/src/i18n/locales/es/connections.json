@@ -56,6 +56,40 @@
     "later": "Más tarde",
     "doneTitle": "Todo listo",
     "doneBody": "Tus cuentas están conectadas y tu espacio de trabajo está listo.",
-    "enter": "Abrir el panel"
+    "enter": "Abrir el panel",
+    "projectsTitle": "Elige tus proyectos",
+    "projectsBody": "Elige los proyectos en los que trabajas. Sus repositorios se traerán a tu espacio de trabajo; puedes añadir más después desde la página Cuentas."
+  },
+  "projects": {
+    "title": "Proyectos",
+    "subtitle": "Elige los proyectos en los que trabajas para traer sus repositorios a tu espacio de trabajo. Puedes añadir más en cualquier momento.",
+    "requires": "Conecta {{name}} primero: se necesita para traer el código de un proyecto.",
+    "empty": "El catálogo no incluye proyectos.",
+    "loadFailed": "No se pudo cargar el catálogo de proyectos",
+    "configError": "No se pudo leer el catálogo de proyectos",
+    "starting": "Iniciando…",
+    "progressLabel": "Trayendo {{name}}",
+    "summary": "{{cloned}} de {{total}} proyectos configurados",
+    "addSelected": "Traer seleccionados ({{count}})",
+    "status": {
+      "cloned": "Configurado",
+      "partial": "Traído en parte",
+      "fetching": "Trayendo…",
+      "failed": "Error al traer"
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "showOutput": "Ver el registro completo"
+    },
+    "result": {
+      "failed": "No se completó la descarga del proyecto",
+      "cancelled": "Descarga cancelada",
+      "timeout": "Se agotó el tiempo de la descarga"
+    },
+    "errors": {
+      "addFailed": "No se pudo empezar a traer el proyecto: {{message}}",
+      "cancelFailed": "No se pudo cancelar: {{message}}"
+    }
   }
 }

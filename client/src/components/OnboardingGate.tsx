@@ -5,9 +5,12 @@
  * which a workspace cannot fetch its project's code), the dashboard covers
  * every page with this dialog until that connection is signed in and its
  * sign-in job, which may still be cloning repositories, has finished without
- * failing. The
+ * failing. When the operator also configured a project catalog, the dialog
+ * then asks which projects to set up (ProjectPicker) and stays open, showing
+ * each fetch's progress, until at least one project is in the workspace. The
  * person can put it off for this browser session with "Later". Renders nothing
- * when connections are off, none is required, or the list cannot be loaded.
+ * when nothing is required and no project needs choosing, or the lists cannot
+ * be loaded.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 /*
@@ -23,9 +26,11 @@
  * First-run gate for required account connections. When the operator marks a connection `required`
  * (for example Azure DevOps, without which a workspace cannot fetch its project's code), the
  * dashboard covers every page with this dialog until that connection is signed in and its sign-in
- * job, which may still be cloning repositories, has finished without failing. The person can put it
- * off for this browser session with "Later". Renders nothing when connections are off, none is
- * required, or the list cannot be loaded.
+ * job, which may still be cloning repositories, has finished without failing. When the operator
+ * also configured a project catalog, the dialog then asks which projects to set up (ProjectPicker)
+ * and stays open, showing each fetch's progress, until at least one project is in the workspace.
+ * The person can put it off for this browser session with "Later". Renders nothing when nothing is
+ * required and no project needs choosing, or the lists cannot be loaded.
  *
  * ## Architectural boundary
  * - This component should express one reusable UI responsibility through typed props and observable
@@ -38,9 +43,13 @@
  * ## Local dependency edges
  * - `../hooks/useConnections` — repository-local contract consumed by this module; review its
  *   exports before changing assumptions here.
+ * - `../hooks/useProjects` — repository-local contract consumed by this module; review its exports
+ *   before changing assumptions here.
  * - `../lib/api` — repository-local contract consumed by this module; review its exports before
  *   changing assumptions here.
  * - `./ConnectionCard` — repository-local contract consumed by this module; review its exports
+ *   before changing assumptions here.
+ * - `./ProjectPicker` — repository-local contract consumed by this module; review its exports
  *   before changing assumptions here.
  *
  * ## Package dependency edges
@@ -54,6 +63,8 @@
  * ## Public surface
  * - `needsAttention` (function) — exported contract; search downstream imports and tests before
  *   changing its name, shape, or timing.
+ * - `needsProjects` (function) — exported contract; search downstream imports and tests before
+ *   changing its name, shape, or timing.
  * - `ONBOARDING_LATER_KEY` (variable) — exported contract; search downstream imports and tests
  *   before changing its name, shape, or timing.
  * - `OnboardingGate` (function) — exported contract; search downstream imports and tests before
@@ -63,6 +74,8 @@
  * - `laterChosen` (function) — top-level declaration that helps orient code review and focused test
  *   selection.
  * - `needsAttention` (function) — top-level declaration that helps orient code review and focused
+ *   test selection.
+ * - `needsProjects` (function) — top-level declaration that helps orient code review and focused
  *   test selection.
  * - `ONBOARDING_LATER_KEY` (variable) — top-level declaration that helps orient code review and
  *   focused test selection.
@@ -76,6 +89,8 @@
  *   freshness and cleanup semantics.
  * - `useEffect` — lifecycle/state dependency detected in this module; preserve dependency freshness
  *   and cleanup semantics.
+ * - `useProjects` — lifecycle/state dependency detected in this module; preserve dependency
+ *   freshness and cleanup semantics.
  * - `useRef` — lifecycle/state dependency detected in this module; preserve dependency freshness
  *   and cleanup semantics.
  * - `useState` — lifecycle/state dependency detected in this module; preserve dependency freshness
@@ -150,10 +165,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CircleCheck, KeyRound } from "lucide-react";
+import { CircleCheck, FolderGit2, KeyRound } from "lucide-react";
 import { ConnectionCard } from "./ConnectionCard";
+import { ProjectPicker } from "./ProjectPicker";
 import { useConnections } from "../hooks/useConnections";
-import type { ConnectionItem } from "../lib/api";
+import { useProjects } from "../hooks/useProjects";
+import type { ConnectionItem, ProjectsResponse } from "../lib/api";
 
 /** sessionStorage key that remembers "Later" until the browser tab closes. */
 export const ONBOARDING_LATER_KEY = "ccam.onboarding.later";
@@ -183,18 +200,39 @@ function laterChosen(): boolean {
 }
 
 /**
- * Full-screen dialog asking for the required connections.
- * @returns The dialog, or null when nothing is required right now.
+ * True while the project catalog still needs the person: it is configured and
+ * lists projects, and either none of them is set up yet or a fetch is running
+ * (so the dialog can show its progress until it ends).
+ */
+export function needsProjects(catalog: ProjectsResponse | null): boolean {
+  if (!catalog?.enabled || catalog.error || catalog.items.length === 0) return false;
+  if (catalog.items.some((i) => i.job?.state === "running")) return true;
+  return !catalog.items.some((i) => i.cloned);
+}
+
+/**
+ * Full-screen dialog asking for the required connections, then for the projects
+ * to set up in the workspace (when the operator configured a project catalog).
+ * @returns The dialog, or null when nothing is needed right now.
  */
 export function OnboardingGate() {
   const { t } = useTranslation("connections");
   const { data, actionError, connect, cancel, disconnect, sendInput } = useConnections();
+  // Re-read the catalog whenever a connection's status or sign-in changes, so the
+  // picker unlocks as soon as the connection a fetch needs is signed in.
+  const connectionKey = (data?.items ?? [])
+    .map((i) => `${i.id}:${String(i.status?.connected)}:${i.job?.state ?? ""}`)
+    .join(",");
+  const projects = useProjects(connectionKey);
   const [later, setLater] = useState(laterChosen);
   const [finished, setFinished] = useState(false);
   const wasPending = useRef(false);
 
   const required = data?.enabled && !data.error ? data.items.filter((i) => i.required) : [];
-  const pending = required.some(needsAttention);
+  const connectionsPending = required.some(needsAttention);
+  const projectsPending = needsProjects(projects.data);
+  const pending = connectionsPending || projectsPending;
+  const showProjects = Boolean(projects.data?.enabled && projects.data.items.length > 0);
 
   // Shown once it was needed and everything is now done: say so before letting go.
   useEffect(() => {
@@ -213,6 +251,17 @@ export function OnboardingGate() {
     setLater(true);
   };
 
+  let title = t("onboarding.title");
+  let body = t("onboarding.body");
+  if (finished) {
+    title = t("onboarding.doneTitle");
+    body = t("onboarding.doneBody");
+  } else if (!connectionsPending) {
+    title = t("onboarding.projectsTitle");
+    body = t("onboarding.projectsBody");
+  }
+  const Icon = finished ? CircleCheck : connectionsPending ? KeyRound : FolderGit2;
+
   return (
     <div
       className="fixed inset-0 z-[70] flex items-start sm:items-center justify-center overflow-y-auto bg-surface-0/90 backdrop-blur-sm p-4"
@@ -223,19 +272,16 @@ export function OnboardingGate() {
       <div className="w-full max-w-xl space-y-5 my-8">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-            {finished ? (
-              <CircleCheck className="w-5 h-5 text-emerald-400" aria-hidden />
-            ) : (
-              <KeyRound className="w-5 h-5 text-accent" aria-hidden />
-            )}
+            <Icon
+              className={`w-5 h-5 ${finished ? "text-emerald-400" : "text-accent"}`}
+              aria-hidden
+            />
           </div>
           <div className="space-y-1">
             <h1 id="onboarding-title" className="text-lg font-semibold text-gray-100">
-              {finished ? t("onboarding.doneTitle") : t("onboarding.title")}
+              {title}
             </h1>
-            <p className="text-sm text-gray-400">
-              {finished ? t("onboarding.doneBody") : t("onboarding.body")}
-            </p>
+            <p className="text-sm text-gray-400">{body}</p>
           </div>
         </div>
 
@@ -245,18 +291,22 @@ export function OnboardingGate() {
           </p>
         )}
 
-        <div className="space-y-4">
-          {required.map((item) => (
-            <ConnectionCard
-              key={item.id}
-              item={item}
-              onConnect={(id) => void connect(id)}
-              onCancel={(id) => void cancel(id)}
-              onDisconnect={(id) => void disconnect(id)}
-              onInput={sendInput}
-            />
-          ))}
-        </div>
+        {required.length > 0 && (
+          <div className="space-y-4">
+            {required.map((item) => (
+              <ConnectionCard
+                key={item.id}
+                item={item}
+                onConnect={(id) => void connect(id)}
+                onCancel={(id) => void cancel(id)}
+                onDisconnect={(id) => void disconnect(id)}
+                onInput={sendInput}
+              />
+            ))}
+          </div>
+        )}
+
+        {showProjects && <ProjectPicker state={projects} showHeading={required.length > 0} />}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           {finished ? (

@@ -57,6 +57,8 @@ tags:
     description: Spawn and supervise Claude Code or interactive Codex runs from the dashboard, stream output over WebSocket, and manage run history
   - name: Connections
     description: 'Account connections: sign-in flows the operator defines in the file named by `DASHBOARD_CONNECTIONS_FILE`, which the dashboard runs so a person can connect their own accounts. Off (empty list, nothing spawned) when no file is configured.'
+  - name: Projects
+    description: 'Project catalog: the projects a person can set up in their workspace from the dashboard. The operator defines a `projects` key in the file named by `DASHBOARD_CONNECTIONS_FILE` (a `list` command that prints the catalog as JSON and an `add` command with an `{id}` placeholder). Off (empty list, nothing spawned) when that key is absent.'
   - name: Push
     description: Web Push notification subscriptions and broadcast (VAPID); also fires native Electron notifications when hosted in the desktop app
 components:
@@ -4340,6 +4342,144 @@ components:
             - $ref: '#/components/schemas/ConnectionStatus'
           nullable: true
           description: The connection's status after the command ran.
+    ProjectErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Stable machine-readable code.
+              enum:
+                - EBADORIGIN
+                - EBADID
+                - ENOPROJECTS
+                - EPROJECTSCONFIG
+                - ENOPROJECT
+                - ELIST
+                - EREQUIRES
+                - ETOOMANY
+                - ENOJOB
+                - ESPAWN
+                - PROJECTS_FAILED
+            message:
+              type: string
+    ProjectJobState:
+      type: string
+      enum:
+        - running
+        - succeeded
+        - failed
+        - cancelled
+        - timeout
+    ProjectJob:
+      type: object
+      required:
+        - id
+        - projectId
+        - state
+        - startedAt
+        - endedAt
+        - exitCode
+        - output
+        - progress
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+        state:
+          $ref: '#/components/schemas/ProjectJobState'
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        exitCode:
+          type: integer
+          nullable: true
+        output:
+          type: string
+          description: The fetch command's output so far (ANSI stripped, last 64 KiB).
+        progress:
+          type: string
+          description: 'The latest non-empty output line: what the fetch is doing now.'
+    ProjectJobResponse:
+      type: object
+      required:
+        - job
+      properties:
+        job:
+          $ref: '#/components/schemas/ProjectJob'
+    ProjectItem:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - cloned
+        - partial
+        - job
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        cloned:
+          type: boolean
+          description: Every repository of the project is in the workspace.
+        partial:
+          type: boolean
+          description: Some, but not all, of its repositories are in the workspace.
+        job:
+          allOf:
+            - $ref: '#/components/schemas/ProjectJob'
+          nullable: true
+    ProjectsResponse:
+      type: object
+      required:
+        - enabled
+        - error
+        - requires
+        - items
+      properties:
+        enabled:
+          type: boolean
+          description: False when no catalog is configured.
+        error:
+          type: string
+          nullable: true
+          description: Why the catalog could not be read (bad config, list command failed).
+        requires:
+          type: object
+          nullable: true
+          description: The account connection a fetch needs first, and whether it is signed in.
+          required:
+            - id
+            - name
+            - connected
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            connected:
+              type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectItem'
     PushVapidKeyResponse:
       type: object
       required:
@@ -11153,6 +11293,192 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConnectionErrorResponse'
+  /api/projects:
+    get:
+      tags:
+        - Projects
+      summary: List the project catalog
+      description: Runs the operator's `list` command (15 s limit) and returns each project with whether its repositories are in the workspace and its fetch job. Also reports the connection a fetch needs (`requires`) and whether it is signed in. The commands themselves are never returned.
+      operationId: projectsList
+      responses:
+        '200':
+          description: 'The catalog; `enabled: false` with no items when the feature is off.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectsResponse'
+              example:
+                enabled: true
+                error: null
+                requires:
+                  id: azure-devops
+                  name: Azure DevOps
+                  connected: true
+                items:
+                  - id: ipa
+                    name: IPA
+                    description: Trading platform
+                    cloned: false
+                    partial: false
+                    job: null
+        '403':
+          description: '`EBADORIGIN` — a browser request from an origin that is neither loopback nor in `DASHBOARD_ALLOWED_HOSTS`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+  /api/projects/{id}/add:
+    post:
+      tags:
+        - Projects
+      summary: Fetch a project into the workspace
+      description: 'Checks that the id is in the catalog and that the required connection (if any) is signed in, then spawns the operator''s `add` command with `{id}` replaced (argv, no shell) and returns its job. One job per project: while one is running the call returns it with 200. At most 4 fetches run at once.'
+      operationId: projectsAdd
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Project id from the catalog. Starts with a letter or digit, so it can never be read as an option.
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$
+          example: ipa
+      responses:
+        '200':
+          description: A fetch of this project was already running; this is its job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectJobResponse'
+        '202':
+          description: The fetch command was started.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectJobResponse'
+        '400':
+          description: '`EBADID` — the id does not match the project id pattern.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '403':
+          description: '`EBADORIGIN` — a browser request from an origin that is neither loopback nor in `DASHBOARD_ALLOWED_HOSTS`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '404':
+          description: '`ENOPROJECTS` when the feature is off, or `ENOPROJECT` when the id is not in the catalog.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '409':
+          description: '`EREQUIRES` — the connection the fetch needs is not signed in.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '429':
+          description: '`ETOOMANY` — 4 fetches are already running.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '500':
+          description: '`ESPAWN` — the command could not be started; `EPROJECTSCONFIG` — the catalog config is invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '502':
+          description: '`ELIST` — the list command failed, so the id could not be checked.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+  /api/projects/{id}/job:
+    get:
+      tags:
+        - Projects
+      summary: Read a fetch's progress
+      description: The running fetch, or the last one for 10 minutes after it ended. Poll this while `state` is `running`.
+      operationId: projectsGetJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Project id from the catalog. Starts with a letter or digit, so it can never be read as an option.
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$
+          example: ipa
+      responses:
+        '200':
+          description: The job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectJobResponse'
+        '400':
+          description: '`EBADID` — the id does not match the project id pattern.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '403':
+          description: '`EBADORIGIN` — a browser request from an origin that is neither loopback nor in `DASHBOARD_ALLOWED_HOSTS`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '404':
+          description: '`ENOPROJECTS`, or `ENOJOB` when the project has no fetch job.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+    delete:
+      tags:
+        - Projects
+      summary: Cancel a fetch
+      description: Stops the fetch command and every process it started (SIGTERM, then SIGKILL after 3 s). Already-fetched repositories stay in the workspace.
+      operationId: projectsCancelJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Project id from the catalog. Starts with a letter or digit, so it can never be read as an option.
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$
+          example: ipa
+      responses:
+        '200':
+          description: The job, now `cancelled` (or its final state if it had already ended).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectJobResponse'
+        '400':
+          description: '`EBADID` — the id does not match the project id pattern.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '403':
+          description: '`EBADORIGIN` — a browser request from an origin that is neither loopback nor in `DASHBOARD_ALLOWED_HOSTS`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
+        '404':
+          description: '`ENOPROJECTS`, or `ENOJOB` when the project has no fetch job.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectErrorResponse'
   /api/push/vapid-public-key:
     get:
       tags:

@@ -56,6 +56,40 @@
     "later": "稍后",
     "doneTitle": "一切就绪",
     "doneBody": "账户已连接，你的工作区已准备就绪。",
-    "enter": "打开仪表板"
+    "enter": "打开仪表板",
+    "projectsTitle": "选择你的项目",
+    "projectsBody": "选择你参与的项目。它们的代码仓库会被拉取到你的工作区；之后可以在“账户”页面添加更多项目。"
+  },
+  "projects": {
+    "title": "项目",
+    "subtitle": "选择你参与的项目，将其代码仓库拉取到你的工作区。你可以随时添加更多项目。",
+    "requires": "请先连接 {{name}}：拉取项目代码需要该账户。",
+    "empty": "目录中没有项目。",
+    "loadFailed": "无法加载项目目录",
+    "configError": "无法读取项目目录",
+    "starting": "正在开始…",
+    "progressLabel": "正在拉取 {{name}}",
+    "summary": "已设置 {{cloned}}/{{total}} 个项目",
+    "addSelected": "拉取所选项目（{{count}}）",
+    "status": {
+      "cloned": "已设置",
+      "partial": "部分拉取",
+      "fetching": "正在拉取…",
+      "failed": "拉取失败"
+    },
+    "actions": {
+      "cancel": "取消",
+      "retry": "重试",
+      "showOutput": "查看完整日志"
+    },
+    "result": {
+      "failed": "拉取未完成",
+      "cancelled": "已取消拉取",
+      "timeout": "拉取超时"
+    },
+    "errors": {
+      "addFailed": "无法开始拉取：{{message}}",
+      "cancelFailed": "无法取消拉取：{{message}}"
+    }
   }
 }

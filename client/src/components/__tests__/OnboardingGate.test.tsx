@@ -42,6 +42,8 @@
  *   repository's existing adapter patterns.
  *
  * ## Top-level implementation landmarks
+ * - `catalog` (variable) — top-level declaration that helps orient code review and focused test
+ *   selection.
  * - `item` (function) — top-level declaration that helps orient code review and focused test
  *   selection.
  * - `job` (function) — top-level declaration that helps orient code review and focused test
@@ -50,6 +52,14 @@
  *   selection.
  * - `mocks` (variable) — top-level declaration that helps orient code review and focused test
  *   selection.
+ * - `noCatalog` (variable) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `project` (function) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `projectJob` (function) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `projectMocks` (variable) — top-level declaration that helps orient code review and focused
+ *   test selection.
  * - `renderGate` (function) — top-level declaration that helps orient code review and focused test
  *   selection.
  * - `settle` (function) — top-level declaration that helps orient code review and focused test
@@ -62,22 +72,36 @@
  *   freshness and cleanup semantics.
  *
  * ## Named test contracts
+ * - `asks for projects once the required connection is in, and fetches the picked ones` —
+ *   executable behavior named by this suite; preserve the observable contract or update the test
+ *   with rationale.
  * - `asks only for the required connections, and starts the sign-in` — executable behavior named by
  *   this suite; preserve the observable contract or update the test with rationale.
  * - `can be put off for this browser session` — executable behavior named by this suite; preserve
  *   the observable contract or update the test with rationale.
+ * - `keeps the project picker locked until the connection it needs is signed in` — executable
+ *   behavior named by this suite; preserve the observable contract or update the test with
+ *   rationale.
  * - `needsAttention: required and not signed in, still running, or failed` — executable behavior
  *   named by this suite; preserve the observable contract or update the test with rationale.
+ * - `needsProjects: a configured catalog with nothing set up, or a fetch still running` —
+ *   executable behavior named by this suite; preserve the observable contract or update the test
+ *   with rationale.
  * - `OnboardingGate` — executable behavior named by this suite; preserve the observable contract or
  *   update the test with rationale.
  * - `says when everything is done, then lets the person in` — executable behavior named by this
  *   suite; preserve the observable contract or update the test with rationale.
+ * - `shows the last lines of a running fetch` — executable behavior named by this suite; preserve
+ *   the observable contract or update the test with rationale.
+ * - `stays away once a project is set up and nothing is fetching` — executable behavior named by
+ *   this suite; preserve the observable contract or update the test with rationale.
  * - `stays away when connections are off, none is required, or all are done` — executable behavior
  *   named by this suite; preserve the observable contract or update the test with rationale.
  * - `stays away when the list cannot be loaded` — executable behavior named by this suite; preserve
  *   the observable contract or update the test with rationale.
- * - `stays open while the signed-in job finishes, showing its latest line` — executable behavior
- *   named by this suite; preserve the observable contract or update the test with rationale.
+ * - `stays open while the signed-in job finishes, showing its latest output lines` — executable
+ *   behavior named by this suite; preserve the observable contract or update the test with
+ *   rationale.
  *
  * ## Area invariants
  * - Name the user-visible or contract-level behavior in each test title so failures explain the
@@ -142,7 +166,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act, fireEvent, within } from "@testing-library/react";
 import i18n from "i18next";
-import type { ConnectionItem, ConnectionJob, ConnectionsResponse } from "../../lib/api";
+import type {
+  ConnectionItem,
+  ConnectionJob,
+  ConnectionsResponse,
+  ProjectItem,
+  ProjectJob,
+  ProjectsResponse,
+} from "../../lib/api";
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
@@ -153,12 +184,24 @@ const mocks = vi.hoisted(() => ({
   logout: vi.fn(),
 }));
 
+const projectMocks = vi.hoisted(() => ({
+  list: vi.fn(),
+  add: vi.fn(),
+  job: vi.fn(),
+  cancel: vi.fn(),
+}));
+
 vi.mock("../../lib/api", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
-  return { ...actual, api: { connections: mocks } };
+  return { ...actual, api: { connections: mocks, projects: projectMocks } };
 });
 
-import { OnboardingGate, ONBOARDING_LATER_KEY, needsAttention } from "../OnboardingGate";
+import {
+  OnboardingGate,
+  ONBOARDING_LATER_KEY,
+  needsAttention,
+  needsProjects,
+} from "../OnboardingGate";
 
 function job(over: Partial<ConnectionJob> = {}): ConnectionJob {
   return {
@@ -211,9 +254,47 @@ async function renderGate() {
   await settle();
 }
 
+const noCatalog: ProjectsResponse = { enabled: false, error: null, requires: null, items: [] };
+
+function project(over: Partial<ProjectItem> = {}): ProjectItem {
+  return {
+    id: "ipa",
+    name: "IPA",
+    description: "Trading platform",
+    cloned: false,
+    partial: false,
+    job: null,
+    ...over,
+  };
+}
+
+function projectJob(over: Partial<ProjectJob> = {}): ProjectJob {
+  return {
+    id: "fetch-1",
+    projectId: "ipa",
+    state: "running",
+    startedAt: "2026-11-25T12:00:00.000Z",
+    endedAt: null,
+    exitCode: null,
+    output: "",
+    progress: "",
+    ...over,
+  };
+}
+
+const catalog = (
+  items: ProjectItem[],
+  requires: ProjectsResponse["requires"] = {
+    id: "azure-devops",
+    name: "Azure DevOps",
+    connected: true,
+  }
+): ProjectsResponse => ({ enabled: true, error: null, requires, items });
+
 beforeEach(() => {
   i18n.changeLanguage("en");
   window.sessionStorage.clear();
+  projectMocks.list.mockResolvedValue(noCatalog);
 });
 
 afterEach(() => {
@@ -267,7 +348,7 @@ describe("OnboardingGate", () => {
     );
   });
 
-  it("stays open while the signed-in job finishes, showing its latest line", async () => {
+  it("stays open while the signed-in job finishes, showing its latest output lines", async () => {
     mocks.list.mockResolvedValue(
       listing([
         item({
@@ -276,6 +357,12 @@ describe("OnboardingGate", () => {
             code: "ABCD1234",
             urls: ["https://microsoft.com/devicelogin"],
             signedIn: true,
+            output: [
+              "1/3 Đăng nhập Azure DevOps",
+              "2/3 MCP server azure-devops: đã cài",
+              "3/3 Repo của dự án",
+              "pmc-clone: cloning ipa-backend (develop)",
+            ].join("\n"),
             progress: "pmc-clone: cloning ipa-backend (develop)",
           }),
         }),
@@ -285,7 +372,10 @@ describe("OnboardingGate", () => {
     await renderGate();
     const dialog = within(screen.getByRole("dialog"));
     expect(dialog.getByText("Signed in. Finishing setup…")).toBeTruthy();
-    expect(dialog.getByText("pmc-clone: cloning ipa-backend (develop)")).toBeTruthy();
+    // The last few lines show what setup is doing now: the MCP step and the clone.
+    const status = dialog.getByText("Signed in. Finishing setup…").closest('[role="status"]');
+    expect(status?.textContent).toContain("2/3 MCP server azure-devops: đã cài");
+    expect(status?.textContent).toContain("pmc-clone: cloning ipa-backend (develop)");
     expect(dialog.getByText("Finishing…")).toBeTruthy();
     // The sign-in steps are gone once signed in.
     expect(dialog.queryByText("ABCD1234")).toBeNull();
@@ -338,5 +428,83 @@ describe("OnboardingGate", () => {
     expect(needsAttention(item({ status: connected, job: job({ state: "succeeded" }) }))).toBe(
       false
     );
+  });
+  it("asks for projects once the required connection is in, and fetches the picked ones", async () => {
+    mocks.list.mockResolvedValue(
+      listing([item({ status: { connected: true, account: "alice@pharmacity.vn", detail: "" } })])
+    );
+    projectMocks.list.mockResolvedValue(
+      catalog([project(), project({ id: "demo", name: "Demo", description: "" })])
+    );
+    projectMocks.add.mockResolvedValue({ job: projectJob() });
+    projectMocks.job.mockReturnValue(new Promise(() => {}));
+    await renderGate();
+    const dialog = within(screen.getByRole("dialog"));
+    expect(dialog.getByText("Choose your projects")).toBeTruthy();
+    const fetch = dialog.getByRole("button", { name: "Fetch selected (0)" });
+    expect((fetch as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(dialog.getByLabelText("IPA"));
+    await act(async () => {
+      fireEvent.click(dialog.getByRole("button", { name: "Fetch selected (1)" }));
+    });
+    expect(projectMocks.add).toHaveBeenCalledWith("ipa");
+    expect(projectMocks.add).toHaveBeenCalledTimes(1);
+    expect(dialog.getByText("Fetching…")).toBeTruthy();
+  });
+
+  it("keeps the project picker locked until the connection it needs is signed in", async () => {
+    mocks.list.mockResolvedValue(listing([item()]));
+    projectMocks.list.mockResolvedValue(
+      catalog([project()], { id: "azure-devops", name: "Azure DevOps", connected: false })
+    );
+    await renderGate();
+    const dialog = within(screen.getByRole("dialog"));
+    expect(dialog.getByText("One last step: connect your accounts")).toBeTruthy();
+    expect(
+      dialog.getByText("Connect Azure DevOps first: fetching a project's code needs it.")
+    ).toBeTruthy();
+    expect((dialog.getByLabelText("IPA") as HTMLInputElement).disabled).toBe(true);
+  });
+
+  it("shows the last lines of a running fetch", async () => {
+    projectMocks.list.mockResolvedValue(
+      catalog([
+        project({
+          job: projectJob({
+            output: "pmc-clone: cloning ipa-backend (develop)\nReceiving objects:  42% (420/1000)",
+            progress: "Receiving objects:  42% (420/1000)",
+          }),
+        }),
+      ])
+    );
+    mocks.list.mockResolvedValue({ enabled: true, error: null, items: [] });
+    projectMocks.job.mockReturnValue(new Promise(() => {}));
+    await renderGate();
+    const progress = screen.getByRole("status", { name: "Fetching IPA" });
+    expect(progress.textContent).toContain("pmc-clone: cloning ipa-backend (develop)");
+    expect(progress.textContent).toContain("Receiving objects:  42% (420/1000)");
+  });
+
+  it("stays away once a project is set up and nothing is fetching", async () => {
+    mocks.list.mockResolvedValue({ enabled: true, error: null, items: [] });
+    projectMocks.list.mockResolvedValue(
+      catalog([project({ cloned: true }), project({ id: "demo" })])
+    );
+    await renderGate();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("needsProjects: a configured catalog with nothing set up, or a fetch still running", () => {
+    expect(needsProjects(null)).toBe(false);
+    expect(needsProjects(noCatalog)).toBe(false);
+    expect(needsProjects(catalog([]))).toBe(false);
+    expect(needsProjects({ ...catalog([project()]), error: "list failed" })).toBe(false);
+    expect(needsProjects(catalog([project()]))).toBe(true);
+    expect(needsProjects(catalog([project({ cloned: true })]))).toBe(false);
+    expect(
+      needsProjects(
+        catalog([project({ cloned: true }), project({ id: "demo", job: projectJob() })])
+      )
+    ).toBe(true);
   });
 });

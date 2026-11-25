@@ -265,7 +265,14 @@ function firstLine(text) {
 
 // ── One-shot commands (status, logout) ────────────────────────────────────────
 
-function runOnce(command, timeoutMs) {
+/**
+ * Run a command to completion without a shell.
+ * @param {string[]} command argv array from the operator's file.
+ * @param {number} timeoutMs Kill the command (SIGKILL) after this long.
+ * @param {number} [maxBytes=8192] Keep at most this much of stdout and of stderr.
+ * @returns {Promise<{ code: number|null, stdout: string, stderr: string }>}
+ */
+function runOnce(command, timeoutMs, maxBytes = 8192) {
   return new Promise((resolve) => {
     let child;
     try {
@@ -295,10 +302,10 @@ function runOnce(command, timeoutMs) {
       finish(null, "timed out");
     }, timeoutMs);
     child.stdout.on("data", (d) => {
-      if (stdout.length < 8192) stdout += d.toString("utf8");
+      if (stdout.length < maxBytes) stdout += d.toString("utf8");
     });
     child.stderr.on("data", (d) => {
-      if (stderr.length < 8192) stderr += d.toString("utf8");
+      if (stderr.length < maxBytes) stderr += d.toString("utf8");
     });
     child.on("error", (err) =>
       finish(null, err.code === "ENOENT" ? `command not found: ${command[0]}` : err.message)
@@ -561,6 +568,8 @@ module.exports = {
   sendInput,
   cancelLogin,
   logout,
+  // shared with the project catalog (server/lib/projects.js), which reads the same file
+  runOnce,
   // exported for tests
   extractUrls,
   stripEscapes,

@@ -51,6 +51,7 @@ const ccConfigRouter = require("./routes/cc-config");
 const codexConfigRouter = require("./routes/codex-config");
 const runRouter = require("./routes/run");
 const connectionsRouter = require("./routes/connections");
+const projectsRouter = require("./routes/projects");
 const alertsRouter = require("./routes/alerts");
 const webhooksRouter = require("./routes/webhooks");
 const remoteSourcesRouter = require("./routes/remote-sources");
@@ -101,6 +102,7 @@ function createApp() {
   app.use("/api/codex-config", codexConfigRouter);
   app.use("/api/run", runRouter);
   app.use("/api/connections", connectionsRouter);
+  app.use("/api/projects", projectsRouter);
   app.use("/api/alerts", alertsRouter);
   app.use("/api/webhooks", webhooksRouter);
   app.use("/api/remote-sources", remoteSourcesRouter);

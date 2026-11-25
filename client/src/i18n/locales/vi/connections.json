@@ -56,6 +56,40 @@
     "later": "Để sau",
     "doneTitle": "Đã sẵn sàng",
     "doneBody": "Tài khoản đã được kết nối và workspace của bạn đã sẵn sàng.",
-    "enter": "Vào dashboard"
+    "enter": "Vào dashboard",
+    "projectsTitle": "Chọn dự án để bắt đầu",
+    "projectsBody": "Chọn các dự án bạn làm. Repository của chúng sẽ được tải về máy làm việc; bạn có thể thêm dự án khác sau ở trang Tài khoản."
+  },
+  "projects": {
+    "title": "Dự án",
+    "subtitle": "Chọn các dự án bạn làm để tải repository về máy làm việc. Bạn có thể thêm dự án khác bất cứ lúc nào.",
+    "requires": "Hãy kết nối {{name}} trước: cần tài khoản này để tải code của dự án.",
+    "empty": "Danh mục chưa có dự án nào.",
+    "loadFailed": "Không tải được danh mục dự án",
+    "configError": "Không đọc được danh mục dự án",
+    "starting": "Đang bắt đầu…",
+    "progressLabel": "Đang tải {{name}}",
+    "summary": "Đã thiết lập {{cloned}}/{{total}} dự án",
+    "addSelected": "Tải dự án đã chọn ({{count}})",
+    "status": {
+      "cloned": "Đã thiết lập",
+      "partial": "Tải chưa đủ",
+      "fetching": "Đang tải…",
+      "failed": "Tải lỗi"
+    },
+    "actions": {
+      "cancel": "Huỷ",
+      "retry": "Thử lại",
+      "showOutput": "Xem toàn bộ log"
+    },
+    "result": {
+      "failed": "Tải dự án chưa hoàn tất",
+      "cancelled": "Đã huỷ tải",
+      "timeout": "Tải dự án quá thời gian"
+    },
+    "errors": {
+      "addFailed": "Không bắt đầu tải được: {{message}}",
+      "cancelFailed": "Không huỷ tải được: {{message}}"
+    }
   }
 }

@@ -54,6 +54,10 @@
  *   selection.
  * - `mocks` (variable) — top-level declaration that helps orient code review and focused test
  *   selection.
+ * - `noCatalog` (variable) — top-level declaration that helps orient code review and focused test
+ *   selection.
+ * - `projectMocks` (variable) — top-level declaration that helps orient code review and focused
+ *   test selection.
  * - `renderPage` (function) — top-level declaration that helps orient code review and focused test
  *   selection.
  * - `settle` (function) — top-level declaration that helps orient code review and focused test
@@ -70,8 +74,14 @@
  *   or update the test with rationale.
  * - `explains how to turn the page on when no file is configured` — executable behavior named by
  *   this suite; preserve the observable contract or update the test with rationale.
+ * - `hides the project section when no catalog is configured` — executable behavior named by this
+ *   suite; preserve the observable contract or update the test with rationale.
  * - `is translated` — executable behavior named by this suite; preserve the observable contract or
  *   update the test with rationale.
+ * - `lists the project catalog below the accounts and fetches more projects` — executable behavior
+ *   named by this suite; preserve the observable contract or update the test with rationale.
+ * - `offers a retry and the full log when a fetch failed` — executable behavior named by this
+ *   suite; preserve the observable contract or update the test with rationale.
  * - `offers a retry when the list cannot be loaded` — executable behavior named by this suite;
  *   preserve the observable contract or update the test with rationale.
  * - `runs a device-code sign-in: link and code, polling, then a status refresh` — executable
@@ -153,7 +163,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act, fireEvent, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import i18n from "i18next";
-import type { ConnectionItem, ConnectionJob, ConnectionsResponse } from "../../lib/api";
+import type {
+  ConnectionItem,
+  ConnectionJob,
+  ConnectionsResponse,
+  ProjectsResponse,
+} from "../../lib/api";
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
@@ -164,9 +179,16 @@ const mocks = vi.hoisted(() => ({
   logout: vi.fn(),
 }));
 
+const projectMocks = vi.hoisted(() => ({
+  list: vi.fn(),
+  add: vi.fn(),
+  job: vi.fn(),
+  cancel: vi.fn(),
+}));
+
 vi.mock("../../lib/api", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
-  return { ...actual, api: { connections: mocks } };
+  return { ...actual, api: { connections: mocks, projects: projectMocks } };
 });
 
 import { Connections } from "../Connections";
@@ -229,8 +251,11 @@ async function renderPage() {
   await settle();
 }
 
+const noCatalog: ProjectsResponse = { enabled: false, error: null, requires: null, items: [] };
+
 beforeEach(() => {
   i18n.changeLanguage("en");
+  projectMocks.list.mockResolvedValue(noCatalog);
 });
 
 afterEach(() => {
@@ -407,5 +432,101 @@ describe("Connections page", () => {
     await renderPage();
     expect(screen.getByRole("heading", { name: "Kết nối tài khoản" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Kết nối" })).toBeTruthy();
+  });
+  it("lists the project catalog below the accounts and fetches more projects", async () => {
+    mocks.list.mockResolvedValue(
+      listing([item("ado", { status: { connected: true, account: "alice", detail: "" } })])
+    );
+    projectMocks.list.mockResolvedValue({
+      enabled: true,
+      error: null,
+      requires: { id: "ado", name: "Azure DevOps", connected: true },
+      items: [
+        { id: "ipa", name: "IPA", description: "", cloned: true, partial: false, job: null },
+        { id: "demo", name: "Demo", description: "", cloned: false, partial: false, job: null },
+      ],
+    });
+    projectMocks.add.mockResolvedValue({
+      job: {
+        id: "fetch-1",
+        projectId: "demo",
+        state: "running",
+        startedAt: "2026-06-10T13:00:00.000Z",
+        endedAt: null,
+        exitCode: null,
+        output: "",
+        progress: "",
+      },
+    });
+    projectMocks.job.mockReturnValue(new Promise(() => {}));
+    await renderPage();
+    const section = within(screen.getByRole("region", { name: "Projects" }));
+    expect(section.getByText("1 of 2 projects set up")).toBeTruthy();
+    // A project already in the workspace cannot be picked again.
+    expect((section.getByLabelText("IPA") as HTMLInputElement).disabled).toBe(true);
+    fireEvent.click(section.getByLabelText("Demo"));
+    await act(async () => {
+      fireEvent.click(section.getByRole("button", { name: "Fetch selected (1)" }));
+    });
+    expect(projectMocks.add).toHaveBeenCalledWith("demo");
+    expect(section.getByText("Fetching…")).toBeTruthy();
+  });
+
+  it("offers a retry and the full log when a fetch failed", async () => {
+    mocks.list.mockResolvedValue(listing([item("ado")]));
+    projectMocks.list.mockResolvedValue({
+      enabled: true,
+      error: null,
+      requires: null,
+      items: [
+        {
+          id: "pos",
+          name: "Enterprise POS",
+          description: "",
+          cloned: false,
+          partial: true,
+          job: {
+            id: "fetch-2",
+            projectId: "pos",
+            state: "failed",
+            startedAt: "2026-06-10T12:50:00.000Z",
+            endedAt: "2026-06-10T12:51:00.000Z",
+            exitCode: 1,
+            output: "pmc-clone: cloning pos-backend\npmc-clone: FAILED pos-backend\n",
+            progress: "pmc-clone: FAILED pos-backend",
+          },
+        },
+      ],
+    });
+    projectMocks.add.mockResolvedValue({
+      job: {
+        id: "fetch-3",
+        projectId: "pos",
+        state: "running",
+        startedAt: "2026-06-10T13:00:00.000Z",
+        endedAt: null,
+        exitCode: null,
+        output: "",
+        progress: "",
+      },
+    });
+    projectMocks.job.mockReturnValue(new Promise(() => {}));
+    await renderPage();
+    const section = within(screen.getByRole("region", { name: "Projects" }));
+    expect(section.getByText("Fetch failed")).toBeTruthy();
+    expect(
+      section.getByText("The fetch did not complete — pmc-clone: FAILED pos-backend")
+    ).toBeTruthy();
+    expect(section.getByText("Show the full log")).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(section.getByRole("button", { name: "Try again" }));
+    });
+    expect(projectMocks.add).toHaveBeenCalledWith("pos");
+  });
+
+  it("hides the project section when no catalog is configured", async () => {
+    mocks.list.mockResolvedValue(listing([item("ado")]));
+    await renderPage();
+    expect(screen.queryByRole("region", { name: "Projects" })).toBeNull();
   });
 });

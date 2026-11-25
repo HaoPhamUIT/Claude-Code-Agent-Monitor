@@ -336,7 +336,7 @@ Dashboard 覆盖完整的本地 Agent 生命周期。详细运行契约仍见相
 | **设置** | 系统与 Hook 状态、按 Provider 的定价、通知、清理、Provider 主目录、即时数据刷新，以及最大 25 MiB 的导出 JSON 幂等恢复。定价支持 Provider 级默认值、通配规则、公开费率指引、272K GPT 边界，以及独立的 Cursor 原生与第三方目录。 |
 | **编辑器文件夹启动器** | 在设置 → 编辑器中添加 VS Code、Cursor、VS Code Insiders、Windsurf 或 VSCodium，并选择默认编辑器。会话卡片、仪表盘会话卡片、会话列表和详情通过编辑器链接打开工作文件夹；选择器可切换其他已配置编辑器。偏好仅保存在此浏览器中。需要通过 localhost 访问、来自本地的会话、已安装的编辑器，以及此计算机上已存在的文件夹。缺少路径和远程会话会被禁用；无法检测缺失的文件夹或应用。不会恢复 Agent 对话，也不会执行 shell 命令。 |
 | **Run Agent + Agent 配置** | `/run` 启动 Claude Code 或原生 Codex app-server 线程，提供对应 Provider 的模型、审批、沙箱、恢复、停止、流式输出和重新连接。`/cc-config` 并列提供可编辑的 Claude 与 Codex 浏览器；受支持的用户文件使用受保护的原子保存和带时间戳备份、Secret 脱敏预览、准确的 Profile 命令和 Provider 专用监听器。 |
-| **账户连接** | `/connections` 让用户直接在 dashboard 中登录自己的账户，例如 MCP 服务器的 OAuth 或 CLI 的设备码登录，使 agent 以该用户的权限工作。运营者在 `DASHBOARD_CONNECTIONS_FILE` 指定的 JSON 文件中列出登录命令；页面显示每个账户的状态、打开登录链接、显示设备码，并接收粘贴回来的重定向地址。标记为 `required` 的连接（始终必需，或运营者命令以 0 退出时必需）会在每个页面上弹出对话框，直到完成登录且登录命令运行结束，例如克隆该账户才能访问的仓库；**稍后** 可在本次浏览器会话中暂缓。未设置该文件时关闭，并从侧边栏隐藏。 |
+| **账户连接** | `/connections` 让用户直接在 dashboard 中登录自己的账户，例如 MCP 服务器的 OAuth 或 CLI 的设备码登录，使 agent 以该用户的权限工作。运营者在 `DASHBOARD_CONNECTIONS_FILE` 指定的 JSON 文件中列出登录命令；页面显示每个账户的状态、打开登录链接、显示设备码，并接收粘贴回来的重定向地址。标记为 `required` 的连接（始终必需，或运营者命令以 0 退出时必需）会在每个页面上弹出对话框，直到完成登录且登录命令运行结束，例如克隆该账户才能访问的仓库；**稍后** 可在本次浏览器会话中暂缓。同一文件中可选的 `projects` 键会添加项目目录：完成必需账户后，对话框会询问要将哪些项目拉取到工作区（克隆其仓库，并实时显示每次拉取的最后几行输出），页面也保留 **项目** 区域，可随时拉取更多项目。未设置该文件时关闭，并从侧边栏隐藏。 |
 | **Codex Agent 配置** | 显示完整账户模型目录及基础/Profile 覆盖，创建标准 `<name>.config.toml` Overlay，并通过规范路径包含检查和符号链接检查保护编辑。Profile、Hook、规则、技能和指令支持来源/路径/编辑/删除操作，删除前备份；`config.toml` 仅可编辑。 |
 | **MCP Server（本地）** | stdio、HTTP+SSE 和 REPL 三种传输在 16 个模块中暴露 103 个类型化工具。统一的已验证目录强制 localhost 或 HTTPS 目标、Bearer Token 规则、拒绝重定向、变更门禁、每文件 50 MiB 和每调用 100 MiB 上传、10 MiB 二进制响应，以及 25 MiB 恢复。 |
 | **工作流** | 11 个 D3 区域覆盖编排、工具流、协作、效能、模式、委派、错误、并发、复杂度、压缩和会话下钻。本地化说明 Tooltip、交叉筛选、JSON 导出、3 秒防抖的实时刷新，以及从日志重建的动态运行，会保留每个 Agent 的阶段、Token、工具、时长、提示和结果详情。 |
@@ -651,7 +651,7 @@ flowchart LR
 | `REMOTE_PUSH_TOKEN` / `REMOTE_PUSH_TOKEN_FILE` | 未设置 | 单独把守公网 `POST /api/hooks/ingest-batch` 和 `/api/hooks/ingest-transcript`。两条路由默认禁用，且绝不继承本地 Hook Token。 |
 | `REMOTE_TRANSCRIPT_MAX_FILE_MB` | `256` | `ingest-transcript` 接受的每个文件的最大存储大小（MiB）；每个请求分块另行限制为 4 MiB。 |
 | `DASHBOARD_ALLOWED_HOSTS` | loopback | DNS 重绑定防护允许的额外逗号分隔 HTTP 和 WebSocket `Host` 值。 |
-| `DASHBOARD_CONNECTIONS_FILE` | 未设置 | 列出账户页面所用账户连接（登录命令）的 JSON 文件。未设置则关闭该功能。格式：[docs/API.md](./docs/API.md#account-connections)。 |
+| `DASHBOARD_CONNECTIONS_FILE` | 未设置 | 列出账户页面所用账户连接（登录命令）的 JSON 文件。未设置则关闭该功能。格式：[docs/API.md](./docs/API.md#account-connections)；其中可选的 `projects` 键用于添加项目目录（[docs/API.md](./docs/API.md#project-catalog)）。 |
 | `DASHBOARD_ENV_PATH` | 仓库 `.env` | 用于持久化 Provider 主目录覆盖值的可写 dotenv 文件；容器默认使用 `/app/config/.env`。 |
 | `CCAM_DASHBOARD_URL` | localhost 发现 | 远程 Hook 目标。非 loopback URL 需要 HTTPS 和 Hook Token。 |
 | `CCAM_HOOK_TOKEN` / `CCAM_HOOK_TOKEN_FILE` | 未设置 | Hook 客户端作为 `x-ccam-hook-token` 发送的凭据。 |

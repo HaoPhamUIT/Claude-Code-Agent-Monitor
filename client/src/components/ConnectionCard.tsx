@@ -4,8 +4,9 @@
  * sign-in status, the connect / reconnect / cancel / sign-out buttons, and the
  * guided steps of a running sign-in (open the link, enter the device code,
  * paste the redirect address). Once the operator's signed-in marker appears,
- * the steps give way to the command's latest line while it finishes (cloning
- * repositories, for example). Used by the Accounts page and the onboarding gate.
+ * the steps give way to the command's last few output lines while it finishes
+ * (installing an MCP server, cloning repositories, for example). Used by the
+ * Accounts page and the onboarding gate.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 /*
@@ -21,8 +22,8 @@
  * One account connection as a card: its name, description and sign-in status, the connect /
  * reconnect / cancel / sign-out buttons, and the guided steps of a running sign-in (open the link,
  * enter the device code, paste the redirect address). Once the operator's signed-in marker appears,
- * the steps give way to the command's latest line while it finishes (cloning repositories, for
- * example). Used by the Accounts page and the onboarding gate.
+ * the steps give way to the command's last few output lines while it finishes (installing an MCP
+ * server, cloning repositories, for example). Used by the Accounts page and the onboarding gate.
  *
  * ## Architectural boundary
  * - This component should express one reusable UI responsibility through typed props and observable
@@ -35,6 +36,8 @@
  * ## Local dependency edges
  * - `../lib/api` — repository-local contract consumed by this module; review its exports before
  *   changing assumptions here.
+ * - `../lib/outputTail` — repository-local contract consumed by this module; review its exports
+ *   before changing assumptions here.
  *
  * ## Package dependency edges
  * - `lucide-react` — external package boundary; keep usage within the installed version and the
@@ -139,6 +142,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CircleAlert, CircleCheck, CircleX, Copy, ExternalLink, LoaderCircle } from "lucide-react";
 import type { ConnectionItem, ConnectionJob } from "../lib/api";
+import { outputTail } from "../lib/outputTail";
 
 /** Props for {@link StatusBadge}. */
 interface StatusBadgeProps {
@@ -199,6 +203,8 @@ function JobPanel({ job, onSubmit }: JobPanelProps) {
   const running = job.state === "running";
   const signingIn = running && !job.signedIn;
   const [signInUrl, ...otherUrls] = job.urls;
+  // What the command is doing now (installing an MCP server, cloning, …).
+  const tail = outputTail(job.output);
 
   /** Copy the device code; the button falls back to doing nothing without clipboard access. */
   const copyCode = async () => {
@@ -293,7 +299,9 @@ function JobPanel({ job, onSubmit }: JobPanelProps) {
             {t("steps.finishing")}
           </p>
           {job.progress && (
-            <p className="pl-6 text-xs font-mono text-gray-500 break-all">{job.progress}</p>
+            <pre className="ml-6 max-h-28 overflow-auto rounded bg-surface-1 border border-border p-2 text-[11px] leading-relaxed font-mono text-gray-400 whitespace-pre-wrap break-all">
+              {(tail.length ? tail : [job.progress]).join("\n")}
+            </pre>
           )}
         </div>
       )}

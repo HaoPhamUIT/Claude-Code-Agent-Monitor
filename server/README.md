@@ -180,6 +180,7 @@ server/
 │   ├── push.js            #   /api/push/* paths + schemas
 │   ├── run.js             #   /api/run/* paths + schemas
 │   ├── connections.js     #   /api/connections/* paths + schemas
+│   ├── projects.js        #   /api/projects/* paths + schemas
 │   └── misc.js            #   remaining route groups
 │
 ├── lib/
@@ -820,6 +821,17 @@ Sign-in flows an operator defines in the JSON file named by `DASHBOARD_CONNECTIO
 | `POST`   | `/api/connections/:id/job/input`  | Write one pasted line to the command's stdin. Body: `{ text }` |
 | `DELETE` | `/api/connections/:id/job`        | Cancel (SIGTERM → SIGKILL after 3 s) |
 | `POST`   | `/api/connections/:id/logout`     | Run the sign-out command, then report the status |
+
+### Project Catalog (`/api/projects`)
+
+The projects a person can fetch into their workspace from the dashboard, from the `projects` key of the same `DASHBOARD_CONNECTIONS_FILE` (`routes/projects.js` + `lib/projects.js`). Off by default: with no `projects` key the list is empty and nothing is spawned. Same loopback-Origin guard as Run Agent. The operator's `list` command prints the catalog as JSON and the `add` command fetches one project with `{id}` substituted; an id is substituted only after `list` returned it and only if it starts with a letter or digit. File format and field reference: [docs/API.md](../docs/API.md#project-catalog).
+
+| Method   | Path                          | Description |
+| -------- | ----------------------------- | ----------- |
+| `GET`    | `/api/projects`               | `{ enabled, error, requires, items }`; runs `list` (15 s limit). Each item: `id`, `name`, `description`, `cloned`, `partial`, `job`. `requires` is the connection a fetch needs and whether it is signed in |
+| `POST`   | `/api/projects/:id/add`       | Start the fetch (202) or return the one already running (200); `409 EREQUIRES` until the required connection is signed in, `429 ETOOMANY` past four running fetches |
+| `GET`    | `/api/projects/:id/job`       | Job progress: `state`, `output` (last 64 KiB), `progress` (latest line), `exitCode` |
+| `DELETE` | `/api/projects/:id/job`       | Cancel (SIGTERM → SIGKILL after 3 s); repositories already fetched stay |
 
 ### Import History
 
