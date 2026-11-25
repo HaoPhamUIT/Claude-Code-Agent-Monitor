@@ -177,6 +177,7 @@ import type {
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
+  status: vi.fn(),
   login: vi.fn(),
   job: vi.fn(),
   input: vi.fn(),
@@ -254,6 +255,23 @@ async function renderGate() {
   await settle();
 }
 
+/**
+ * Answer a status check the way the server would: from the connection as the
+ * latest list response describes it (the hook lists with `?status=0`, then asks
+ * for each status on its own).
+ */
+async function statusFromLatestList(id: string) {
+  const results = mocks.list.mock.results;
+  const latest = results[results.length - 1];
+  const response = (await latest?.value) as ConnectionsResponse | undefined;
+  const found = response?.items.find((i) => i.id === id);
+  return {
+    id,
+    required: found?.required ?? false,
+    status: found?.status ?? { connected: null, account: "", detail: "" },
+  };
+}
+
 const noCatalog: ProjectsResponse = { enabled: false, error: null, requires: null, items: [] };
 
 function project(over: Partial<ProjectItem> = {}): ProjectItem {
@@ -295,6 +313,7 @@ beforeEach(() => {
   i18n.changeLanguage("en");
   window.sessionStorage.clear();
   projectMocks.list.mockResolvedValue(noCatalog);
+  mocks.status.mockImplementation(statusFromLatestList);
 });
 
 afterEach(() => {
@@ -421,6 +440,9 @@ describe("OnboardingGate", () => {
   it("needsAttention: required and not signed in, still running, or failed", () => {
     expect(needsAttention(item())).toBe(true);
     expect(needsAttention(item({ required: false }))).toBe(false);
+    // Still being checked: no dialog until the answer arrives, unless a sign-in runs.
+    expect(needsAttention(item({ status: null }))).toBe(false);
+    expect(needsAttention(item({ status: null, job: job() }))).toBe(true);
     const connected = { connected: true, account: "a", detail: "" };
     expect(needsAttention(item({ status: connected }))).toBe(false);
     expect(needsAttention(item({ status: connected, job: job() }))).toBe(true);

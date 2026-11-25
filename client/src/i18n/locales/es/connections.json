@@ -13,6 +13,7 @@
     "connectedAs": "Conectado como {{account}}",
     "notConnected": "Sin conectar",
     "unknown": "Estado desconocido",
+    "checking": "Comprobando…",
     "signingIn": "Iniciando sesión…",
     "finishing": "Terminando…"
   },

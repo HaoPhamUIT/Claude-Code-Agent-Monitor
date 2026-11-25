@@ -2,7 +2,7 @@
  * @file connections.js
  * @description HTTP routes for account connections, mounted at
  * `/api/connections`: list the connections the operator defined (with whether
- * each is signed in), start or cancel a sign-in, read its progress, hand it one
+ * each is signed in, all at once or one connection at a time), start or cancel a sign-in, read its progress, hand it one
  * pasted line, and sign out. The commands themselves live in the operator's
  * file (`DASHBOARD_CONNECTIONS_FILE`); see server/lib/connections.js.
  *
@@ -37,6 +37,19 @@ function fail(res, err) {
 router.get("/", async (req, res) => {
   try {
     res.json(await connections.listConnections({ withStatus: req.query.status !== "0" }));
+  } catch (err) {
+    fail(res, err);
+  }
+});
+
+/**
+ * One connection's `required` and sign-in status. The page lists connections
+ * with `?status=0`, then asks for each status separately so a slow one does not
+ * hold back the others.
+ */
+router.get("/:id/status", async (req, res) => {
+  try {
+    res.json(await connections.connectionStatus(req.params.id));
   } catch (err) {
     fail(res, err);
   }

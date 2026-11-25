@@ -709,6 +709,19 @@ vi.mock("../../lib/api", async (importOriginal) => {
             },
           ],
         }),
+        status: vi.fn(async (id: string) =>
+          id === "azure-devops"
+            ? {
+                id,
+                required: false,
+                status: { connected: true, account: "alice@example.com", detail: "" },
+              }
+            : {
+                id,
+                required: false,
+                status: { connected: false, account: "", detail: "not signed in" },
+              }
+        ),
         job: vi.fn().mockReturnValue(new Promise(() => {})),
       },
       projects: {

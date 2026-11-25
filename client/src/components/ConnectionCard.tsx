@@ -161,6 +161,14 @@ function StatusBadge({ item }: StatusBadgeProps) {
       </span>
     );
   }
+  if (item.status === null) {
+    return (
+      <span className="badge bg-gray-500/10 text-gray-400 border-gray-500/20">
+        <LoaderCircle className="w-3 h-3 animate-spin" aria-hidden />
+        {t("status.checking")}
+      </span>
+    );
+  }
   if (item.status?.connected) {
     return (
       <span className="badge bg-emerald-500/10 text-emerald-400 border-emerald-500/20">

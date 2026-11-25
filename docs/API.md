@@ -1575,6 +1575,7 @@ The `/api/connections/*` namespace lets a person sign in to their own accounts f
 
 ```http
 GET    /api/connections[?status=0]        { enabled, error, items } — each item has its sign-in status and current job
+GET    /api/connections/:id/status        { id, required, status } — one connection's status (the page reads each on its own)
 POST   /api/connections/:id/login         Start the sign-in command (202), or return the job already running (200)
 GET    /api/connections/:id/job           Progress: { job: { state, output, urls, code, acceptsInput, … } }
 POST   /api/connections/:id/job/input     Hand the running sign-in one pasted line — Body: { text }

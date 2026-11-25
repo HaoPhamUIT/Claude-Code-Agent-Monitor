@@ -172,6 +172,7 @@ import type {
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
+  status: vi.fn(),
   login: vi.fn(),
   job: vi.fn(),
   input: vi.fn(),
@@ -251,11 +252,29 @@ async function renderPage() {
   await settle();
 }
 
+/**
+ * Answer a status check the way the server would: from the connection as the
+ * latest list response describes it (the hook lists with `?status=0`, then asks
+ * for each status on its own).
+ */
+async function statusFromLatestList(id: string) {
+  const results = mocks.list.mock.results;
+  const latest = results[results.length - 1];
+  const response = (await latest?.value) as ConnectionsResponse | undefined;
+  const found = response?.items.find((i) => i.id === id);
+  return {
+    id,
+    required: found?.required ?? false,
+    status: found?.status ?? { connected: null, account: "", detail: "" },
+  };
+}
+
 const noCatalog: ProjectsResponse = { enabled: false, error: null, requires: null, items: [] };
 
 beforeEach(() => {
   i18n.changeLanguage("en");
   projectMocks.list.mockResolvedValue(noCatalog);
+  mocks.status.mockImplementation(statusFromLatestList);
 });
 
 afterEach(() => {
@@ -290,6 +309,40 @@ describe("Connections page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     await settle();
     expect(screen.getByText("Azure DevOps")).toBeTruthy();
+  });
+
+  it("lists the connections at once and fills in each status when its own check answers", async () => {
+    mocks.list.mockResolvedValue(
+      listing([item("ado", { status: null }), item("atl", { status: null })])
+    );
+    let answerAtl: (value: unknown) => void = () => {};
+    mocks.status.mockImplementation((id: string) =>
+      id === "ado"
+        ? Promise.resolve({
+            id,
+            required: false,
+            status: { connected: true, account: "alice@example.com", detail: "" },
+          })
+        : new Promise((resolve) => {
+            answerAtl = resolve;
+          })
+    );
+    await renderPage();
+    // The list itself runs no command; each status is asked for separately.
+    expect(mocks.list).toHaveBeenCalledWith({ withStatus: false });
+    expect(mocks.status.mock.calls.map(([id]) => id)).toEqual(["ado", "atl"]);
+    // The slow check holds back only its own card.
+    expect(screen.getByText("Connected as alice@example.com")).toBeTruthy();
+    expect(screen.getByText("Checking…")).toBeTruthy();
+
+    answerAtl({
+      id: "atl",
+      required: false,
+      status: { connected: false, account: "", detail: "" },
+    });
+    await settle();
+    expect(screen.queryByText("Checking…")).toBeNull();
+    expect(screen.getByText("Not connected")).toBeTruthy();
   });
 
   it("shows each connection's status and the matching actions", async () => {

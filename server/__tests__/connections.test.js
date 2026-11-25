@@ -6,7 +6,8 @@
  * waits for a pasted redirect URL, one that never ends, and status/sign-out
  * commands. Covers the off-by-default behaviour, config validation, link and
  * code extraction, the job lifecycle, input validation, required connections,
- * the signed-in marker and the origin guard.
+ * per-connection status reads (overlapping reads share one run), the
+ * signed-in marker and the origin guard.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 
@@ -233,6 +234,61 @@ describe("/api/connections", () => {
 
     const quick = await fetchJson("/api/connections?status=0");
     assert.ok(quick.body.items.every((i) => i.status === null));
+  });
+
+  it("reads one connection's status, and overlapping reads share one run of its command", async () => {
+    const counter = path.join(TMP, "status-runs");
+    fs.rmSync(counter, { force: true });
+    // A slow status command that counts how often it runs.
+    const slow = script(
+      "slow-status.js",
+      `require("fs").appendFileSync(${JSON.stringify(counter)}, "x");
+setTimeout(() => { console.log("carol"); }, 300);`
+    );
+    writeConfig({
+      connections: [
+        { id: "slow", name: "Slow", status: [NODE, slow], login: [NODE, DEVICE] },
+        {
+          id: "gated",
+          name: "Gated",
+          required: { when: [NODE, "-e", "process.exit(0)"] },
+          status: [NODE, STATUS],
+          login: [NODE, DEVICE],
+        },
+      ],
+    });
+    const runs = () => (fs.existsSync(counter) ? fs.readFileSync(counter, "utf8").length : 0);
+
+    const [a, b, list] = await Promise.all([
+      fetchJson("/api/connections/slow/status"),
+      fetchJson("/api/connections/slow/status"),
+      fetchJson("/api/connections"),
+    ]);
+    assert.equal(a.status, 200);
+    assert.deepEqual(a.body, {
+      id: "slow",
+      required: false,
+      status: { connected: true, account: "carol", detail: "" },
+    });
+    assert.deepEqual(b.body, a.body);
+    assert.deepEqual(list.body.items[0].status, a.body.status);
+    assert.equal(runs(), 1);
+
+    // Nothing is kept once the run ends: the next read runs the command again.
+    await fetchJson("/api/connections/slow/status");
+    assert.equal(runs(), 2);
+
+    // `required.when` is decided by the same read.
+    const gated = await fetchJson("/api/connections/gated/status");
+    assert.deepEqual(gated.body, {
+      id: "gated",
+      required: true,
+      status: { connected: false, account: "", detail: "not signed in" },
+    });
+
+    const missing = await fetchJson("/api/connections/nope/status");
+    assert.equal(missing.status, 404);
+    assert.equal(missing.body.error.code, "ENOCONNECTION");
   });
 
   it("runs a device-code sign-in: link and code are extracted, then the status flips", async () => {

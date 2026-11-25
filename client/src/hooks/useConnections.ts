@@ -1,8 +1,9 @@
 /**
  * @file useConnections.ts
  * @description State and actions for account connections, shared by the
- * Accounts page and the first-run onboarding gate: loads every connection with
- * its status, polls a running sign-in job until it ends (then re-reads every
+ * Accounts page and the first-run onboarding gate: loads the connections, then
+ * each one's status on its own (a slow one holds back only its card), polls a
+ * running sign-in job until it ends (then re-reads every
  * status), and wraps connect / cancel / sign out / paste-back so a failure
  * becomes one translated message. Nothing here depends on the WebSocket.
  * @author Son Nguyen <hoangson091104@gmail.com>
@@ -18,9 +19,10 @@
  * **Area:** client hook
  * **Responsibility:**
  * State and actions for account connections, shared by the Accounts page and the first-run
- * onboarding gate: loads every connection with its status, polls a running sign-in job until it
- * ends (then re-reads every status), and wraps connect / cancel / sign out / paste-back so a
- * failure becomes one translated message. Nothing here depends on the WebSocket.
+ * onboarding gate: loads the connections, then each one's status on its own (a slow one holds back
+ * only its card), polls a running sign-in job until it ends (then re-reads every status), and wraps
+ * connect / cancel / sign out / paste-back so a failure becomes one translated message. Nothing
+ * here depends on the WebSocket.
  *
  * ## Architectural boundary
  * - Owns a reusable React side-effect or stateful subscription while exposing a small declarative
@@ -135,7 +137,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../lib/api";
-import type { ConnectionJob, ConnectionsResponse } from "../lib/api";
+import type { ConnectionItem, ConnectionJob, ConnectionsResponse } from "../lib/api";
 
 /** How often a running sign-in is polled. */
 const POLL_MS = 1500;
@@ -153,7 +155,7 @@ export interface ConnectionsState {
   loadError: string | null;
   /** Translated message of the last failed action; null when the last one succeeded. */
   actionError: string | null;
-  /** True while a load is in flight. */
+  /** True while a load, or any of its status checks, is in flight. */
   refreshing: boolean;
   /** Re-read every connection with its status. */
   load: () => Promise<void>;
@@ -179,17 +181,57 @@ export function useConnections(): ConnectionsState {
   const [refreshing, setRefreshing] = useState(false);
   const mounted = useRef(true);
 
+  // Bumped by every load, so the answers of an older load cannot overwrite a newer one.
+  const generation = useRef(0);
+
   const load = useCallback(async () => {
+    const gen = ++generation.current;
+    const current = () => mounted.current && gen === generation.current;
     setRefreshing(true);
     try {
-      const next = await api.connections.list();
-      if (!mounted.current) return;
-      setData(next);
+      // The list itself runs no command, so the cards show at once; each status
+      // is then asked for on its own and fills in its card when it arrives.
+      const list = await api.connections.list({ withStatus: false });
+      if (!current()) return;
+      setData((prev) => ({
+        ...list,
+        // Keep what the last check said while this one runs, so a reload does
+        // not flash "checking" (or close the first-run dialog for a moment).
+        items: list.items.map((item) => {
+          const before = prev?.items.find((p) => p.id === item.id);
+          return before?.status
+            ? { ...item, required: before.required, status: before.status }
+            : item;
+        }),
+      }));
       setLoadError(null);
+      await Promise.all(
+        list.items.map(async (item) => {
+          let next: Pick<ConnectionItem, "required" | "status">;
+          try {
+            const r = await api.connections.status(item.id);
+            next = { required: r.required, status: r.status };
+          } catch (err) {
+            next = {
+              required: item.required,
+              status: { connected: null, account: "", detail: messageOf(err) },
+            };
+          }
+          if (!current()) return;
+          setData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  items: prev.items.map((i) => (i.id === item.id ? { ...i, ...next } : i)),
+                }
+              : prev
+          );
+        })
+      );
     } catch (err) {
-      if (mounted.current) setLoadError(messageOf(err));
+      if (current()) setLoadError(messageOf(err));
     } finally {
-      if (mounted.current) setRefreshing(false);
+      if (current()) setRefreshing(false);
     }
   }, []);
 

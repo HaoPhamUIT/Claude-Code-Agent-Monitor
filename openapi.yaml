@@ -4324,6 +4324,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConnectionItem'
+    ConnectionStatusResponse:
+      type: object
+      required:
+        - id
+        - required
+        - status
+      properties:
+        id:
+          type: string
+          description: The connection id.
+        required:
+          type: boolean
+          description: 'True when the dashboard asks for this connection before anything else: `required: true` in the operator''s file, or `required.when` exited 0.'
+        status:
+          $ref: '#/components/schemas/ConnectionStatus'
     ConnectionLogoutResponse:
       type: object
       required:
@@ -11069,6 +11084,48 @@ paths:
                     job: null
         '403':
           description: '`EBADORIGIN` — a browser request from an origin that is neither loopback nor in `DASHBOARD_ALLOWED_HOSTS`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionErrorResponse'
+  /api/connections/{id}/status:
+    get:
+      tags:
+        - Connections
+      summary: Read one connection's status
+      description: Runs one connection's `required.when` and status commands side by side (15 s limit each). The dashboard lists connections with `status=0`, then reads each status this way, so a slow status command holds back only its own card. Reads of the same connection that overlap share one run; nothing is kept once it ends.
+      operationId: connectionsStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Connection id from the operator's file.
+          schema:
+            type: string
+            pattern: ^[a-z0-9][a-z0-9-]{0,39}$
+          example: azure-devops
+      responses:
+        '200':
+          description: The connection's `required` flag and sign-in status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionStatusResponse'
+              example:
+                id: azure-devops
+                required: true
+                status:
+                  connected: true
+                  account: alice@example.com
+                  detail: ''
+        '403':
+          description: '`EBADORIGIN` — a browser request from an origin that is neither loopback nor in `DASHBOARD_ALLOWED_HOSTS`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionErrorResponse'
+        '404':
+          description: '`ENOCONNECTION` — no connection has this id (always the case while the feature is off).'
           content:
             application/json:
               schema:

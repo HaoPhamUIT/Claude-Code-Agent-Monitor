@@ -22,6 +22,9 @@
  * The dashboard then asks for it before anything else, until it is connected
  * and its sign-in job has finished.
  *
+ * Status can be read for every connection at once or for one connection, and
+ * reads of the same connection that overlap share one run of its commands.
+ *
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
 
@@ -57,6 +60,8 @@ const CONTROL_RE = /[\u0000-\u001f\u007f]/;
 
 /** connection id -> job (running, or finished and not yet expired). */
 const jobs = new Map();
+/** connection id -> in-flight status probe, so requests that overlap share one run. */
+const probes = new Map();
 let cached = { path: null, mtimeMs: null, result: null };
 
 class ConnectionError extends Error {
@@ -438,6 +443,8 @@ function startLogin(id) {
     job.state = job.stopState || state;
     job.exitCode = exitCode;
     job.endedAt = new Date().toISOString();
+    // A status read that started before the sign-in ended may be stale.
+    probes.delete(id);
   };
   try {
     job.child = spawn(command[0], command.slice(1), {
@@ -520,6 +527,7 @@ async function logout(id) {
   const running = currentJob(id);
   if (running) stopJob(running, "cancelled");
   const r = await runOnce(connection.logout, LOGOUT_TIMEOUT_MS);
+  probes.delete(id);
   return {
     ok: r.code === 0,
     detail: r.code === 0 ? "" : firstLine(r.stderr) || firstLine(r.stdout),
@@ -534,17 +542,52 @@ async function logout(id) {
 async function listConnections({ withStatus = true } = {}) {
   const config = loadConfig();
   const items = await Promise.all(
-    config.connections.map(async (c) => ({
-      id: c.id,
-      name: c.name,
-      description: c.description,
-      canLogout: Boolean(c.logout),
-      required: withStatus ? await isRequired(c) : c.required.always,
-      status: withStatus ? await checkStatus(c) : null,
-      job: publicJob(currentJob(c.id)),
-    }))
+    config.connections.map(async (c) => {
+      const checked = withStatus ? await probe(c) : { required: c.required.always, status: null };
+      return {
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        canLogout: Boolean(c.logout),
+        required: checked.required,
+        status: checked.status,
+        job: publicJob(currentJob(c.id)),
+      };
+    })
   );
   return { enabled: config.enabled, error: config.error, items };
+}
+
+/**
+ * Run a connection's `required.when` and status commands side by side. Callers
+ * that arrive while a probe is running get that probe instead of a new one: the
+ * page and the first-run dialog both ask on load, and a slow status command
+ * (one that health-checks a remote server) should run once, not once per caller.
+ * Nothing is kept once it settles, so the next request runs the commands again.
+ * @returns {Promise<{ required: boolean, status: { connected: boolean|null, account: string, detail: string } }>}
+ */
+function probe(connection) {
+  const running = probes.get(connection.id);
+  if (running) return running;
+  const p = Promise.all([isRequired(connection), checkStatus(connection)])
+    .then(([required, status]) => ({ required, status }))
+    .finally(() => {
+      // A sign-in or sign-out may have dropped this probe and a newer one taken its place.
+      if (probes.get(connection.id) === p) probes.delete(connection.id);
+    });
+  probes.set(connection.id, p);
+  return p;
+}
+
+/**
+ * One connection's `required` and sign-in status, so a slow status command
+ * holds back only its own connection on the page.
+ * @param {string} id
+ * @returns {Promise<{ id: string, required: boolean, status: object }>}
+ */
+async function connectionStatus(id) {
+  const connection = findConnection(id);
+  return { id: connection.id, ...(await probe(connection)) };
 }
 
 /** Stop every running job and forget cached config. Tests only. */
@@ -555,6 +598,7 @@ function __reset() {
     if (job.state === "running") killTree(job, "SIGKILL");
   }
   jobs.clear();
+  probes.clear();
   cached = { path: null, mtimeMs: null, result: null };
 }
 
@@ -562,6 +606,7 @@ module.exports = {
   ConnectionError,
   loadConfig,
   listConnections,
+  connectionStatus,
   checkStatus,
   startLogin,
   getJob,

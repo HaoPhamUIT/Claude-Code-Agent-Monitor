@@ -13,6 +13,7 @@
     "connectedAs": "Đã kết nối: {{account}}",
     "notConnected": "Chưa kết nối",
     "unknown": "Chưa rõ trạng thái",
+    "checking": "Đang kiểm tra…",
     "signingIn": "Đang đăng nhập…",
     "finishing": "Đang hoàn tất…"
   },

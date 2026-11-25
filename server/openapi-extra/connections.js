@@ -216,6 +216,19 @@ const schemas = {
       items: { type: "array", items: { $ref: "#/components/schemas/ConnectionItem" } },
     },
   },
+  ConnectionStatusResponse: {
+    type: "object",
+    required: ["id", "required", "status"],
+    properties: {
+      id: { type: "string", description: "The connection id." },
+      required: {
+        type: "boolean",
+        description:
+          "True when the dashboard asks for this connection before anything else: `required: true` in the operator's file, or `required.when` exited 0.",
+      },
+      status: { $ref: "#/components/schemas/ConnectionStatus" },
+    },
+  },
   ConnectionLogoutResponse: {
     type: "object",
     required: ["ok", "detail", "status"],
@@ -273,6 +286,33 @@ const paths = {
           },
         },
         403: badOrigin,
+      },
+    },
+  },
+  "/api/connections/{id}/status": {
+    get: {
+      tags: ["Connections"],
+      summary: "Read one connection's status",
+      description:
+        "Runs one connection's `required.when` and status commands side by side (15 s limit each). The dashboard lists connections with `status=0`, then reads each status this way, so a slow status command holds back only its own card. Reads of the same connection that overlap share one run; nothing is kept once it ends.",
+      operationId: "connectionsStatus",
+      parameters: [idParam],
+      responses: {
+        200: {
+          description: "The connection's `required` flag and sign-in status.",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/ConnectionStatusResponse" },
+              example: {
+                id: "azure-devops",
+                required: true,
+                status: { connected: true, account: "alice@example.com", detail: "" },
+              },
+            },
+          },
+        },
+        403: badOrigin,
+        404: unknownConnection,
       },
     },
   },

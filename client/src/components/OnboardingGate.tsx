@@ -184,10 +184,11 @@ const UNFINISHED = new Set(["running", "failed", "timeout"]);
  * follows it).
  */
 export function needsAttention(item: ConnectionItem): boolean {
-  return (
-    item.required &&
-    (item.status?.connected !== true || (item.job !== null && UNFINISHED.has(item.job.state)))
-  );
+  if (!item.required) return false;
+  if (item.job !== null && UNFINISHED.has(item.job.state)) return true;
+  // Still being checked: wait for the answer rather than flash the dialog open.
+  if (item.status === null) return false;
+  return item.status.connected !== true;
 }
 
 /** Whether "Later" was chosen in this browser session; storage errors count as no. */

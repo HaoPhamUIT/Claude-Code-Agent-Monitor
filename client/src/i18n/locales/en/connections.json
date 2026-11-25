@@ -13,6 +13,7 @@
     "connectedAs": "Connected as {{account}}",
     "notConnected": "Not connected",
     "unknown": "Status unknown",
+    "checking": "Checking…",
     "signingIn": "Signing in…",
     "finishing": "Finishing…"
   },

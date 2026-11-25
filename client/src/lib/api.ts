@@ -220,6 +220,8 @@
  *   before changing its name, shape, or timing.
  * - `ConnectionStatus` (interface) — exported contract; search downstream imports and tests before
  *   changing its name, shape, or timing.
+ * - `ConnectionStatusResponse` (interface) — exported contract; search downstream imports and tests
+ *   before changing its name, shape, or timing.
  * - `CwdSuggestion` (interface) — exported contract; search downstream imports and tests before
  *   changing its name, shape, or timing.
  * - `DashboardRunHistoryItem` (interface) — exported contract; search downstream imports and tests
@@ -372,6 +374,8 @@
  *   focused test selection.
  * - `ConnectionStatus` (interface) — top-level declaration that helps orient code review and
  *   focused test selection.
+ * - `ConnectionStatusResponse` (interface) — top-level declaration that helps orient code review
+ *   and focused test selection.
  * - `CwdSuggestion` (interface) — top-level declaration that helps orient code review and focused
  *   test selection.
  * - `DashboardRunHistoryItem` (interface) — top-level declaration that helps orient code review and
@@ -2348,6 +2352,15 @@ export const api = {
         `/connections${options?.withStatus === false ? "?status=0" : ""}`
       ),
     /**
+     * GET /api/connections/:id/status - one connection's `required` flag and
+     * sign-in status, so a slow status command holds back only its own card.
+     *
+     * @param id Connection id.
+     * @returns {@link ConnectionStatusResponse}.
+     */
+    status: (id: string) =>
+      request<ConnectionStatusResponse>(`/connections/${encodeURIComponent(id)}/status`),
+    /**
      * POST /api/connections/:id/login - start the sign-in command, or get the
      * job that is already running.
      *
@@ -3883,10 +3896,20 @@ export interface ConnectionItem {
   canLogout: boolean;
   /** True when the dashboard asks for this connection before anything else. */
   required: boolean;
-  /** Sign-in status; null when the list was requested without status. */
+  /** Sign-in status; null when the list was requested without status (the page shows "checking"). */
   status: ConnectionStatus | null;
   /** The running or most recent sign-in job; null when there is none. */
   job: ConnectionJob | null;
+}
+
+/** Response of GET /api/connections/:id/status. */
+export interface ConnectionStatusResponse {
+  /** The connection id. */
+  id: string;
+  /** True when the dashboard asks for this connection before anything else. */
+  required: boolean;
+  /** Sign-in status. */
+  status: ConnectionStatus;
 }
 
 /** Response of GET /api/connections. */

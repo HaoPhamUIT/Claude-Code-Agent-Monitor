@@ -13,6 +13,7 @@
     "connectedAs": "已连接：{{account}}",
     "notConnected": "未连接",
     "unknown": "状态未知",
+    "checking": "检查中…",
     "signingIn": "正在登录…",
     "finishing": "正在完成…"
   },
